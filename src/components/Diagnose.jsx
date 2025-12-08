@@ -4,26 +4,40 @@ import { ScanIcon, CheckCircleIcon } from "./Icons";
 import FeedbackForm from "./FeedbackForm";
 import AutoFillTop from "./AutoFillTop";
 import useAutoFillSpace from "./useAutoFillSpace";
+import Optimizer from "./Optimizer";
+import GamifiedResults from "./GamifiedResults";
 
 const Diagnose = () => {
+    // viewState: "IDLE" | "SCANNING" | "REPORT" | "OPTIMIZING" | "RESULTS"
+    const [viewState, setViewState] = useState("IDLE");
     const [diagnosticReport, setDiagnosticReport] = useState(null);
-    const [isScanning, setIsScanning] = useState(false);
     const [showFeedback, setShowFeedback] = useState(false);
 
     const containerRef = useRef(null);
     const showFill = useAutoFillSpace(containerRef);
 
     const runDiagnostics = async () => {
-        setIsScanning(true);
+        setViewState("SCANNING");
 
         setTimeout(async () => {
             const report = await generateDiagnosticReport();
             setDiagnosticReport(report);
-            setIsScanning(false);
+            setViewState("REPORT");
         }, 2500);
     };
 
+    const startOptimization = () => {
+        setViewState("OPTIMIZING");
+    };
 
+    const handleOptimizationComplete = () => {
+        setViewState("RESULTS");
+    };
+
+    const handleRescan = () => {
+        setDiagnosticReport(null);
+        runDiagnostics();
+    };
 
     const generateDiagnosticReport = async () => {
         const nav = navigator;
@@ -34,35 +48,25 @@ const Diagnose = () => {
         const cores = nav.hardwareConcurrency || "Unknown";
 
         // Memory: deviceMemory gives approximate value (privacy-limited)
-        // For better accuracy, estimate based on performance.memory if available
         let memory = "Unknown";
         if (nav.deviceMemory) {
-            // deviceMemory is intentionally limited by browsers (usually shows ~half of actual RAM)
-            // Show a more realistic estimate
             const reportedMemory = nav.deviceMemory;
-            const estimatedActual = reportedMemory * 2; // Common browser behavior
+            const estimatedActual = reportedMemory * 2;
             memory = `~${estimatedActual} GB (${reportedMemory} GB available to browser)`;
         } else if (performance.memory) {
-            // Fallback: estimate from JS heap
             const jsHeapGB = (performance.memory.jsHeapSizeLimit / 1024 / 1024 / 1024).toFixed(1);
             memory = `~${jsHeapGB} GB (estimated)`;
         } else if (os === "iOS" || os === "macOS") {
-            // iOS/Safari doesn't support deviceMemory, estimate based on device
             memory = estimateIOSMemory();
         }
 
         const resolution = `${window.screen.width} x ${window.screen.height}`;
         const pixelRatio = window.devicePixelRatio || 1;
 
-        // Make pixel ratio more understandable
         let pixelRatioDisplay = `${pixelRatio}x`;
-        if (pixelRatio >= 2) {
-            pixelRatioDisplay += " (Retina/High-DPI)";
-        } else if (pixelRatio > 1 && pixelRatio < 2) {
-            pixelRatioDisplay += " (Enhanced)";
-        } else {
-            pixelRatioDisplay += " (Standard)";
-        }
+        if (pixelRatio >= 2) pixelRatioDisplay += " (Retina/High-DPI)";
+        else if (pixelRatio > 1 && pixelRatio < 2) pixelRatioDisplay += " (Enhanced)";
+        else pixelRatioDisplay += " (Standard)";
 
         const networkType = connection?.effectiveType || "Unknown";
         const downlink = connection?.downlink ? `${connection.downlink} Mbps` : "Unknown";
@@ -105,11 +109,9 @@ const Diagnose = () => {
         };
     };
 
-
     const estimateIOSMemory = () => {
         return "Restricted (Apple Privacy)";
     };
-
 
     const detectOS = () => {
         const u = navigator.userAgent;
@@ -135,16 +137,11 @@ const Diagnose = () => {
         const recommendations = [];
 
         if (data.cores < 4) issues.push({ severity: "warning", title: "Low CPU Cores" });
-
         if (parseInt(data.memory) < 4) issues.push({ severity: "high", title: "Low RAM" });
-
         if (data.networkType === "2g") issues.push({ severity: "medium", title: "Slow Network" });
+        if (data.storageInfo && data.storageInfo.usagePercent > 90) issues.push({ severity: "high", title: "Low Storage" });
 
-        if (data.storageInfo && data.storageInfo.usagePercent > 90)
-            issues.push({ severity: "high", title: "Low Storage" });
-
-        if (!issues.length)
-            recommendations.push({ title: "System Healthy", description: "No major issues detected." });
+        if (!issues.length) recommendations.push({ title: "System Healthy", description: "No major issues detected." });
 
         return { issues, recommendations };
     };
@@ -155,72 +152,107 @@ const Diagnose = () => {
 
             <section ref={containerRef} className="diagnose-path" id="diagnose">
 
-                {/* ---- Scan UI - Always visible ---- */}
-                <div style={{ textAlign: "center", width: "100%", marginBottom: "3rem" }}>
-                    <h2 style={{ fontSize: "2rem", fontWeight: "700", color: "#1f2937" }}>
-                        System Diagnostics
-                    </h2>
-                    <p style={{ maxWidth: "480px", margin: "auto", color: "#6b7280", marginBottom: "1.5rem" }}>
-                        {!diagnosticReport
-                            ? "Let Yolofi examine your device performance & system condition."
-                            : "Your diagnostic report is ready. Scan again to refresh."
-                        }
-                    </p>
+                {/* 1. IDLE & SCANNING STATE - Same initial UI */}
+                {(viewState === "IDLE" || viewState === "SCANNING") && (
+                    <div style={{ textAlign: "center", width: "100%", marginBottom: "3rem" }}>
+                        <h2 style={{ fontSize: "2rem", fontWeight: "700", color: "#1f2937" }}>
+                            System Diagnostics
+                        </h2>
+                        <p style={{ maxWidth: "480px", margin: "auto", color: "#6b7280", marginBottom: "1.5rem" }}>
+                            Let Yolofi examine your device performance & system condition.
+                        </p>
 
-                    {!isScanning && (
-                        <button
-                            className="scan-button"
-                            onClick={runDiagnostics}
-                            style={{
-                                padding: "1rem 2.5rem",
-                                borderRadius: "12px",
-                                fontSize: "1rem",
-                                background: "#6a85ff",
-                                color: "white",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "10px",
-                                boxShadow: "0 6px 16px rgba(106,133,255,0.25)",
-                                border: "none",
-                                cursor: "pointer",
-                                transition: "all 0.3s ease",
-                            }}
-                        >
-                            <ScanIcon size={26} color="white" />
-                            {diagnosticReport ? "Re-scan" : "Start Scan"}
-                        </button>
-                    )}
+                        {viewState === "IDLE" && (
+                            <button
+                                className="scan-button"
+                                onClick={runDiagnostics}
+                                style={{
+                                    padding: "1rem 2.5rem",
+                                    borderRadius: "12px",
+                                    fontSize: "1rem",
+                                    background: "#6a85ff",
+                                    color: "white",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "10px",
+                                    boxShadow: "0 6px 16px rgba(106,133,255,0.25)",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    transition: "all 0.3s ease",
+                                }}
+                            >
+                                <ScanIcon size={26} color="white" />
+                                Start Scan
+                            </button>
+                        )}
 
-                    {isScanning && (
-                        <div style={{ display: "inline-block" }}>
-                            <div className="scanner-ring">
-                                <div className="scan-pulse"></div>
+                        {viewState === "SCANNING" && (
+                            <div style={{ display: "inline-block" }}>
+                                <div className="scanner-ring">
+                                    <div className="scan-pulse"></div>
+                                </div>
+                                <p style={{ marginTop: "12px", fontSize: "0.9rem", color: "#6b7280" }}>
+                                    Running diagnostics...
+                                </p>
                             </div>
-                            <p style={{ marginTop: "12px", fontSize: "0.9rem", color: "#6b7280" }}>
-                                Running diagnostics...
-                            </p>
-                        </div>
-                    )}
-                </div>
-
-                {/* ---- Report UI - Shows below button ---- */}
-                {diagnosticReport && (
-                    <div className="diagnostic-report">
-                        <div className="report-header">
-                            <CheckCircleIcon size={32} color="#10b981" />
-                            <div>
-                                <h3>Diagnostic Complete</h3>
-                                <p className="scan-time">Scanned at {diagnosticReport.scanTime}</p>
-                            </div>
-                        </div>
-
-                        <div className="info-grid">
-                            {Object.entries(diagnosticReport.systemInfo).map(([k, v]) => (
-                                <InfoItem key={k} label={k} value={v} />
-                            ))}
-                        </div>
+                        )}
                     </div>
                 )}
+
+                {/* 2. REPORT STATE */}
+                {viewState === "REPORT" && diagnosticReport && (
+                    <>
+                        <div style={{ textAlign: "center", width: "100%", marginBottom: "1.5rem" }}>
+                            <h2 style={{ fontSize: "2rem", fontWeight: "700", color: "#1f2937" }}>Analysis Complete</h2>
+                            <button
+                                className="optimize-btn"
+                                onClick={startOptimization}
+                                style={{
+                                    padding: "1rem 2.5rem",
+                                    borderRadius: "12px",
+                                    fontSize: "1.1rem",
+                                    background: "#10b981", // Green for action
+                                    color: "white",
+                                    border: "none",
+                                    fontWeight: "600",
+                                    cursor: "pointer",
+                                    margin: "1rem 0",
+                                    boxShadow: "0 6px 20px rgba(16, 185, 129, 0.3)",
+                                    transition: "transform 0.2s"
+                                }}
+                            >
+                                ✨ Intelligent Optimize Now
+                            </button>
+                        </div>
+
+                        <div className="diagnostic-report">
+                            <div className="report-header">
+                                <CheckCircleIcon size={32} color="#10b981" />
+                                <div>
+                                    <h3>Diagnostic Report</h3>
+                                    <p className="scan-time">Scanned at {diagnosticReport.scanTime}</p>
+                                </div>
+                            </div>
+
+                            <div className="info-grid">
+                                {Object.entries(diagnosticReport.systemInfo).map(([k, v]) => (
+                                    <InfoItem key={k} label={k} value={v} />
+                                ))}
+                            </div>
+                        </div>
+                    </>
+                )}
+
+                {/* 3. OPTIMIZING STATE */}
+                {viewState === "OPTIMIZING" && (
+                    <Optimizer onComplete={handleOptimizationComplete} />
+                )}
+
+                {/* 4. RESULTS STATE */}
+                {viewState === "RESULTS" && (
+                    <GamifiedResults onRescan={handleRescan} />
+                )}
+
             </section>
         </>
     );
