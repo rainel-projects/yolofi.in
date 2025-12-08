@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Splash from "./components/Splash";
-import GetStarted from "./components/getstarted";
+import GetStarted from "./components/GetStarted";
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
