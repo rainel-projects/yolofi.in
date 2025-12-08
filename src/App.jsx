@@ -7,6 +7,7 @@ import HowItWorks from "./components/HowItWorks";
 import Diagnose from "./components/Diagnose";
 import "./App.css";
 
+// Navigation flow: Splash → GetStarted → Home
 export default function App() {
   const [currentPage, setCurrentPage] = useState("splash");
 
