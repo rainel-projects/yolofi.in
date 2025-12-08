@@ -9,19 +9,31 @@ body {
     background: #f8f9fc;
 }
 
-/* MAIN LAYOUT - Always fits inside screen at 100% zoom*/
+/* MAIN LAYOUT - Always fits inside screen */
 .diagnose-path {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 3rem 1.5rem;
-    box-sizing: border-box;
-    display: flex;
     padding-top: 30rem;
-    gap: 2.5rem;
-    align-items: flex-start;
-    justify-content: space-between;
+    /* USER REQUEST: KEEP THIS */
+    box-sizing: border-box;
+
+    display: flex;
     flex-wrap: wrap;
+    gap: 2.5rem;
+
+    justify-content: center;
+    /* FIXED: centers UI */
+    align-items: center;
+    text-align: left;
+}
+
+/* ensure text block doesn't collapse or shift left */
+.section-content {
+    flex: 1;
+    min-width: 300px;
+    max-width: 480px;
 }
 
 /* BUTTON */
@@ -48,6 +60,9 @@ body {
 /* VISUAL SECTION - auto scale */
 .section-visual {
     flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     min-width: 300px;
     max-width: 450px;
 }
@@ -215,6 +230,7 @@ body {
     border-left-color: #eab308;
 }
 
+/* Issue text */
 .issue-header {
     display: flex;
     align-items: center;
@@ -281,12 +297,18 @@ body {
     }
 }
 
-/* MEDIA RESPONSIVE FIXES */
+/* RESPONSIVE FIXES */
 @media (max-width: 900px) {
     .diagnose-path {
         flex-direction: column;
+        justify-content: center;
         align-items: center;
         text-align: center;
+        gap: 3rem;
+    }
+
+    .section-content {
+        max-width: 100%;
     }
 
     .diagnostic-report {
