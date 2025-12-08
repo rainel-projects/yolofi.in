@@ -36,3 +36,47 @@ export const CheckCircleIcon = ({ size = 24, color = "currentColor" }) => (
         <path d="M8 12L11 15L16 9" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
 );
+export const CpuIcon = ({ size = 24, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="4" width="16" height="16" rx="2" stroke={color} strokeWidth="2" />
+        <rect x="9" y="9" width="6" height="6" stroke={color} strokeWidth="2" />
+        <path d="M9 1V4" stroke={color} strokeWidth="2" strokeLinecap="round" />
+        <path d="M15 1V4" stroke={color} strokeWidth="2" strokeLinecap="round" />
+        <path d="M9 20V23" stroke={color} strokeWidth="2" strokeLinecap="round" />
+        <path d="M15 20V23" stroke={color} strokeWidth="2" strokeLinecap="round" />
+        <path d="M20 9H23" stroke={color} strokeWidth="2" strokeLinecap="round" />
+        <path d="M20 14H23" stroke={color} strokeWidth="2" strokeLinecap="round" />
+        <path d="M1 9H4" stroke={color} strokeWidth="2" strokeLinecap="round" />
+        <path d="M1 14H4" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+);
+
+export const MemoryIcon = ({ size = 24, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 7H22" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M2 12H22" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M2 17H22" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M2 2L2 22" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M22 2L22 22" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
+
+export const NetworkIcon = ({ size = 24, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" stroke={color} strokeWidth="2" />
+        <path d="M12 6V12L15 15" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    </svg>
+);
+
+export const TrashIcon = ({ size = 24, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 6H5H21" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M8 6V4C8 3.44772 8.44772 3 9 3H15C15.5523 3 16 3.44772 16 4V6M19 6V20C19 20.5523 18.5523 21 18 21H6C5.44772 21 5 20.5523 5 20V6H19Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
+
+export const ShieldIcon = ({ size = 24, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
