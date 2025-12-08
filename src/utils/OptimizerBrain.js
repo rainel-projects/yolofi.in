@@ -58,19 +58,19 @@ export const getMemoryStatus = () => {
 
     if (percent < 35) {
         status = "Smooth";
-        label = "Device operating efficiently";
+        label = "Your device is operating efficiently.";
         color = "#10b981";
     } else if (percent < 65) {
         status = "Active";
-        label = "Multitasking detected";
+        label = "You’re multitasking. We can improve responsiveness.";
         color = "#f59e0b"; // Yellow
     } else if (percent < 85) {
         status = "Heavy";
-        label = "Optimization recommended";
+        label = "Yolofi can optimize memory and refresh unused scripts.";
         color = "#f97316"; // Orange
     } else {
         status = "Critical";
-        label = "Action recommended";
+        label = "Performance degradation detected — Action recommended.";
         color = "#ef4444"; // Red
     }
 
@@ -88,9 +88,9 @@ export const warmNetwork = async () => {
     // 1. Preconnect to common CDNs to warm up DNS/TCP
     const commonCDNs = [
         "https://fonts.googleapis.com",
-        "https://fonts.gstatic.com",
         "https://cdn.jsdelivr.net",
-        "https://cdnjs.cloudflare.com"
+        "https://cdnjs.cloudflare.com",
+        "https://google.com"
     ];
 
     commonCDNs.forEach(url => {
@@ -180,7 +180,12 @@ export const runRealOptimization = async () => {
                 scanned: storageScan.totalSize,
                 cleaned: freedBytes,
                 filesRemoved: storageScan.trash.length,
-                keptSafe: storageScan.safe.length + storageScan.critical.length
+                keptSafe: storageScan.safe.length + storageScan.critical.length,
+                counts: {
+                    critical: storageScan.critical.length,
+                    useful: storageScan.safe.length,
+                    trash: storageScan.trash.length
+                }
             },
             network: {
                 latency: networkStat.latency,

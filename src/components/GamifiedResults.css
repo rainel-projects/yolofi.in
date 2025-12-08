@@ -103,28 +103,6 @@
     font-weight: 500;
 }
 
-.new-val {
-    color: #111827;
-    font-weight: 700;
-    font-size: 1.1rem;
-}
-
-.weekly-suggestion {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    background: #f9fafb;
-    padding: 1rem;
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-    text-align: left;
-    margin-bottom: 2rem;
-}
-
-.suggestion-icon {
-    font-size: 1.5rem;
-}
-
 .suggestion-text h4 {
     margin: 0 0 0.2rem 0;
     color: #1f2937;
