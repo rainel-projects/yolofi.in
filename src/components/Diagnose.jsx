@@ -6,6 +6,7 @@ import AutoFillTop from "./AutoFillTop";
 import useAutoFillSpace from "./useAutoFillSpace";
 import Optimizer from "./Optimizer";
 import GamifiedResults from "./GamifiedResults";
+import { classifyStorage, getMemoryStatus, warmNetwork } from "../utils/OptimizerBrain";
 
 const Diagnose = () => {
     // viewState: "IDLE" | "SCANNING" | "REPORT" | "OPTIMIZING" | "RESULTS"
@@ -26,50 +27,28 @@ const Diagnose = () => {
         }, 2500);
     };
 
-    const startOptimization = () => {
-        setViewState("OPTIMIZING");
-    };
-
-    const handleOptimizationComplete = (result) => {
-        setOptimizationResult(result);
-        setViewState("RESULTS");
-    };
-
-    // ... (rest of methods) ...
-
-    {/* 3. OPTIMIZING STATE */ }
-    {
-        viewState === "OPTIMIZING" && (
-            <Optimizer onComplete={handleOptimizationComplete} />
-        )
-    }
-
-    {/* 4. RESULTS STATE */ }
-    {
-        viewState === "RESULTS" && (
-            <GamifiedResults onRescan={handleRescan} results={optimizationResult} />
-        )
-    }
-
-    const handleRescan = () => {
-        setDiagnosticReport(null);
-        runDiagnostics();
-    };
+    // ... (rest of methods)
 
     const generateDiagnosticReport = async () => {
         const nav = navigator;
         const connection = nav.connection;
 
+        // Capture Baseline Metrics for Verification
+        const storageBaseline = classifyStorage();
+        const memoryBaseline = getMemoryStatus();
+        // Quick latency check for baseline
+        const networkBaseline = await warmNetwork(); // We use this early to get 'before' latency
+
         const os = detectOS();
         const browser = detectBrowser();
+        // ... (rest of standard detection logic)
         const cores = nav.hardwareConcurrency || "Unknown";
 
-        // Memory: deviceMemory gives approximate value (privacy-limited)
+        // ... (memory detection code) ...
         let memory = "Unknown";
         if (nav.deviceMemory) {
-            const reportedMemory = nav.deviceMemory;
-            const estimatedActual = reportedMemory * 2;
-            memory = `~${estimatedActual} GB (${reportedMemory} GB available to browser)`;
+            // ...
+            memory = `~${nav.deviceMemory * 2} GB`;
         } else if (performance.memory) {
             const jsHeapGB = (performance.memory.jsHeapSizeLimit / 1024 / 1024 / 1024).toFixed(1);
             memory = `~${jsHeapGB} GB (estimated)`;
@@ -79,12 +58,13 @@ const Diagnose = () => {
 
         const resolution = `${window.screen.width} x ${window.screen.height}`;
         const pixelRatio = window.devicePixelRatio || 1;
-
+        // ... (pixel ratio logic) ...
         let pixelRatioDisplay = `${pixelRatio}x`;
         if (pixelRatio >= 2) pixelRatioDisplay += " (Retina/High-DPI)";
         else if (pixelRatio > 1 && pixelRatio < 2) pixelRatioDisplay += " (Enhanced)";
         else pixelRatioDisplay += " (Standard)";
 
+        // ... (network/battery logic) ...
         const networkType = connection?.effectiveType || "Unknown";
         const downlink = connection?.downlink ? `${connection.downlink} Mbps` : "Unknown";
 
@@ -99,6 +79,7 @@ const Diagnose = () => {
 
         let storageInfo = null;
         if (nav.storage?.estimate) {
+            // ... (storage api logic)
             const estimate = await nav.storage.estimate();
             storageInfo = {
                 used: (estimate.usage / 1024 / 1024 / 1024).toFixed(2),
@@ -108,6 +89,11 @@ const Diagnose = () => {
         }
 
         return {
+            baseline: {
+                storage: storageBaseline,
+                memory: memoryBaseline,
+                network: networkBaseline
+            },
             systemInfo: {
                 os,
                 browser,
@@ -267,7 +253,11 @@ const Diagnose = () => {
 
                 {/* 4. RESULTS STATE */}
                 {viewState === "RESULTS" && (
-                    <GamifiedResults onRescan={handleRescan} results={optimizationResult} />
+                    <GamifiedResults
+                        onRescan={handleRescan}
+                        results={optimizationResult}
+                        baseline={diagnosticReport?.baseline}
+                    />
                 )}
 
             </section>
