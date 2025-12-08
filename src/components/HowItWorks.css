@@ -1,0 +1,78 @@
+/* How It Works - Clean Pastel Style */
+.how-it-works-path {
+    background: transparent;
+}
+
+.steps-visual-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.step-icon-card {
+    background: #f8f9fc;
+    padding: 2rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e8eaf0;
+    transition: all 0.3s;
+}
+
+.step-icon-card:hover {
+    transform: translateY(-3px);
+    border-color: #a8b5d1;
+}
+
+.steps-list {
+    margin: 2rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.step-item {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+.step-marker {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #a8b5d1;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.step-info h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #2d3748;
+}
+
+.step-info p {
+    font-size: 1.05rem;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .steps-visual-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .step-icon-card {
+        padding: 1.5rem;
+    }
+}

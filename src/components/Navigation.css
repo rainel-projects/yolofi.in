@@ -1,0 +1,123 @@
+.navigation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    padding: 1.2rem 2rem;
+    background: white;
+    border-bottom: 1px solid #e8eaf0;
+    transition: all 0.3s ease;
+}
+
+.nav-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    cursor: pointer;
+    transition: transform 0.3s;
+    flex-shrink: 0;
+}
+
+.nav-logo:hover {
+    transform: scale(1.05);
+}
+
+.nav-logo img {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.nav-logo span {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.nav-links {
+    display: none;
+    gap: 2rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #64748b;
+    font-weight: 500;
+    font-size: 0.95rem;
+    position: relative;
+    transition: color 0.3s;
+    white-space: nowrap;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #a8b5d1;
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: #2d3748;
+}
+
+.nav-links a.active::after {
+    width: 100%;
+}
+
+.nav-cta {
+    padding: 0.7rem 1.8rem;
+    background: #a8b5d1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.nav-cta:hover {
+    background: #8a9bb8;
+    transform: translateY(-1px);
+}
+
+/* Show nav links on tablet and above */
+@media (min-width: 768px) {
+    .nav-links {
+        display: flex;
+    }
+}
+
+/* Mobile */
+@media (max-width: 380px) {
+    .nav-logo span {
+        display: none;
+    }
+
+    .nav-cta {
+        font-size: 0.85rem;
+        padding: 0.6rem 1.4rem;
+    }
+}

@@ -1,70 +1,58 @@
 import React, { useState, useEffect } from 'react';
-import './components/Splash.css'; // Ensure splash styles are available
 import logo from './assets/logo.jpg';
+import './components/Splash.css';
+import './App.css';
 
 function App() {
-  const [phase, setPhase] = useState('splash'); // 'splash' | 'moving' | 'done'
+  const [phase, setPhase] = useState('splash'); // 'splash' | 'home'
 
   useEffect(() => {
-    // 1. Initial hold (Splash state) - 5 seconds
-    const timer1 = setTimeout(() => {
-      setPhase('moving');
+    // After 6 seconds, transition to home
+    const timer = setTimeout(() => {
+      setPhase('home');
+    }, 6000);
 
-      // 2. Animation duration (matches CSS)
-      const timer2 = setTimeout(() => {
-        setPhase('done');
-      }, 1200); // 1.2s transition
-    }, 5000);
-
-    return () => {
-      clearTimeout(timer1);
-    };
+    return () => clearTimeout(timer);
   }, []);
 
   return (
     <div className={`app-container phase-${phase}`}>
+      {/* Splash Screen - Full screen initially */}
+      {phase === 'splash' && (
+        <div className="splash-screen">
+          <div className="orbit orbit-1"></div>
+          <div className="orbit orbit-2"></div>
+          <div className="orbit orbit-3"></div>
+          <div className="particle"></div>
+          <div className="particle"></div>
+          <div className="particle"></div>
+          <div className="particle"></div>
+          <div className="particle"></div>
 
-      {/* 
-        The Shared Logo Element 
-        This single element transforms from "Hero Splash" to "Header Logo"
-      */}
-      <div className="shared-logo-wrapper">
-        <img src={logo} alt="Yolofi Logo" className="shared-logo" />
-      </div>
+          <div className="splash-logo-container">
+            <img src={logo} alt="Yolofi" className="splash-logo" />
+          </div>
+        </div>
+      )}
 
-      {/* Main Content */}
-      <div className="main-content">
-        <header className="app-header">
-          {/* Header space is reserved, logo moves into it */}
-          <nav style={{ marginLeft: 'auto', display: 'flex', gap: '2rem', padding: '1.5rem' }}>
-            {/* Placeholder nav items */}
-            <span style={{ opacity: 0.6 }}>Home</span>
-            <span style={{ opacity: 0.6 }}>Features</span>
-            <span style={{ opacity: 0.6 }}>Contact</span>
-          </nav>
-        </header>
+      {/* Header with Logo - Shows after splash */}
+      {phase === 'home' && (
+        <>
+          <header className="app-header">
+            <img src={logo} alt="Yolofi" className="header-logo" />
+            <span className="brand-name">yolofi</span>
+          </header>
 
-        <main className="landing-hero">
-          <h1>yolofi.in</h1>
-          <p>Device troubleshooting, simplified.</p>
-          <button style={{
-            marginTop: '2rem',
-            padding: '1rem 2rem',
-            borderRadius: '50px',
-            border: 'none',
-            background: '#1a1a1a',
-            color: 'white',
-            fontSize: '1rem',
-            cursor: 'pointer'
-          }}>
-            Get Started
-          </button>
-        </main>
-      </div>
-
-      {/* Dynamic Background (Splash Layer) */}
-      <div className="splash-background"></div>
-
+          {/* Home Page Content */}
+          <div className="home-page">
+            <section className="welcome-section">
+              <h1>Welcome to Yolofi</h1>
+              <p>Your AI-powered troubleshooting companion</p>
+              <button className="cta-button">Get Started →</button>
+            </section>
+          </div>
+        </>
+      )}
     </div>
   );
 }
