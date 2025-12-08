@@ -1,6 +1,47 @@
+import { useState, useEffect } from 'react';
+import { db } from '../firebase/config';
+import { collection, getCountFromServer } from 'firebase/firestore';
 import "./GetStarted.css";
 
 export default function IntroPage({ onContinue }) {
+    const [stats, setStats] = useState({
+        issuesResolved: 0,
+        successRate: 98,
+        avgFixTime: '<60s'
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                // Get real count of testimonials from Firebase
+                const coll = collection(db, 'testimonials');
+                const snapshot = await getCountFromServer(coll);
+                const count = snapshot.data().count;
+
+                setStats({
+                    issuesResolved: count,
+                    successRate: count > 0 ? 98 : 0, // 98% success rate
+                    avgFixTime: '<60s' // Static for now, can be calculated if we track fix times
+                });
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+                // Fallback to 0 on error
+                setStats({ issuesResolved: 0, successRate: 98, avgFixTime: '<60s' });
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, []);
+
+    const formatNumber = (num) => {
+        if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M+`;
+        if (num >= 1000) return `${(num / 1000).toFixed(1)}K+`;
+        return num.toString();
+    };
+
     return (
         <div className="intro-page">
             <div className="intro-content">
@@ -18,17 +59,19 @@ export default function IntroPage({ onContinue }) {
 
                 <div className="intro-stats">
                     <div className="stat-item">
-                        <div className="stat-value">2.4M+</div>
+                        <div className="stat-value">
+                            {loading ? '...' : formatNumber(stats.issuesResolved)}
+                        </div>
                         <div className="stat-label">Issues Resolved</div>
                     </div>
                     <div className="stat-divider"></div>
                     <div className="stat-item">
-                        <div className="stat-value">98%</div>
+                        <div className="stat-value">{stats.successRate}%</div>
                         <div className="stat-label">Success Rate</div>
                     </div>
                     <div className="stat-divider"></div>
                     <div className="stat-item">
-                        <div className="stat-value">&lt;60s</div>
+                        <div className="stat-value">{stats.avgFixTime}</div>
                         <div className="stat-label">Avg. Fix Time</div>
                     </div>
                 </div>
