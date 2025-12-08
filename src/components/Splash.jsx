@@ -1,38 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import './Splash.css';
-import logo from '../assets/logo.jpg';
+import { useEffect, useState } from "react";
+import "./Splash.css";
+import logo from "../assets/logo.jpg";
 
-const Splash = ({ onComplete }) => {
-    const [exiting, setExiting] = useState(false);
+export default function Splash({ onFinish }) {
+    const [fadeOut, setFadeOut] = useState(false);
 
     useEffect(() => {
-        // Hold splash for 3 seconds, then exit
         const timer = setTimeout(() => {
-            setExiting(true);
-
-            // Wait for exit animation to finish before unmounting
-            setTimeout(() => {
-                onComplete && onComplete();
-            }, 800);
-        }, 2500);
+            setFadeOut(true);
+            setTimeout(() => onFinish && onFinish(), 600);
+        }, 2000);
 
         return () => clearTimeout(timer);
-    }, [onComplete]);
+    }, [onFinish]);
 
     return (
-        <div className={`splash-container ${exiting ? 'splash-exit' : ''}`}>
-            <div className="splash-content">
-                <div className="logo-wrapper">
-                    <img src={logo} alt="Yolofi Logo" className="splash-logo" />
-                </div>
-                <h1 className="splash-tagline">
-                    <span>Troubleshoot.</span>
-                    <span>Solve.</span>
-                    <span>Relax.</span>
-                </h1>
-            </div>
+        <div className={`splash-container ${fadeOut ? "fade-out" : ""}`}>
+            <img src={logo} alt="Yolofi" className="splash-logo" />
+            <p className="loading-text">Starting up...</p>
         </div>
     );
-};
-
-export default Splash;
+}
