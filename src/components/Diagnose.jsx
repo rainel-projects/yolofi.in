@@ -46,6 +46,9 @@ const Diagnose = () => {
             // Fallback: estimate from JS heap
             const jsHeapGB = (performance.memory.jsHeapSizeLimit / 1024 / 1024 / 1024).toFixed(1);
             memory = `~${jsHeapGB} GB (estimated)`;
+        } else if (os === "iOS" || os === "macOS") {
+            // iOS/Safari doesn't support deviceMemory, estimate based on device
+            memory = estimateIOSMemory();
         }
 
         const resolution = `${window.screen.width} x ${window.screen.height}`;
@@ -100,6 +103,19 @@ const Diagnose = () => {
             issues: detectIssues({ cores, memory, networkType, storageInfo, batteryInfo }),
             scanTime: new Date().toLocaleString(),
         };
+    };
+
+
+    const estimateIOSMemory = () => {
+        // iOS doesn't expose RAM info. Estimate based on screen size (logical pixels)
+        const w = window.screen.width;
+        const h = window.screen.height;
+        const maxDim = Math.max(w, h);
+
+        if (maxDim >= 920) return "~6-8 GB (Estimated)"; // Pro Max / Plus models
+        if (maxDim >= 840) return "~6 GB (Estimated)";   // Pro / standard newer models
+        if (maxDim >= 812) return "~4-6 GB (Estimated)"; // iPhone X/11/12/13 range
+        return "~3-4 GB (Estimated)"; // Older / SE
     };
 
 
