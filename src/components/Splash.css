@@ -1,0 +1,203 @@
+/* Variable Definitions */
+:root {
+    --color-accent-blue: #8ab4df;
+    --color-bg-light: #fdfbf7;
+    --color-text-dark: #1a1a1a;
+}
+
+/* App Container */
+.app-container {
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Splash Background */
+.splash-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(at 0% 0%, hsla(210, 56%, 93%, 1) 0, transparent 50%),
+        radial-gradient(at 50% 0%, hsla(208, 100%, 93%, 1) 0, transparent 50%),
+        radial-gradient(at 100% 0%, hsla(210, 56%, 93%, 1) 0, transparent 50%);
+    background-size: 200% 200%;
+    animation: gradientFlow 15s ease infinite;
+    z-index: -1;
+    transition: opacity 1.5s ease;
+}
+
+.phase-done .splash-background {
+    opacity: 0.4;
+}
+
+
+/* Shared Logo Wrapper */
+.shared-logo-wrapper {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    transition: all 1.2s cubic-bezier(0.65, 0, 0.35, 1);
+
+    /* Glass effect (start strong) */
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(12px);
+    padding: 2.5rem;
+    border-radius: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 25px 50px rgba(138, 180, 223, 0.15);
+}
+
+.shared-logo {
+    width: 180px;
+    height: auto;
+    display: block;
+    transition: all 1.2s cubic-bezier(0.65, 0, 0.35, 1);
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05));
+}
+
+
+/* --- Phase: Moving & Done (Header Mode) --- */
+.phase-moving .shared-logo-wrapper,
+.phase-done .shared-logo-wrapper {
+    top: 1.5rem;
+    /* Reduced top padding */
+    left: 1.5rem;
+    /* Reduced left padding */
+    transform: translate(0, 0);
+
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+.phase-moving .shared-logo,
+.phase-done .shared-logo {
+    width: 40px;
+    /* Smaller header logo */
+    border-radius: 8px;
+}
+
+
+/* --- Main Content --- */
+.main-content {
+    opacity: 0;
+    transition: opacity 1s ease;
+    transition-delay: 0.5s;
+}
+
+.phase-moving .main-content,
+.phase-done .main-content {
+    opacity: 1;
+}
+
+.landing-hero {
+    text-align: center;
+    margin-top: 25vh;
+    /* Adjusted margin */
+    padding: 2rem;
+}
+
+.landing-hero h1 {
+    font-family: 'Inter', sans-serif;
+    font-size: 4rem;
+    font-weight: 300;
+    margin-bottom: 1rem;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: contentFadeUp 1s forwards 0.8s;
+}
+
+.landing-hero p {
+    font-size: 1.5rem;
+    color: #666;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: contentFadeUp 1s forwards 1s;
+}
+
+.landing-hero button {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: contentFadeUp 1s forwards 1.2s;
+}
+
+
+/* --- Responsive Design (Mobile) --- */
+@media (max-width: 768px) {
+
+    /* Splash State: Smaller logo */
+    .shared-logo-wrapper {
+        padding: 2rem;
+        border-radius: 30px;
+    }
+
+    .shared-logo {
+        width: 120px;
+        /* Smaller splash logo on mobile */
+    }
+
+    /* Header State: Adjust positioning */
+    .phase-moving .shared-logo-wrapper,
+    .phase-done .shared-logo-wrapper {
+        top: 1rem;
+        left: 1rem;
+    }
+
+    .phase-moving .shared-logo,
+    .phase-done .shared-logo {
+        width: 36px;
+    }
+
+    /* Main Content Adjustments */
+    .landing-hero {
+        margin-top: 20vh;
+        padding: 1.5rem;
+    }
+
+    .landing-hero h1 {
+        font-size: 2.8rem;
+        /* Smaller heading */
+    }
+
+    .landing-hero p {
+        font-size: 1.1rem;
+    }
+
+    /* Hide text nav items on mobile, maybe replace with icon? */
+    .app-header nav {
+        gap: 1rem !important;
+        padding: 1rem !important;
+    }
+
+    .app-header nav span {
+        font-size: 0.9rem;
+    }
+}
+
+@keyframes contentFadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes gradientFlow {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
