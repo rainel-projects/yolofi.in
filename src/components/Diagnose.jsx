@@ -107,15 +107,7 @@ const Diagnose = () => {
 
 
     const estimateIOSMemory = () => {
-        // iOS doesn't expose RAM info. Estimate based on screen size (logical pixels)
-        const w = window.screen.width;
-        const h = window.screen.height;
-        const maxDim = Math.max(w, h);
-
-        if (maxDim >= 920) return "~6-8 GB (Estimated)"; // Pro Max / Plus models
-        if (maxDim >= 840) return "~6 GB (Estimated)";   // Pro / standard newer models
-        if (maxDim >= 812) return "~4-6 GB (Estimated)"; // iPhone X/11/12/13 range
-        return "~3-4 GB (Estimated)"; // Older / SE
+        return "Restricted (Apple Privacy)";
     };
 
 
