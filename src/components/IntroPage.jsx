@@ -6,8 +6,8 @@ import "./GetStarted.css";
 export default function IntroPage({ onContinue }) {
     const [stats, setStats] = useState({
         issuesResolved: 0,
-        successRate: 98,
-        avgFixTime: '<60s'
+        successRate: 0,
+        avgFixTime: 0
     });
     const [loading, setLoading] = useState(true);
 
@@ -21,13 +21,18 @@ export default function IntroPage({ onContinue }) {
 
                 setStats({
                     issuesResolved: count,
-                    successRate: count > 0 ? 98 : 0, // 98% success rate
-                    avgFixTime: '<60s' // Static for now, can be calculated if we track fix times
+                    // Success rate: Calculate from database if you track success/failure
+                    // For now, if someone submitted feedback, we assume it was successful
+                    // So 100% if we have testimonials, 0% if none
+                    successRate: count > 0 ? 100 : 0,
+                    // Avg fix time: Static until we track actual fix times in testimonials
+                    // To make this real: add "fixDuration" field when submitting feedback
+                    avgFixTime: count > 0 ? '<60s' : 0
                 });
             } catch (error) {
                 console.error('Error fetching stats:', error);
-                // Fallback to 0 on error
-                setStats({ issuesResolved: 0, successRate: 98, avgFixTime: '<60s' });
+                // Show 0 for everything on error
+                setStats({ issuesResolved: 0, successRate: 0, avgFixTime: 0 });
             } finally {
                 setLoading(false);
             }
@@ -37,6 +42,7 @@ export default function IntroPage({ onContinue }) {
     }, []);
 
     const formatNumber = (num) => {
+        if (num === 0) return '0';
         if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M+`;
         if (num >= 1000) return `${(num / 1000).toFixed(1)}K+`;
         return num.toString();
