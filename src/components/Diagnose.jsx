@@ -115,18 +115,79 @@ const Diagnose = () => {
         return { issues, recommendations };
     };
 
-    <p className="scan-time">Scanned at {diagnosticReport.scanTime}</p>
-                            </div >
-                        </div >
+    return (
+        <>
+            {showFill && <AutoFillTop />}
 
-    <div className="info-grid">
-        {Object.entries(diagnosticReport.systemInfo).map(([k, v]) => (
-            <InfoItem key={k} label={k} value={v} />
-        ))}
-    </div>
-                    </div >
+            <section ref={containerRef} className="diagnose-path" id="diagnose">
+
+                {/* ---- Scan UI - Always visible ---- */}
+                <div style={{ textAlign: "center", width: "100%", marginBottom: "3rem" }}>
+                    <h2 style={{ fontSize: "2rem", fontWeight: "700", color: "#1f2937" }}>
+                        System Diagnostics
+                    </h2>
+                    <p style={{ maxWidth: "480px", margin: "auto", color: "#6b7280", marginBottom: "1.5rem" }}>
+                        {!diagnosticReport
+                            ? "Let Yolofi examine your device performance & system condition."
+                            : "Your diagnostic report is ready. Scan again to refresh."
+                        }
+                    </p>
+
+                    {!isScanning && (
+                        <button
+                            className="scan-button"
+                            onClick={runDiagnostics}
+                            style={{
+                                padding: "1rem 2.5rem",
+                                borderRadius: "12px",
+                                fontSize: "1rem",
+                                background: "#6a85ff",
+                                color: "white",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "10px",
+                                boxShadow: "0 6px 16px rgba(106,133,255,0.25)",
+                                border: "none",
+                                cursor: "pointer",
+                                transition: "all 0.3s ease",
+                            }}
+                        >
+                            <ScanIcon size={26} color="white" />
+                            {diagnosticReport ? "Re-scan" : "Start Scan"}
+                        </button>
+                    )}
+
+                    {isScanning && (
+                        <div style={{ display: "inline-block" }}>
+                            <div className="scanner-ring">
+                                <div className="scan-pulse"></div>
+                            </div>
+                            <p style={{ marginTop: "12px", fontSize: "0.9rem", color: "#6b7280" }}>
+                                Running diagnostics...
+                            </p>
+                        </div>
+                    )}
+                </div>
+
+                {/* ---- Report UI - Shows below button ---- */}
+                {diagnosticReport && (
+                    <div className="diagnostic-report">
+                        <div className="report-header">
+                            <CheckCircleIcon size={32} color="#10b981" />
+                            <div>
+                                <h3>Diagnostic Complete</h3>
+                                <p className="scan-time">Scanned at {diagnosticReport.scanTime}</p>
+                            </div>
+                        </div>
+
+                        <div className="info-grid">
+                            {Object.entries(diagnosticReport.systemInfo).map(([k, v]) => (
+                                <InfoItem key={k} label={k} value={v} />
+                            ))}
+                        </div>
+                    </div>
                 )}
-            </section >
+            </section>
         </>
     );
 };
