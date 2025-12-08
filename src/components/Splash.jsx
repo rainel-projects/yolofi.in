@@ -3,28 +3,30 @@ import "./Splash.css";
 import logo from "../assets/logo.jpg";
 
 export default function Splash({ onFinish }) {
-    const [progress, setProgress] = useState(0);
+    const [checks, setChecks] = useState([]);
     const [fadeOut, setFadeOut] = useState(false);
 
-    useEffect(() => {
-        // Smooth progress animation
-        const progressInterval = setInterval(() => {
-            setProgress(prev => {
-                if (prev >= 100) return 100;
-                return prev + 2;
-            });
-        }, 30);
+    const diagnosticChecks = [
+        { id: 1, text: "System detected", delay: 300 },
+        { id: 2, text: "Diagnostic tools loaded", delay: 900 },
+        { id: 3, text: "Ready to troubleshoot", delay: 1600 }
+    ];
 
-        // Finish after 2.5 seconds
+    useEffect(() => {
+        // Show checks progressively
+        diagnosticChecks.forEach((check) => {
+            setTimeout(() => {
+                setChecks(prev => [...prev, check.id]);
+            }, check.delay);
+        });
+
+        // Finish and fade out
         const finishTimer = setTimeout(() => {
             setFadeOut(true);
             setTimeout(() => onFinish && onFinish(), 500);
         }, 2500);
 
-        return () => {
-            clearInterval(progressInterval);
-            clearTimeout(finishTimer);
-        };
+        return () => clearTimeout(finishTimer);
     }, [onFinish]);
 
     return (
@@ -41,21 +43,33 @@ export default function Splash({ onFinish }) {
                 {/* Tagline */}
                 <p className="splash-tagline">Smart PC Troubleshooting</p>
 
-                {/* Progress Bar */}
-                <div className="splash-progress">
-                    <div
-                        className="splash-progress-fill"
-                        style={{ width: `${progress}%` }}
-                    ></div>
+                {/* Diagnostic Checks */}
+                <div className="splash-checks">
+                    {diagnosticChecks.map((check) => (
+                        <div
+                            key={check.id}
+                            className={`check-item ${checks.includes(check.id) ? 'visible' : ''}`}
+                        >
+                            <svg
+                                className="check-icon"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 18 18"
+                                fill="none"
+                            >
+                                <circle cx="9" cy="9" r="8" stroke="currentColor" strokeWidth="1.5" />
+                                <path
+                                    d="M6 9L8 11L12 7"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                            <span>{check.text}</span>
+                        </div>
+                    ))}
                 </div>
-
-                {/* Loading Text */}
-                <p className="splash-status">
-                    {progress < 30 && "Initializing..."}
-                    {progress >= 30 && progress < 70 && "Loading diagnostics..."}
-                    {progress >= 70 && progress < 100 && "Almost ready..."}
-                    {progress >= 100 && "Ready!"}
-                </p>
             </div>
         </div>
     );
