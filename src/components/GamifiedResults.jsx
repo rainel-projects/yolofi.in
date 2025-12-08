@@ -65,12 +65,14 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                     <span className="score-label" style={{ color: "#374151" }}>System ID</span>
                 </div>
                 <h2>Optimization Complete</h2>
-                <div className="level-badge">
-                    🏆 Level 5: {currentLevel} (+{xpGained} XP)
+                <div className="level-badge" style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                    <ShieldIcon size={16} color="#4338ca" />
+                    <span>Level 5: {currentLevel} (+{xpGained} XP)</span>
                 </div>
             </div>
 
             <div className="stats-comparison">
+                {/* ... existing stats ... */}
                 {/* NETWORK CARD */}
                 <div className="stat-card improved">
                     <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
@@ -130,8 +132,8 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                     <ShieldIcon size={32} color="#10b981" />
                 </div>
                 <div className="suggestion-text">
-                    <h4 style={{ color: "#1f2937" }}>Streak: 1 Day 🔥</h4>
-                    <p style={{ color: "#4b5563" }}>Next recommended scan: 2 Days</p>
+                    <h4 style={{ color: "#1f2937" }}>Action Required</h4>
+                    <p style={{ color: "#4b5563" }}>Recommended next scan: 2 Days</p>
                 </div>
             </div>
 
