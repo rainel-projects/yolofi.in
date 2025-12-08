@@ -17,9 +17,9 @@ export default function App() {
     setCurrentPage("getstarted");
   };
 
-  // Navigate from GetStarted to Home
+  // Navigate from GetStarted directly to Diagnose
   const handleGetStartedContinue = () => {
-    setCurrentPage("home");
+    setCurrentPage("diagnose");
   };
 
   return (
@@ -32,7 +32,14 @@ export default function App() {
         <IntroPage onContinue={handleGetStartedContinue} />
       )}
 
-      {/* Home Page with all sections */}
+      {/* Diagnose Page - Clean, focused diagnostic interface */}
+      {currentPage === "diagnose" && (
+        <div className="diagnose-page">
+          <Diagnose />
+        </div>
+      )}
+
+      {/* Home Page with all sections - Not used in main flow anymore */}
       {currentPage === "home" && (
         <HomePage />
       )}
@@ -40,6 +47,7 @@ export default function App() {
   );
 }
 
+// Home Page Component with Navigation and all sections
 function HomePage() {
   return (
     <div className="home-page">
