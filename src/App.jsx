@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Splash from "./components/Splash";
-import GetStarted from "./components/GetStarted";
+import WelcomePage from "./components/WelcomePage";
 import Navigation from "./components/Navigation";
 import Hero from "./components/Hero";
 import HowItWorks from "./components/HowItWorks";
@@ -25,9 +25,9 @@ export default function App() {
       {/* Splash Screen */}
       {currentPage === "splash" && <Splash onFinish={handleSplashFinish} />}
 
-      {/* Get Started Page */}
+      {/* Get Started / Welcome Page */}
       {currentPage === "getstarted" && (
-        <GetStarted onContinue={handleGetStartedContinue} />
+        <WelcomePage onContinue={handleGetStartedContinue} />
       )}
 
       {/* Home Page with all sections */}

@@ -1,65 +1,87 @@
 .gs-container {
-    height: 100vh;
-    width: 100vw;
+    min-height: 100vh;
+    width: 100%;
     background: #ffffff;
-    /* clean theme */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     font-family: "Inter", sans-serif;
     text-align: center;
-    padding: 20px;
-}
-
-/* Brand Logo */
-.gs-logo {
-    width: clamp(120px, 20vw, 180px);
-    margin-bottom: 25px;
-    animation: fadeIn 1.2s ease-out;
+    padding: 40px 20px;
+    box-sizing: border-box;
 }
 
 /* Text */
 .gs-title {
-    font-size: clamp(26px, 5vw, 40px);
+    font-size: clamp(28px, 5vw, 48px);
     font-weight: 600;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
+    color: #1a1a1a;
+    max-width: 800px;
 }
 
 .gs-subtitle {
-    font-size: clamp(14px, 2.5vw, 18px);
-    opacity: 0.6;
+    font-size: clamp(16px, 2.5vw, 20px);
+    color: #666;
     margin-bottom: 40px;
+    max-width: 600px;
+    line-height: 1.6;
 }
 
 /* Button */
 .gs-button {
-    background: #586eff;
+    background: #4a6cff;
     color: white;
-    padding: 14px 34px;
+    padding: 16px 40px;
     font-size: 18px;
     font-weight: 500;
-    border-radius: 30px;
+    border-radius: 8px;
     border: none;
     cursor: pointer;
-    transition: 0.25s;
-    box-shadow: 0px 6px 14px rgba(88, 110, 255, 0.18);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(74, 108, 255, 0.2);
 }
 
 .gs-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0px 10px 20px rgba(88, 110, 255, 0.25);
+    background: #3a5ce5;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(74, 108, 255, 0.3);
 }
 
-/* Subtle entrance animation */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
+.gs-button:active {
+    transform: translateY(0);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .gs-container {
+        padding: 30px 20px;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .gs-title {
+        margin-bottom: 12px;
+    }
+
+    .gs-subtitle {
+        margin-bottom: 30px;
+    }
+
+    .gs-button {
+        padding: 14px 32px;
+        font-size: 16px;
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .gs-container {
+        padding: 20px 16px;
+    }
+
+    .gs-button {
+        padding: 12px 28px;
+        font-size: 15px;
     }
 }
