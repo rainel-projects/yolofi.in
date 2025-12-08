@@ -1,10 +1,30 @@
-/* Diagnose - Enhanced Diagnostic Report - Compact for 100% zoom */
-.diagnose-path {
-    background: transparent;
-    max-width: 1400px;
-    margin: 0 auto;
+/* GLOBAL RESET - ensures browser doesn't cut UI */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    background: #f8f9fc;
 }
 
+/* MAIN LAYOUT - Always fits inside screen at 100% zoom*/
+.diagnose-path {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+    box-sizing: border-box;
+    display: flex;
+    padding-top: 30rem;
+    gap: 2.5rem;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+/* BUTTON */
 .scan-button {
     display: inline-flex;
     align-items: center;
@@ -25,12 +45,27 @@
     transform: translateY(-2px);
 }
 
+/* VISUAL SECTION - auto scale */
+.section-visual {
+    flex: 1;
+    min-width: 300px;
+    max-width: 450px;
+}
+
 .diagnose-visual {
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+.diagnose-visual svg {
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+}
+
+/* Scanner animation */
 .scanner-ring {
     width: 200px;
     height: 200px;
@@ -50,16 +85,18 @@
     animation: pulse 2s ease-in-out infinite;
 }
 
-/* Diagnostic Report - Compact */
+/* Diagnostic Report Card */
 .diagnostic-report {
     margin-top: 1.5rem;
     background: white;
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    width: 100%;
     max-width: 900px;
 }
 
+/* Header */
 .report-header {
     display: flex;
     align-items: center;
@@ -81,6 +118,7 @@
     color: #64748b;
 }
 
+/* Report Sections */
 .report-section {
     margin-bottom: 1.5rem;
 }
@@ -92,12 +130,14 @@
     font-weight: 600;
 }
 
+/* Grid for details */
 .info-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 0.75rem;
 }
 
+/* Info items */
 .info-item {
     display: flex;
     flex-direction: column;
@@ -120,7 +160,7 @@
     font-weight: 500;
 }
 
-/* Storage Bar */
+/* STORAGE BAR */
 .storage-bar {
     width: 100%;
     height: 12px;
@@ -143,7 +183,7 @@
     color: #64748b;
 }
 
-/* Issues Section - Compact */
+/* ISSUES */
 .issues-section {
     background: #fff5f5;
     padding: 1rem;
@@ -192,37 +232,7 @@
     color: #991b1b;
 }
 
-.issue-card.medium .severity-badge {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.issue-card.warning .severity-badge {
-    background: #fef9c3;
-    color: #854d0e;
-}
-
-.issue-header h5 {
-    margin: 0;
-    font-size: 0.9rem;
-    color: #2d3748;
-}
-
-.issue-desc {
-    margin: 0 0 0.5rem 0;
-    font-size: 0.85rem;
-    color: #4b5563;
-    line-height: 1.5;
-}
-
-.issue-rec {
-    margin: 0;
-    font-size: 0.8rem;
-    color: #10b981;
-    font-weight: 500;
-}
-
-/* Recommendations Section - Compact */
+/* Recommendations */
 .recommendations-section {
     background: #f0fdf4;
     padding: 1rem;
@@ -237,20 +247,7 @@
     border-left: 3px solid #10b981;
 }
 
-.recommendation-card h5 {
-    margin: 0 0 0.4rem 0;
-    font-size: 0.9rem;
-    color: #2d3748;
-}
-
-.recommendation-card p {
-    margin: 0;
-    font-size: 0.85rem;
-    color: #4b5563;
-    line-height: 1.5;
-}
-
-/* Feedback Button - Compact */
+/* Feedback Button */
 .feedback-btn {
     margin-top: 1rem;
     background: #3b5bdb;
@@ -269,6 +266,7 @@
     transform: translateY(-1px);
 }
 
+/* Animations */
 @keyframes pulse {
 
     0%,
@@ -283,25 +281,15 @@
     }
 }
 
-/* Mobile */
-@media (max-width: 768px) {
-
-    .diagnose-visual svg,
-    .scanner-ring {
-        width: 200px;
-        height: 200px;
-    }
-
-    .scan-pulse {
-        width: 130px;
-        height: 130px;
+/* MEDIA RESPONSIVE FIXES */
+@media (max-width: 900px) {
+    .diagnose-path {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
     }
 
     .diagnostic-report {
-        padding: 1.5rem;
-    }
-
-    .info-grid {
-        grid-template-columns: 1fr;
+        max-width: 100%;
     }
 }
