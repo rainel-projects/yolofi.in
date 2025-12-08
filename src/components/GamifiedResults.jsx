@@ -137,10 +137,7 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                 </div>
             </div>
 
-            <button className="rescan-btn" onClick={onRescan}>
-                <CheckCircleIcon size={20} color="white" />
-                Return to Dashboard
-            </button>
+
         </div>
     );
 };
