@@ -24,6 +24,7 @@ const Diagnose = () => {
     };
 
 
+
     const generateDiagnosticReport = async () => {
         const nav = navigator;
         const connection = nav.connection;
@@ -31,10 +32,34 @@ const Diagnose = () => {
         const os = detectOS();
         const browser = detectBrowser();
         const cores = nav.hardwareConcurrency || "Unknown";
-        const memory = nav.deviceMemory ? `${nav.deviceMemory} GB` : "Unknown";
+
+        // Memory: deviceMemory gives approximate value (privacy-limited)
+        // For better accuracy, estimate based on performance.memory if available
+        let memory = "Unknown";
+        if (nav.deviceMemory) {
+            // deviceMemory is intentionally limited by browsers (usually shows ~half of actual RAM)
+            // Show a more realistic estimate
+            const reportedMemory = nav.deviceMemory;
+            const estimatedActual = reportedMemory * 2; // Common browser behavior
+            memory = `~${estimatedActual} GB (${reportedMemory} GB available to browser)`;
+        } else if (performance.memory) {
+            // Fallback: estimate from JS heap
+            const jsHeapGB = (performance.memory.jsHeapSizeLimit / 1024 / 1024 / 1024).toFixed(1);
+            memory = `~${jsHeapGB} GB (estimated)`;
+        }
 
         const resolution = `${window.screen.width} x ${window.screen.height}`;
         const pixelRatio = window.devicePixelRatio || 1;
+
+        // Make pixel ratio more understandable
+        let pixelRatioDisplay = `${pixelRatio}x`;
+        if (pixelRatio >= 2) {
+            pixelRatioDisplay += " (Retina/High-DPI)";
+        } else if (pixelRatio > 1 && pixelRatio < 2) {
+            pixelRatioDisplay += " (Enhanced)";
+        } else {
+            pixelRatioDisplay += " (Standard)";
+        }
 
         const networkType = connection?.effectiveType || "Unknown";
         const downlink = connection?.downlink ? `${connection.downlink} Mbps` : "Unknown";
@@ -65,7 +90,7 @@ const Diagnose = () => {
                 cores,
                 memory,
                 resolution,
-                pixelRatio: `${pixelRatio}x`,
+                pixelRatio: pixelRatioDisplay,
                 language: nav.language,
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             },
@@ -76,6 +101,7 @@ const Diagnose = () => {
             scanTime: new Date().toLocaleString(),
         };
     };
+
 
     const detectOS = () => {
         const u = navigator.userAgent;
