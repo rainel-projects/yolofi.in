@@ -4,20 +4,18 @@ import './components/Splash.css';
 import './App.css';
 
 function App() {
-  const [phase, setPhase] = useState('splash'); // 'splash' | 'home'
+  const [phase, setPhase] = useState('splash');
 
   useEffect(() => {
-    // After 6 seconds, transition to home
     const timer = setTimeout(() => {
       setPhase('home');
     }, 6000);
-
     return () => clearTimeout(timer);
   }, []);
 
   return (
     <div className={`app-container phase-${phase}`}>
-      {/* Splash Screen - Full screen initially */}
+      {/* Splash Screen */}
       {phase === 'splash' && (
         <div className="splash-screen">
           <div className="orbit orbit-1"></div>
@@ -35,13 +33,16 @@ function App() {
         </div>
       )}
 
-      {/* Header with Logo - Shows after splash */}
+      {/* Header - Logo only */}
       {phase === 'home' && (
         <>
           <header className="app-header">
             <img src={logo} alt="Yolofi" className="header-logo" />
-            <span className="brand-name">yolofi</span>
           </header>
+
+          {/* Curved Background Designs */}
+          <div className="curve-design curve-top"></div>
+          <div className="curve-design curve-bottom"></div>
 
           {/* Home Page Content */}
           <div className="home-page">

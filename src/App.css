@@ -1,7 +1,19 @@
+/* Professional Matte Color Palette */
+:root {
+    --color-primary: #2C3E50;
+    --color-secondary: #34495E;
+    --color-accent: #3498DB;
+    --color-light: #ECF0F1;
+    --color-white: #FFFFFF;
+    --color-text: #2C3E50;
+    --color-text-light: #7F8C8D;
+}
+
 /* App Container */
 .app-container {
     width: 100%;
     min-height: 100vh;
+    background: var(--color-white);
 }
 
 /* Header */
@@ -11,34 +23,58 @@
     left: 0;
     right: 0;
     height: 70px;
-    background: white;
-    border-bottom: 1px solid #e8eaf0;
+    background: var(--color-white);
+    border-bottom: 1px solid var(--color-light);
     display: flex;
     align-items: center;
-    padding: 0 2rem;
-    gap: 1rem;
+    padding: 0 3rem;
     z-index: 1000;
     animation: headerSlideDown 0.5s ease-out;
 }
 
 .header-logo {
-    width: 45px;
-    height: 45px;
-    border-radius: 10px;
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
     object-fit: cover;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(44, 62, 80, 0.1);
+    transition: transform 0.3s ease;
 }
 
-.brand-name {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #2d3748;
-    font-family: 'Inter', sans-serif;
+.header-logo:hover {
+    transform: scale(1.05);
+}
+
+/* Curved Line Designs */
+.curve-design {
+    position: fixed;
+    width: 100%;
+    height: 400px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.curve-top {
+    top: 0;
+    right: 0;
+    width: 60%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400"><path d="M0,100 Q300,50 600,100 T1200,100 L1200,0 L0,0 Z" fill="%23ECF0F1" opacity="0.5"/><path d="M0,150 Q400,80 800,150 T1200,150 L1200,0 L0,0 Z" fill="%23ECF0F1" opacity="0.3"/></svg>') no-repeat;
+    background-size: cover;
+}
+
+.curve-bottom {
+    bottom: 0;
+    left: 0;
+    width: 70%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400"><path d="M0,300 Q300,350 600,300 T1200,300 L1200,400 L0,400 Z" fill="%23ECF0F1" opacity="0.4"/><path d="M0,250 Q400,320 800,250 T1200,250 L1200,400 L0,400 Z" fill="%23ECF0F1" opacity="0.2"/></svg>') no-repeat;
+    background-size: cover;
 }
 
 /* Home Page */
 .home-page {
     padding-top: 70px;
+    position: relative;
+    z-index: 1;
     animation: fadeIn 0.8s ease-out 0.3s both;
 }
 
@@ -49,40 +85,43 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 2rem;
-    background: linear-gradient(135deg, #fdfbf7 0%, #f5f7fa 100%);
+    padding: 3rem 2rem;
+    position: relative;
 }
 
 .welcome-section h1 {
-    font-size: clamp(2.5rem, 8vw, 5rem);
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
     font-weight: 700;
     margin-bottom: 1.5rem;
-    color: #2d3748;
+    color: var(--color-primary);
+    letter-spacing: -0.02em;
 }
 
 .welcome-section p {
-    font-size: clamp(1.1rem, 3vw, 1.5rem);
-    color: #64748b;
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
+    color: var(--color-text-light);
     margin-bottom: 3rem;
     max-width: 600px;
+    line-height: 1.6;
 }
 
 .cta-button {
     padding: 1.2rem 3rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: var(--color-accent);
+    color: var(--color-white);
     border: none;
-    border-radius: 12px;
+    border-radius: 8px;
     font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
 }
 
 .cta-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+    background: #2980B9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.3);
 }
 
 /* Animations */
@@ -113,17 +152,13 @@
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .app-header {
-        padding: 0 1rem;
+        padding: 0 1.5rem;
         height: 60px;
     }
 
     .header-logo {
-        width: 38px;
-        height: 38px;
-    }
-
-    .brand-name {
-        font-size: 1.2rem;
+        width: 42px;
+        height: 42px;
     }
 
     .home-page {
@@ -131,28 +166,35 @@
     }
 
     .welcome-section {
-        padding: 1.5rem;
+        padding: 2rem 1.5rem;
     }
 
     .cta-button {
-        padding: 1rem 2rem;
+        padding: 1rem 2.5rem;
         font-size: 1rem;
         width: 100%;
-        max-width: 300px;
+        max-width: 320px;
+    }
+
+    .curve-top,
+    .curve-bottom {
+        height: 250px;
     }
 }
 
 @media (max-width: 480px) {
     .app-header {
+        padding: 0 1rem;
         height: 55px;
     }
 
     .header-logo {
-        width: 35px;
-        height: 35px;
+        width: 38px;
+        height: 38px;
     }
 
-    .brand-name {
-        font-size: 1.1rem;
+    .curve-top,
+    .curve-bottom {
+        height: 180px;
     }
 }
