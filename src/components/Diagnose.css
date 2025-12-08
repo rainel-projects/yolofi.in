@@ -304,7 +304,8 @@ body {
         justify-content: center;
         align-items: center;
         text-align: center;
-        gap: 3rem;
+        gap: 2rem;
+        padding: 2rem 1rem;
     }
 
     .section-content {
@@ -313,5 +314,60 @@ body {
 
     .diagnostic-report {
         max-width: 100%;
+        padding: 1.25rem;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .report-header {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .diagnose-path {
+        padding: 1.5rem 0.75rem;
+    }
+
+    .scan-button {
+        width: 100%;
+        max-width: 280px;
+        padding: 0.85rem 2rem !important;
+        font-size: 0.9rem !important;
+    }
+
+    .scanner-ring {
+        width: 150px;
+        height: 150px;
+    }
+
+    .scan-pulse {
+        width: 100px;
+        height: 100px;
+    }
+
+    .diagnostic-report {
+        padding: 1rem;
+        border-radius: 10px;
+    }
+
+    .report-header h3 {
+        font-size: 1.1rem;
+    }
+
+    .info-item {
+        padding: 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    .info-label {
+        font-size: 0.7rem;
+    }
+
+    .info-value {
+        font-size: 0.85rem;
     }
 }
