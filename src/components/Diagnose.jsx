@@ -11,6 +11,7 @@ const Diagnose = () => {
     // viewState: "IDLE" | "SCANNING" | "REPORT" | "OPTIMIZING" | "RESULTS"
     const [viewState, setViewState] = useState("IDLE");
     const [diagnosticReport, setDiagnosticReport] = useState(null);
+    const [optimizationResult, setOptimizationResult] = useState(null);
     const [showFeedback, setShowFeedback] = useState(false);
 
     const containerRef = useRef(null);
@@ -18,7 +19,6 @@ const Diagnose = () => {
 
     const runDiagnostics = async () => {
         setViewState("SCANNING");
-
         setTimeout(async () => {
             const report = await generateDiagnosticReport();
             setDiagnosticReport(report);
@@ -30,9 +30,26 @@ const Diagnose = () => {
         setViewState("OPTIMIZING");
     };
 
-    const handleOptimizationComplete = () => {
+    const handleOptimizationComplete = (result) => {
+        setOptimizationResult(result);
         setViewState("RESULTS");
     };
+
+    // ... (rest of methods) ...
+
+    {/* 3. OPTIMIZING STATE */ }
+    {
+        viewState === "OPTIMIZING" && (
+            <Optimizer onComplete={handleOptimizationComplete} />
+        )
+    }
+
+    {/* 4. RESULTS STATE */ }
+    {
+        viewState === "RESULTS" && (
+            <GamifiedResults onRescan={handleRescan} results={optimizationResult} />
+        )
+    }
 
     const handleRescan = () => {
         setDiagnosticReport(null);
@@ -250,7 +267,7 @@ const Diagnose = () => {
 
                 {/* 4. RESULTS STATE */}
                 {viewState === "RESULTS" && (
-                    <GamifiedResults onRescan={handleRescan} />
+                    <GamifiedResults onRescan={handleRescan} results={optimizationResult} />
                 )}
 
             </section>

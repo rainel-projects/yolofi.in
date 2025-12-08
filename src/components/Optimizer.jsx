@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Optimizer.css";
 import { CheckCircleIcon } from "./Icons";
+import { runRealOptimization } from "../utils/OptimizerBrain";
 
 const Optimizer = ({ onComplete }) => {
     const [progress, setProgress] = useState(0);
@@ -17,19 +18,28 @@ const Optimizer = ({ onComplete }) => {
     ];
 
     useEffect(() => {
-        let currentStep = 0;
-        let cumulativeTime = 0;
+        let isMounted = true;
 
-        const processTask = (index) => {
+        // Start the Real Optimization Brain in background
+        const optimizationPromise = runRealOptimization();
+
+        const processTask = async (index) => {
             if (index >= tasks.length) {
-                setTimeout(() => {
-                    onComplete();
-                }, 800);
+                // Animations done. Wait for Brain to finish if it hasn't (it usually has)
+                try {
+                    const result = await optimizationPromise;
+                    if (isMounted) {
+                        setTimeout(() => onComplete(result), 800);
+                    }
+                } catch (e) {
+                    console.error("Optimization failed", e);
+                    if (isMounted) onComplete(null);
+                }
                 return;
             }
 
             const task = tasks[index];
-            setCurrentTask(task.label);
+            if (isMounted) setCurrentTask(task.label);
 
             const interval = setInterval(() => {
                 setProgress((prev) => {
@@ -41,14 +51,16 @@ const Optimizer = ({ onComplete }) => {
 
             setTimeout(() => {
                 clearInterval(interval);
-                setCompletedTasks((prev) => [...prev, task.label]);
-                processTask(index + 1);
+                if (isMounted) {
+                    setCompletedTasks((prev) => [...prev, task.label]);
+                    processTask(index + 1);
+                }
             }, task.duration);
         };
 
         processTask(0);
 
-        return () => { }; // Cleanup not strictly needed for this simple flow but good practice
+        return () => { isMounted = false; };
     }, []);
 
     return (

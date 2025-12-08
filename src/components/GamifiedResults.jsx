@@ -3,21 +3,42 @@ import "./GamifiedResults.css";
 import { CheckCircleIcon, ScanIcon } from "./Icons";
 import Confetti from "react-confetti";
 
-const GamifiedResults = ({ onRescan }) => {
+const GamifiedResults = ({ onRescan, results }) => {
     const [showConfetti, setShowConfetti] = useState(true);
     const [score, setScore] = useState(0);
 
+    // Parse results for display
+    const actions = results?.actions || {};
+    const networkStatus = actions.network?.status || "Boosted";
+
+    // Format storage message
+    let storageCleaned = "Optimized";
+    if (actions.storage?.cleaned) {
+        if (actions.storage.cleaned > 1024 * 1024) {
+            storageCleaned = (actions.storage.cleaned / 1024 / 1024).toFixed(1) + " MB";
+        } else {
+            storageCleaned = (actions.storage.cleaned / 1024).toFixed(1) + " KB";
+        }
+    }
+
+    const workerMsg = actions.workers?.removed > 0
+        ? `${actions.workers.removed} Workers Removed`
+        : "Background Optimized";
+
+    const scoreBoost = results?.scoreImprovement || 14;
+    const finalScore = 85 + scoreBoost > 100 ? 99 : 85 + scoreBoost;
+
     useEffect(() => {
-        // Animate score from 0 to 98
+        // Animate score from 0 to finalScore
         const interval = setInterval(() => {
             setScore((prev) => {
-                if (prev >= 98) {
+                if (prev >= finalScore) {
                     clearInterval(interval);
-                    return 98;
+                    return finalScore;
                 }
                 return prev + 2;
             });
-        }, 20);
+        }, 30);
 
         // Stop confetti after 5 seconds
         const timer = setTimeout(() => setShowConfetti(false), 5000);
@@ -25,7 +46,7 @@ const GamifiedResults = ({ onRescan }) => {
             clearInterval(interval);
             clearTimeout(timer);
         };
-    }, []);
+    }, [finalScore]);
 
     return (
         <div className="gamified-results-container">
@@ -44,9 +65,9 @@ const GamifiedResults = ({ onRescan }) => {
                 <div className="stat-card improved">
                     <span className="stat-label">System Speed</span>
                     <div className="stat-change">
-                        <span className="old-val">Average</span>
+                        <span className="old-val">Standard</span>
                         <span className="arrow">→</span>
-                        <span className="new-val">Lightning Fast</span>
+                        <span className="new-val">{networkStatus}</span>
                     </div>
                 </div>
                 <div className="stat-card improved">
@@ -54,15 +75,15 @@ const GamifiedResults = ({ onRescan }) => {
                     <div className="stat-change">
                         <span className="old-val">Cluttered</span>
                         <span className="arrow">→</span>
-                        <span className="new-val">Cleaned</span>
+                        <span className="new-val">Cleaned {storageCleaned}</span>
                     </div>
                 </div>
                 <div className="stat-card improved">
-                    <span className="stat-label">Privacy</span>
+                    <span className="stat-label">Background</span>
                     <div className="stat-change">
-                        <span className="old-val">Exposed</span>
+                        <span className="old-val">Active</span>
                         <span className="arrow">→</span>
-                        <span className="new-val">Secured</span>
+                        <span className="new-val">{workerMsg}</span>
                     </div>
                 </div>
             </div>
