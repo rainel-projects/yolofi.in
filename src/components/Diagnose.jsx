@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import './Diagnose.css';
 import { ScanIcon, CheckCircleIcon } from './Icons';
+import FeedbackForm from './FeedbackForm';
 
 const Diagnose = () => {
     const [systemInfo, setSystemInfo] = useState(null);
     const [isScanning, setIsScanning] = useState(false);
+    const [showFeedback, setShowFeedback] = useState(false);
 
     const detectSystem = () => {
         setIsScanning(true);
@@ -52,6 +54,12 @@ const Diagnose = () => {
                                 <span className="value">{systemInfo.browser}</span>
                             </div>
                         </div>
+                        <button
+                            className="feedback-btn"
+                            onClick={() => setShowFeedback(true)}
+                        >
+                            Share Your Experience
+                        </button>
                     </div>
                 )}
             </div>
@@ -72,6 +80,13 @@ const Diagnose = () => {
                     )}
                 </div>
             </div>
+
+            {showFeedback && (
+                <FeedbackForm
+                    onClose={() => setShowFeedback(false)}
+                    issue={systemInfo?.os || "System issue"}
+                />
+            )}
         </section>
     );
 };
