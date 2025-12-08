@@ -108,7 +108,9 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
             </div>
 
             <div className="weekly-suggestion" style={{ background: "#f3f4f6", border: "1px solid #e5e7eb" }}>
-                <div className="suggestion-icon">🛡️</div>
+                <div className="suggestion-icon">
+                    <ShieldIcon size={32} color="#10b981" />
+                </div>
                 <div className="suggestion-text">
                     <h4 style={{ color: "#1f2937" }}>Verified Optimization</h4>
                     <p style={{ color: "#4b5563" }}>System is running {Math.round((beforeLatency - afterLatency) > 0 ? (beforeLatency - afterLatency) : 10)}ms faster.</p>

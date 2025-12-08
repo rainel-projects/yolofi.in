@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import "./Diagnose.css";
-import { ScanIcon, CheckCircleIcon } from "./Icons";
+import { ScanIcon, CheckCircleIcon, BoltIcon } from "./Icons";
 import FeedbackForm from "./FeedbackForm";
 import AutoFillTop from "./AutoFillTop";
 import useAutoFillSpace from "./useAutoFillSpace";
@@ -28,6 +28,19 @@ const Diagnose = () => {
     };
 
     // ... (rest of methods)
+    const startOptimization = () => {
+        setViewState("OPTIMIZING");
+    };
+
+    const handleOptimizationComplete = (result) => {
+        setOptimizationResult(result);
+        setViewState("RESULTS");
+    };
+
+    const handleRescan = () => {
+        setDiagnosticReport(null);
+        runDiagnostics();
+    };
 
     const generateDiagnosticReport = async () => {
         const nav = navigator;
@@ -221,10 +234,14 @@ const Diagnose = () => {
                                     cursor: "pointer",
                                     margin: "1rem 0",
                                     boxShadow: "0 6px 20px rgba(16, 185, 129, 0.3)",
-                                    transition: "transform 0.2s"
+                                    transition: "transform 0.2s",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "10px"
                                 }}
                             >
-                                ✨ Intelligent Optimize Now
+                                <BoltIcon size={22} color="white" />
+                                Intelligent Optimize
                             </button>
                         </div>
 
