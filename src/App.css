@@ -9,6 +9,18 @@
     --color-text-light: #7F8C8D;
 }
 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--color-white);
+    color: var(--color-text);
+}
+
 /* App Container */
 .app-container {
     width: 100%;
@@ -27,6 +39,7 @@
     border-bottom: 1px solid var(--color-light);
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 0 3rem;
     z-index: 1000;
     animation: headerSlideDown 0.5s ease-out;
@@ -39,10 +52,28 @@
     object-fit: cover;
     box-shadow: 0 4px 12px rgba(44, 62, 80, 0.1);
     transition: transform 0.3s ease;
+    cursor: pointer;
 }
 
 .header-logo:hover {
     transform: scale(1.05);
+}
+
+.header-nav {
+    display: flex;
+    gap: 2rem;
+}
+
+.header-nav a {
+    color: var(--color-text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+    cursor: pointer;
+}
+
+.header-nav a:hover {
+    color: var(--color-accent);
 }
 
 /* Curved Line Designs */
@@ -86,7 +117,6 @@
     justify-content: center;
     text-align: center;
     padding: 3rem 2rem;
-    position: relative;
 }
 
 .welcome-section h1 {
@@ -122,6 +152,211 @@
     background: #2980B9;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(52, 152, 219, 0.3);
+}
+
+/* How It Works Section */
+.how-it-works-section {
+    min-height: 100vh;
+    padding: 5rem 2rem;
+    background: var(--color-light);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.how-it-works-section h2 {
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: 700;
+    margin-bottom: 3rem;
+    color: var(--color-primary);
+}
+
+.steps-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    width: 100%;
+}
+
+.step-card {
+    background: var(--color-white);
+    padding: 2.5rem 2rem;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.step-card:hover {
+    transform: translateY(-5px);
+}
+
+.step-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    margin-bottom: 1rem;
+}
+
+.step-card h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--color-primary);
+}
+
+.step-card p {
+    color: var(--color-text-light);
+    line-height: 1.6;
+}
+
+/* About Section */
+.about-section {
+    min-height: 50vh;
+    padding: 5rem 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.about-section h2 {
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: var(--color-primary);
+}
+
+.about-section p {
+    max-width: 700px;
+    font-size: 1.1rem;
+    color: var(--color-text-light);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+}
+
+.copyright {
+    margin-top: 2rem;
+    font-size: 0.9rem;
+    color: var(--color-text-light);
+}
+
+/* Diagnose Page */
+.diagnose-page {
+    padding-top: 70px;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.diagnose-section {
+    min-height: 100vh;
+    padding: 5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.diagnose-section h1 {
+    font-size: clamp(2.5rem, 7vw, 4rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--color-primary);
+}
+
+.diagnose-subtitle {
+    font-size: 1.2rem;
+    color: var(--color-text-light);
+    margin-bottom: 3rem;
+}
+
+.diagnose-container {
+    max-width: 900px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.detection-card {
+    background: var(--color-white);
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.detection-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    color: var(--color-primary);
+}
+
+.system-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    background: var(--color-light);
+    border-radius: 8px;
+}
+
+.info-row .label {
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.info-row .value {
+    color: var(--color-text-light);
+}
+
+.issue-selection h3 {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    color: var(--color-primary);
+}
+
+.issue-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+}
+
+.issue-card {
+    background: var(--color-white);
+    padding: 2rem 1.5rem;
+    border-radius: 12px;
+    border: 2px solid var(--color-light);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.issue-card:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.15);
+}
+
+.issue-icon {
+    font-size: 2.5rem;
+}
+
+.issue-name {
+    font-weight: 600;
+    color: var(--color-text);
+    text-align: center;
 }
 
 /* Animations */
@@ -161,11 +396,18 @@
         height: 42px;
     }
 
-    .home-page {
+    .header-nav {
+        gap: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .home-page,
+    .diagnose-page {
         padding-top: 60px;
     }
 
-    .welcome-section {
+    .welcome-section,
+    .diagnose-section {
         padding: 2rem 1.5rem;
     }
 
@@ -174,6 +416,14 @@
         font-size: 1rem;
         width: 100%;
         max-width: 320px;
+    }
+
+    .steps-container {
+        grid-template-columns: 1fr;
+    }
+
+    .issue-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .curve-top,
@@ -193,8 +443,12 @@
         height: 38px;
     }
 
-    .curve-top,
-    .curve-bottom {
-        height: 180px;
+    .header-nav {
+        gap: 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .issue-grid {
+        grid-template-columns: 1fr;
     }
 }
