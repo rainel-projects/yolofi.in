@@ -51,15 +51,15 @@ export default function IntroPage({ onContinue }) {
     return (
         <div className="intro-page">
             <div className="intro-content">
-                <div className="intro-tag">AI-Powered Diagnostics</div>
+                <div className="intro-tag">Intelligent Browser Optimization</div>
 
                 <h1 className="intro-title">
-                    Troubleshoot Your PC<br />
+                    Accelerate Your Browser<br />
                     In Under 60 Seconds
                 </h1>
 
                 <p className="intro-description">
-                    Enterprise-grade diagnostics that identify and fix system issues automatically.
+                    Smart diagnostics that optimize storage, memory, and network speed automatically.
                     No technical knowledge required.
                 </p>
 

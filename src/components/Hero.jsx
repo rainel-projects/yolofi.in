@@ -26,9 +26,9 @@ const Hero = () => {
             </div>
 
             <div className="hero-content">
-                <h1 className="hero-title">Device Troubleshooting,<br />Simplified.</h1>
+                <h1 className="hero-title">Browser Performance,<br />Simplified.</h1>
                 <p className="hero-subtitle">
-                    Smart AI-powered diagnostics that fix your tech problems in seconds.
+                    Intelligent diagnostics that fix speed, storage, and memory issues in seconds.
                 </p>
                 <div className="hero-cta">
                     <a href="#diagnose" className="btn-primary">

@@ -5,18 +5,18 @@ import { SearchIcon, BrainIcon, BoltIcon } from './Icons';
 const HowItWorks = () => {
     const steps = [
         {
-            title: 'Smart Detection',
-            description: 'Our AI analyzes your system, detecting issues automatically.',
+            title: 'System Scan',
+            description: 'Our heuristic engine scans storage, memory, and network latency.',
             IconComponent: SearchIcon
         },
         {
-            title: 'AI Diagnosis',
-            description: 'Advanced reasoning engine identifies the root cause.',
+            title: 'Performance Analysis',
+            description: 'Identifies junk files, heavy scripts, and connection bottlenecks.',
             IconComponent: BrainIcon
         },
         {
-            title: 'Instant Fix',
-            description: 'Download and apply the automated fix instantly.',
+            title: 'Smart Optimization',
+            description: 'Automatically cleans cache, frees RAM, and boosts connection speed.',
             IconComponent: BoltIcon
         }
     ];
