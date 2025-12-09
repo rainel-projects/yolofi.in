@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./GamifiedResults.css";
+import "./GamifiedResults.css";
 import GoogleAd from "./GoogleAd";
 import { CheckCircleIcon, ScanIcon, NetworkIcon, TrashIcon, CpuIcon, ShieldIcon, BoltIcon } from "./Icons";
 
