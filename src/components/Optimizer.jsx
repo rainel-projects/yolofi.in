@@ -27,8 +27,13 @@ const Optimizer = ({ onComplete }) => {
 
         const processTask = async (index) => {
             if (index >= tasks.length) {
+                // All visual tasks done. Now handle the Logic/Sync specifically as requested.
                 try {
                     const result = await optimizationPromise;
+
+                    // --- NEW: Explicit Sync Step ---
+                    if (isMounted) setCurrentTask("Syncing Global Stats...");
+                    await new Promise(r => setTimeout(r, 800)); // Visible delay for user
 
                     // Calculate Total Issues Resolved
                     // Files Removed + Service Workers Removed + 1 (Network) + 1 (Memory)
@@ -36,23 +41,29 @@ const Optimizer = ({ onComplete }) => {
                         + (result.actions?.workers?.removed || 0)
                         + 2; // Base tasks (Network + Memory)
 
-                    // Increment Global Stats
-                    console.log(`>> ANALYTICS: Incrementing stats by ${totalResolved}...`);
-                    const statsRef = doc(db, "marketing", "stats");
-                    updateDoc(statsRef, {
-                        optimizations: increment(totalResolved)
-                    }).then(() => {
-                        console.log(">> ANALYTICS: Stats incremented successfully!");
-                    }).catch((err) => {
-                        console.warn(">> ANALYTICS: Update failed, trying setDoc fallback...", err);
-                        // Background fallback
-                        setDoc(statsRef, { optimizations: totalResolved }, { merge: true })
-                            .then(() => console.log(">> ANALYTICS: Fallback setDoc success!"))
-                            .catch(e => console.error(">> ANALYTICS: ALL UPDATES FAILED", e));
-                    });
+                    // 1. OFFLINE MIRROR (Guaranteed Update)
+                    try {
+                        const currentLocal = parseInt(localStorage.getItem("yolofi_total_fixed") || "0");
+                        const newTotal = currentLocal + totalResolved;
+                        localStorage.setItem("yolofi_total_fixed", newTotal.toString());
+                        console.log(`>> OFFLINE MODE: Saved ${newTotal} to local storage.`);
+                    } catch (e) {
+                        console.warn("Local storage failed", e);
+                    }
+
+                    // 2. CLOUD SYNC (Fire/Forget)
+                    try {
+                        const statsRef = doc(db, "marketing", "stats");
+                        updateDoc(statsRef, {
+                            optimizations: increment(totalResolved)
+                        }).catch((err) => {
+                            // Silent fallback to setDoc if needed
+                            setDoc(statsRef, { optimizations: totalResolved }, { merge: true }).catch(() => { });
+                        });
+                    } catch (e) { }
 
                     if (isMounted) {
-                        setTimeout(() => onComplete(result), 800);
+                        onComplete(result);
                     }
                 } catch (e) {
                     console.error("Optimization failed", e);

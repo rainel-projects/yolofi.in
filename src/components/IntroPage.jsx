@@ -14,13 +14,17 @@ export default function IntroPage({ onContinue }) {
     useEffect(() => {
         let isMounted = true;
 
-        // Fail-safe: If DB hangs, show default after 1.5s
+        // Fail-safe: If DB hangs (Firewall), switch to Offline Mode after 1.2s
         const safeTimeout = setTimeout(() => {
             if (isMounted) {
-                console.warn(">> INTRO: Timeout reached (1.5s). Showing default stats.");
+                console.warn(">> INTRO: Network Timeout. Switching to Offline Data.");
+                const offlineCount = localStorage.getItem("yolofi_total_fixed");
+                if (offlineCount) {
+                    setStats(prev => ({ ...prev, issuesResolved: parseInt(offlineCount) }));
+                }
                 setLoading(false);
             }
-        }, 1500);
+        }, 1200);
 
         // Fetch stats once on mount (Update on refresh)
         const fetchStats = async () => {
@@ -32,6 +36,9 @@ export default function IntroPage({ onContinue }) {
                     if (docSnap.exists()) {
                         const data = docSnap.data();
                         console.log(">> INTRO: Stats found in DB:", data);
+
+                        // Database is live -> Update local mirror too
+                        localStorage.setItem("yolofi_total_fixed", (data.optimizations || 0).toString());
                         setStats(prev => ({ ...prev, issuesResolved: data.optimizations || 0 }));
                     } else {
                         console.log(">> INTRO: No stats document exists. Creating default (0).");
@@ -40,7 +47,13 @@ export default function IntroPage({ onContinue }) {
                     }
                 }
             } catch (e) {
-                console.error(">> INTRO: STATS FETCH ERROR:", e);
+                console.error(">> INTRO: STATS FETCH ERROR (Network Blocked):", e);
+                // Fallback to Offline Mirror
+                const offlineCount = localStorage.getItem("yolofi_total_fixed");
+                if (offlineCount && isMounted) {
+                    console.log(">> INTRO: Using Offline Mirror count:", offlineCount);
+                    setStats(prev => ({ ...prev, issuesResolved: parseInt(offlineCount) }));
+                }
             } finally {
                 if (isMounted) {
                     clearTimeout(safeTimeout);
