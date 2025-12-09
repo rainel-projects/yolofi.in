@@ -287,95 +287,42 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                 </div>
             )}
 
-            {/* --- MONETIZATION 1: PROFESSIONAL TOOLS (High Payout) --- */}
-            <div style={{ marginTop: "3rem", textAlign: "left" }}>
-                <h3 style={{ fontSize: "1.1rem", color: "#111827", marginBottom: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <ShieldIcon size={20} color="#4f46e5" />
-                    Professional Protection Tools
-                </h3>
-                <div className="stats-comparison" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", marginBottom: "1.5rem" }}>
-
-                    {/* VPN (High Commission) */}
-                    <a href={MonetizationConfig.affiliates.vpn.url} target="_blank" rel="noopener noreferrer" className="stat-card" style={{ textDecoration: "none", cursor: "pointer", border: "1px solid #c7d2fe", background: "#f5f3ff", transition: "all 0.2s" }}>
-                        <div style={{ fontSize: "0.75rem", color: "#6d28d9", fontWeight: "700", textTransform: "uppercase", marginBottom: "0.5rem", letterSpacing: "0.5px" }}>
-                            RECOMMENDED PRIVACY
-                        </div>
-                        <div style={{ color: "#111827", fontWeight: "700", fontSize: "1.05rem", marginBottom: "4px" }}>
-                            {MonetizationConfig.affiliates.vpn.name}
-                        </div>
-                        <div style={{ fontSize: "0.9rem", color: "#4b5563", marginBottom: "8px", lineHeight: "1.4" }}>
-                            {MonetizationConfig.affiliates.vpn.description}
-                        </div>
-                        <div style={{ fontSize: "0.85rem", color: "#4f46e5", fontWeight: "600" }}>Get Deal →</div>
-                    </a>
-
-                    {/* ANTIVIRUS (High Commission) */}
-                    <a href={MonetizationConfig.affiliates.antivirus.url} target="_blank" rel="noopener noreferrer" className="stat-card" style={{ textDecoration: "none", cursor: "pointer", border: "1px solid #fee2e2", background: "#fef2f2", transition: "all 0.2s" }}>
-                        <div style={{ fontSize: "0.75rem", color: "#b91c1c", fontWeight: "700", textTransform: "uppercase", marginBottom: "0.5rem", letterSpacing: "0.5px" }}>
-                            CRITICAL SECURITY
-                        </div>
-                        <div style={{ color: "#111827", fontWeight: "700", fontSize: "1.05rem", marginBottom: "4px" }}>
-                            {MonetizationConfig.affiliates.antivirus.name}
-                        </div>
-                        <div style={{ fontSize: "0.9rem", color: "#4b5563", marginBottom: "8px", lineHeight: "1.4" }}>
-                            {MonetizationConfig.affiliates.antivirus.description}
-                        </div>
-                        <div style={{ fontSize: "0.85rem", color: "#dc2626", fontWeight: "600" }}>Scan Now →</div>
-                    </a>
-
-                    {/* CLEANER (Medium Commission) */}
-                    <a href={MonetizationConfig.affiliates.cleaner.url} target="_blank" rel="noopener noreferrer" className="stat-card" style={{ textDecoration: "none", cursor: "pointer", border: "1px solid #d1fae5", background: "#ecfdf5", transition: "all 0.2s" }}>
-                        <div style={{ fontSize: "0.75rem", color: "#047857", fontWeight: "700", textTransform: "uppercase", marginBottom: "0.5rem", letterSpacing: "0.5px" }}>
-                            SYSTEM BOOST
-                        </div>
-                        <div style={{ color: "#111827", fontWeight: "700", fontSize: "1.05rem", marginBottom: "4px" }}>
-                            {MonetizationConfig.affiliates.cleaner.name}
-                        </div>
-                        <div style={{ fontSize: "0.9rem", color: "#4b5563", marginBottom: "8px", lineHeight: "1.4" }}>
-                            {MonetizationConfig.affiliates.cleaner.description}
-                        </div>
-                        <div style={{ fontSize: "0.85rem", color: "#059669", fontWeight: "600" }}>Optimize →</div>
-                    </a>
-                </div>
-            </div>
-
             {/* --- MONETIZATION 2: VOLUNTARY SUPPORT (Donation) --- */}
             <div style={{
                 marginBottom: "2rem", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: "12px",
                 padding: "1.5rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem"
             }}>
-                <div style={{ textAlign: "center" }}>
-                    <h4 style={{ margin: "0 0 4px 0", color: "#92400e" }}>Support the Project</h4>
-                    <p style={{ margin: 0, fontSize: "0.9rem", color: "#b45309" }}>
-                        Yolofi is 100% free to use. If this tool saved you time or fixed your device, consider supporting our server costs.
-                    </p>
-                </div>
-                <a
-                    href={MonetizationConfig.donationUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                        background: "#ffdd00", color: "#000", padding: "10px 24px", borderRadius: "24px",
-                        textDecoration: "none", fontWeight: "700", fontSize: "0.9rem",
-                        boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", display: "inline-flex", alignItems: "center", gap: "8px"
-                    }}
-                >
-                    <span>☕</span> Buy us a Coffee
-                </a>
-            </div>
+                                <h4 style={{ margin: "0 0 4px 0", color: "#92400e" }}>Support the Project</h4>
+                                <p style={{ margin: 0, fontSize: "0.9rem", color: "#b45309" }}>
+                                    Yolofi is 100% free to use. If this tool saved you time or fixed your device, consider supporting our server costs.
+                                </p>
+                            </div>
+                            <a
+                                href={MonetizationConfig.donationUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                    background: "#ffdd00", color: "#000", padding: "10px 24px", borderRadius: "24px",
+                                    textDecoration: "none", fontWeight: "700", fontSize: "0.9rem",
+                                    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", display: "inline-flex", alignItems: "center", gap: "8px"
+                                }}
+                            >
+                                <span>☕</span> Buy us a Coffee
+                            </a>
+                    </div>
 
-            <div className="weekly-suggestion" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
-                <div className="suggestion-icon">
-                    <CheckCircleIcon size={24} color="#10b981" />
-                </div>
-                <div className="suggestion-text">
-                    <h4 style={{ color: "#1f2937", fontSize: "1rem" }}>System Status: Healthy</h4>
-                    <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>Recommended next scan: 2 Days</p>
-                </div>
-            </div>
+                    <div className="weekly-suggestion" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
+                        <div className="suggestion-icon">
+                            <CheckCircleIcon size={24} color="#10b981" />
+                        </div>
+                        <div className="suggestion-text">
+                            <h4 style={{ color: "#1f2937", fontSize: "1rem" }}>System Status: Healthy</h4>
+                            <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>Recommended next scan: 2 Days</p>
+                        </div>
+                    </div>
 
-        </div >
-    );
+                </div >
+            );
 };
 
 export default GamifiedResults;
