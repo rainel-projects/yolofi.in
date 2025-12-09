@@ -109,79 +109,65 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                         <span className="stat-label">Memory Optimization</span>
                     </div>
                     <div className="stat-change plain-text">
-                        <span className="new-val">{beforeMemStatus} ➔ {afterMemStatus}</span>
-                        <span className="sub-text">{workerMsg}</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* DOWNLOAD INTERSTITIAL (Embedded) */}
-            <div className="download-card" style={{
-                background: "linear-gradient(135deg, #f3f4f6 0%, #ffffff 100%)",
-                border: "1px solid #e5e7eb",
-                borderRadius: "16px",
-                padding: "2rem",
-                margin: "2rem auto",
-                maxWidth: "500px",
-                textAlign: "center",
-                boxShadow: "0 8px 20px rgba(0,0,0,0.06)"
+                        textAlign: "center",
+                        boxShadow: "0 8px 20px rgba(0,0,0,0.06)"
             }}>
-                <div style={{ marginBottom: "1rem" }}>
-                    <ShieldIcon size={32} color="#2563eb" />
-                </div>
-                <h3 style={{ fontSize: "1.4rem", fontWeight: "700", marginBottom: "0.5rem", color: "#111827" }}>
-                    Maintain Peak Performance
-                </h3>
-                <p style={{ color: "#4b5563", marginBottom: "1.5rem", lineHeight: "1.5", fontSize: "0.95rem" }}>
-                    To ensure your device stays optimized and secure against future slowdowns,
-                    we recommend installing our free dedicated tools.
-                </p>
+                        <div style={{ marginBottom: "1rem" }}>
+                            <ShieldIcon size={32} color="#2563eb" />
+                        </div>
+                        <h3 style={{ fontSize: "1.4rem", fontWeight: "700", marginBottom: "0.5rem", color: "#111827" }}>
+                            Maintain Peak Performance
+                        </h3>
+                        <p style={{ color: "#4b5563", marginBottom: "1.5rem", lineHeight: "1.5", fontSize: "0.95rem" }}>
+                            To ensure your device stays optimized and secure against future slowdowns,
+                            we recommend installing our free dedicated tools.
+                        </p>
 
-                <button
-                    onClick={() => window.open("https://example.com/download", "_blank")}
-                    style={{
-                        padding: "0.9rem 2rem",
-                        fontSize: "1rem",
-                        fontWeight: "600",
-                        color: "white",
-                        background: "#2563eb",
-                        border: "none",
-                        borderRadius: "10px",
-                        cursor: "pointer",
-                        boxShadow: "0 4px 12px rgba(37, 99, 235, 0.25)",
-                        transition: "all 0.2s",
-                        width: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "10px"
-                    }}
-                >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    Download Free Tools
-                </button>
-                <div style={{ fontSize: "0.8rem", color: "#9ca3af", marginTop: "0.8rem" }}>
-                    Auto-detecting your device details...
-                </div>
-            </div>
+                        <button
+                            onClick={() => window.open("https://example.com/download", "_blank")}
+                            style={{
+                                padding: "0.9rem 2rem",
+                                fontSize: "1rem",
+                                fontWeight: "600",
+                                color: "white",
+                                background: "#2563eb",
+                                border: "none",
+                                borderRadius: "10px",
+                                cursor: "pointer",
+                                boxShadow: "0 4px 12px rgba(37, 99, 235, 0.25)",
+                                transition: "all 0.2s",
+                                width: "100%",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: "10px"
+                            }}
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Download Free Tools
+                        </button>
+                        <div style={{ fontSize: "0.8rem", color: "#9ca3af", marginTop: "0.8rem" }}>
+                            Auto-detecting your device details...
+                        </div>
+                    </div>
 
-            <div className="weekly-suggestion" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
-                <div className="suggestion-icon">
-                    <CheckCircleIcon size={24} color="#10b981" />
-                </div>
-                <div className="suggestion-text">
-                    <h4 style={{ color: "#1f2937", fontSize: "1rem" }}>System Status: Healthy</h4>
-                    <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>Recommended next scan: 2 Days</p>
-                </div>
-            </div>
+                    <div className="weekly-suggestion" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
+                        <div className="suggestion-icon">
+                            <CheckCircleIcon size={24} color="#10b981" />
+                        </div>
+                        <div className="suggestion-text">
+                            <h4 style={{ color: "#1f2937", fontSize: "1rem" }}>System Status: Healthy</h4>
+                            <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>Recommended next scan: 2 Days</p>
+                        </div>
+                    </div>
 
 
-        </div>
-    );
+                </div>
+                );
 };
 
-export default GamifiedResults;
+                export default GamifiedResults;
