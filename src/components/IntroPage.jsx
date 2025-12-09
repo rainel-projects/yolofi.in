@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
+// Real-time stats sync enabled
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import "./GetStarted.css";
 
