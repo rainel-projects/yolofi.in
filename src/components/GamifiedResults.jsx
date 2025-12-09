@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import "./GamifiedResults.css";
-import "./GamifiedResults.css";
 import GoogleAd from "./GoogleAd";
 import { CheckCircleIcon, ScanIcon, NetworkIcon, TrashIcon, CpuIcon, ShieldIcon, BoltIcon } from "./Icons";
 
@@ -91,7 +90,8 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                 </div>
             </div>
 
-            {/* HIGH REVENUE PLACEMENT: Top of Results - REMOVED TEMPORARILY FOR VERIFICATION */}
+            {/* HIGH REVENUE PLACEMENT: Top of Results */}
+            <GoogleAd slot="5915755780" style={{ marginBottom: '2rem' }} />
 
             <div className="stats-comparison">
                 {/* NETWORK CARD */}
