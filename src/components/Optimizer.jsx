@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import "./Optimizer.css";
 import { CheckCircleIcon, CpuIcon, NetworkIcon, TrashIcon, MemoryIcon, ShieldIcon } from "./Icons";
 import { runRealOptimization } from "../utils/OptimizerBrain";
-import { db } from "../firebase/config";
-import { doc, updateDoc, increment, setDoc } from "firebase/firestore";
 
 const Optimizer = ({ onComplete }) => {
     const [progress, setProgress] = useState(0);
@@ -31,7 +29,7 @@ const Optimizer = ({ onComplete }) => {
                 try {
                     const result = await optimizationPromise;
 
-                    // --- NEW: Explicit Sync Step ---
+                    // --- Explicit Sync Step ---
                     if (isMounted) setCurrentTask("Syncing Global Stats...");
                     await new Promise(r => setTimeout(r, 800)); // Visible delay for user
 
@@ -41,25 +39,22 @@ const Optimizer = ({ onComplete }) => {
                         + (result.actions?.workers?.removed || 0)
                         + 2; // Base tasks (Network + Memory)
 
-                    // 1. OFFLINE MIRROR (Guaranteed Update)
+                    // 1. QUEUE FOR BATCH UPLOAD (No immediate cloud write)
+                    try {
+                        // Add to "Pending Batch" (to be flushed by IntroPage)
+                        const currentPending = parseInt(localStorage.getItem("yolofi_pending_batch") || "0");
+                        const newPending = currentPending + totalResolved;
+                        localStorage.setItem("yolofi_pending_batch", newPending.toString());
+                        console.log(`>> BATCH: Queued +${totalResolved} issues. Total Pending: ${newPending}`);
+                    } catch (e) {
+                        console.warn("Batch queueing failed", e);
+                    }
+
+                    // 2. IMMEDIATE LOCAL MIRROR (For UI feedback)
                     try {
                         const currentLocal = parseInt(localStorage.getItem("yolofi_total_fixed") || "0");
                         const newTotal = currentLocal + totalResolved;
                         localStorage.setItem("yolofi_total_fixed", newTotal.toString());
-                        console.log(`>> OFFLINE MODE: Saved ${newTotal} to local storage.`);
-                    } catch (e) {
-                        console.warn("Local storage failed", e);
-                    }
-
-                    // 2. CLOUD SYNC (Fire/Forget)
-                    try {
-                        const statsRef = doc(db, "marketing", "stats");
-                        updateDoc(statsRef, {
-                            optimizations: increment(totalResolved)
-                        }).catch((err) => {
-                            // Silent fallback to setDoc if needed
-                            setDoc(statsRef, { optimizations: totalResolved }, { merge: true }).catch(() => { });
-                        });
                     } catch (e) { }
 
                     if (isMounted) {

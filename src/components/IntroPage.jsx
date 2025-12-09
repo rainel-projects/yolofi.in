@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
 // Real-time stats sync enabled
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, increment, onSnapshot } from 'firebase/firestore';
 import "./GetStarted.css";
 
 export default function IntroPage({ onContinue }) {
@@ -41,7 +41,6 @@ export default function IntroPage({ onContinue }) {
                         } else {
                             // Smart Seeding: Recycle local truth if available
                             const cachedVal = parseInt(localStorage.getItem("yolofi_total_fixed") || "0");
-                            // If local has "144", user wants that as the new seed, not 142
                             const seedValue = cachedVal > 142 ? cachedVal : 142;
 
                             setDoc(statsRef, { optimizations: seedValue }).catch(e => console.warn("Init failed", e));
@@ -50,8 +49,6 @@ export default function IntroPage({ onContinue }) {
                     }
                 },
                 (error) => {
-                    // console.warn(">> SYNC: Real-time connection failed (Firewall?)", error);
-                    // Listener failed, we rely on the cached value loaded at step 1
                     if (isMounted) setLoading(false);
                 }
             );
@@ -60,7 +57,25 @@ export default function IntroPage({ onContinue }) {
             if (isMounted) setLoading(false);
         }
 
-        // Safety Timeout: Stop loading spinner if DB is silent for 2.5s
+        // 3. BATCH FLUSHER (The "Worker")
+        // Checks periodically if there are pending stats to upload
+        const batchFlusher = setInterval(async () => {
+            if (!isMounted) return;
+
+            const pending = parseInt(localStorage.getItem("yolofi_pending_batch") || "0");
+            if (pending > 0) {
+                console.log(`>> BATCH: Flushing ${pending} pending issues to Cloud...`);
+                try {
+                    await updateDoc(statsRef, { optimizations: increment(pending) });
+                    console.log(">> BATCH: Flush Success! Clearing queue.");
+                    localStorage.setItem("yolofi_pending_batch", "0");
+                } catch (e) {
+                    console.warn(">> BATCH: Flush failed (Network?), retrying next cycle.", e);
+                }
+            }
+        }, 10000); // Check every 10 seconds
+
+        // Safety Timeout
         const safety = setTimeout(() => {
             if (isMounted) setLoading(false);
         }, 2500);
@@ -69,6 +84,7 @@ export default function IntroPage({ onContinue }) {
             isMounted = false;
             unsubscribe();
             clearTimeout(safety);
+            clearInterval(batchFlusher);
         };
     }, []);
 
