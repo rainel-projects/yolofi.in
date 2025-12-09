@@ -119,8 +119,6 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                 </div>
             </div>
 
-            {/* DOWNLOAD INTERSTITIAL (Embedded) */}
-            {/* DOWNLOAD INTERSTITIAL REMOVED */}
 
 
             <div className="stat-card" style={{ marginTop: "1rem", borderColor: "#818cf855", background: "#eef2ff" }}>
