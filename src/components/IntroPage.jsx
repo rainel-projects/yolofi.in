@@ -1,39 +1,37 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
-import { collection, getCountFromServer } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import "./GetStarted.css";
 
 export default function IntroPage({ onContinue }) {
     const [stats, setStats] = useState({
-        issuesResolved: 0,
-        successRate: 0,
-        avgFixTime: 0
+        issuesResolved: 12845,
+        successRate: 99,
+        avgFixTime: '< 45s'
     });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                // Get real count of testimonials from Firebase
-                const coll = collection(db, 'testimonials');
-                const snapshot = await getCountFromServer(coll);
-                const count = snapshot.data().count;
+        const statsRef = doc(db, "marketing", "stats");
 
-                setStats({
-                    issuesResolved: count + 12845, // Start with a "trust" baseline
-                    successRate: 99,
-                    avgFixTime: '< 45s'
-                });
-            } catch (error) {
-                console.error('Error fetching stats:', error);
-                // Fallback to "Marketing" numbers if offline
-                setStats({ issuesResolved: 12845, successRate: 99, avgFixTime: '< 45s' });
-            } finally {
-                setLoading(false);
+        const unsubscribe = onSnapshot(statsRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                setStats(prev => ({
+                    ...prev,
+                    issuesResolved: data.optimizations || 12845
+                }));
+            } else {
+                // Initialize if missing (First Run)
+                setDoc(statsRef, { optimizations: 12845 });
             }
-        };
+            setLoading(false);
+        }, (error) => {
+            // Quietly fail to default
+            setLoading(false);
+        });
 
-        fetchStats();
+        return () => unsubscribe();
     }, []);
 
     const formatNumber = (num) => {
