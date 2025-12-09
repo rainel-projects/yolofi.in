@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"; // Deployment trigger
+
 import "./GamifiedResults.css";
 import { CheckCircleIcon, ScanIcon, NetworkIcon, TrashIcon, CpuIcon, ShieldIcon, BoltIcon } from "./Icons";
 
