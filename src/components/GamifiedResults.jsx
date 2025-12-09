@@ -285,6 +285,43 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                 </div>
             </div>
 
+            {/* VERIFICATION LOG MODAL */}
+            {showLogModal && (
+                <div style={{
+                    position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+                    background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999
+                }}>
+                    <div style={{
+                        background: "white", padding: "2rem", borderRadius: "16px", maxWidth: "400px", width: "90%",
+                        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                    }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+                            <h3 style={{ margin: 0, color: "#111827", fontSize: "1.2rem" }}>Cleanup Verification</h3>
+                            <CheckCircleIcon size={24} color="#10b981" />
+                        </div>
+                        <div style={{
+                            background: "#1f2937", color: "#10b981", padding: "1rem", borderRadius: "8px",
+                            fontFamily: "monospace", fontSize: "0.85rem", height: "150px", overflowY: "auto",
+                            marginBottom: "1.5rem"
+                        }}>
+                            {cleanLogs.map((log, i) => (
+                                <div key={i} style={{ marginBottom: "4px" }}>{`> ${log}`}</div>
+                            ))}
+                            <div style={{ marginTop: "8px", color: "white" }}>STATUS: OPTIMIZED</div>
+                        </div>
+                        <button
+                            onClick={() => setShowLogModal(false)}
+                            style={{
+                                width: "100%", padding: "0.8rem", background: "#4f46e5", color: "white",
+                                border: "none", borderRadius: "8px", fontWeight: "600", cursor: "pointer"
+                            }}
+                        >
+                            Close Report
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <div className="weekly-suggestion" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
                 <div className="suggestion-icon">
                     <CheckCircleIcon size={24} color="#10b981" />
