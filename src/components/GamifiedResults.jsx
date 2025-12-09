@@ -90,8 +90,7 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                 </div>
             </div>
 
-            {/* HIGH REVENUE PLACEMENT: Top of Results */}
-            <GoogleAd slot="1234567890" style={{ marginBottom: '2rem' }} />
+            {/* HIGH REVENUE PLACEMENT: Top of Results - REMOVED TEMPORARILY FOR VERIFICATION */}
 
             <div className="stats-comparison">
                 {/* NETWORK CARD */}

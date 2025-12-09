@@ -278,8 +278,7 @@ const Diagnose = () => {
                     />
                 )}
 
-                {/* REVENUE PLACEMENT: Bottom of Diagnosis */}
-                <GoogleAd slot="1234567890" style={{ marginTop: '4rem', width: '100%', maxWidth: '800px' }} />
+                {/* REVENUE PLACEMENT: REMOVED TEMPORARILY FOR VERIFICATION */}
 
             </section>
         </>
