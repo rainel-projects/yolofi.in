@@ -323,20 +323,39 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
             </div>
 
             {/* --- MONETIZATION 2: VOLUNTARY SUPPORT (Donation) --- */}
+            <div style={{
+                marginBottom: "2rem", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: "12px",
+                padding: "1.5rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem"
+            }}>
+                <div style={{ textAlign: "center" }}>
+                    <h4 style={{ margin: "0 0 4px 0", color: "#92400e" }}>Support the Project</h4>
+                    <p style={{ margin: 0, fontSize: "0.9rem", color: "#b45309" }}>
+                        Yolofi is 100% free to use. If this tool saved you time or fixed your device, consider supporting our server costs.
+                    </p>
+                </div>
+                <a
+                    href="https://www.buymeacoffee.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                        background: "#ffdd00", color: "#000", padding: "10px 24px", borderRadius: "24px",
+                        textDecoration: "none", fontWeight: "700", fontSize: "0.9rem",
+                        boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", display: "inline-flex", alignItems: "center", gap: "8px"
+                    }}
                 >
-            <span>☕</span> Buy us a Coffee
-        </a>
-            </div >
+                    <span>☕</span> Buy us a Coffee
+                </a>
+            </div>
 
-    <div className="weekly-suggestion" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
-        <div className="suggestion-icon">
-            <CheckCircleIcon size={24} color="#10b981" />
-        </div>
-        <div className="suggestion-text">
-            <h4 style={{ color: "#1f2937", fontSize: "1rem" }}>System Status: Healthy</h4>
-            <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>Recommended next scan: 2 Days</p>
-        </div>
-    </div>
+            <div className="weekly-suggestion" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
+                <div className="suggestion-icon">
+                    <CheckCircleIcon size={24} color="#10b981" />
+                </div>
+                <div className="suggestion-text">
+                    <h4 style={{ color: "#1f2937", fontSize: "1rem" }}>System Status: Healthy</h4>
+                    <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>Recommended next scan: 2 Days</p>
+                </div>
+            </div>
 
         </div >
     );
