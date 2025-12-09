@@ -30,15 +30,19 @@ const Optimizer = ({ onComplete }) => {
                 try {
                     const result = await optimizationPromise;
 
-                    // Increment Global Stats Atomicially
+                    // Calculate Total Issues Resolved in this run
+                    // (Junk files + Service Workers + 1 for Network Boost)
+                    const issuesCount = (result?.actions?.storage?.filesRemoved || 0) +
+                        (result?.actions?.workers?.removed || 0) +
+                        1; // Network boost always counts as 1 optimization
+
                     // Increment Global Stats (Non-blocking / Fire-and-forget)
-                    // We don't await this so the user isn't stuck waiting for the DB
                     const statsRef = doc(db, "marketing", "stats");
                     updateDoc(statsRef, {
-                        optimizations: increment(1)
+                        optimizations: increment(issuesCount)
                     }).catch((err) => {
                         // If doc doesn't exist, try creating it (also background)
-                        setDoc(statsRef, { optimizations: 1 }, { merge: true }).catch(e => console.warn("Stats background update failed", e));
+                        setDoc(statsRef, { optimizations: issuesCount }, { merge: true }).catch(e => console.warn("Stats background update failed", e));
                     });
 
                     if (isMounted) {
