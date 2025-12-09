@@ -1,10 +1,24 @@
+import React, { useEffect, useState } from "react";
+import "./Optimizer.css";
+import { CheckCircleIcon, CpuIcon, NetworkIcon, TrashIcon, MemoryIcon, ShieldIcon } from "./Icons";
+import { runRealOptimization } from "../utils/OptimizerBrain";
 import { db } from "../firebase/config";
-import { doc, updateDoc, increment, setDoc, getDoc } from "firebase/firestore";
-
-// ... existing imports
+import { doc, updateDoc, increment, setDoc } from "firebase/firestore";
 
 const Optimizer = ({ onComplete }) => {
-    // ... existing state
+    const [progress, setProgress] = useState(0);
+    const [currentTask, setCurrentTask] = useState("Initializing Optimizer...");
+    const [completedTasks, setCompletedTasks] = useState([]);
+
+    // Technical "Logs" instead of generic tasks
+    const tasks = [
+        { label: "Scanning LocalStorage keys...", duration: 800, icon: <ShieldIcon size={18} color="#6b7280" /> },
+        { label: "Analyzing JS Heap memory usage...", duration: 1000, icon: <MemoryIcon size={18} color="#6b7280" /> },
+        { label: "Pinging network gateway (latency check)...", duration: 1200, icon: <NetworkIcon size={18} color="#6b7280" /> },
+        { label: "Classifying stale cache & tmp files...", duration: 1500, icon: <TrashIcon size={18} color="#6b7280" /> },
+        { label: "Unregistering idle Service Workers...", duration: 1000, icon: <CpuIcon size={18} color="#6b7280" /> },
+        { label: "Compiling optimization report...", duration: 800, icon: <CheckCircleIcon size={18} color="#6b7280" /> },
+    ];
 
     useEffect(() => {
         let isMounted = true;
