@@ -31,15 +31,15 @@ const Optimizer = ({ onComplete }) => {
                     const result = await optimizationPromise;
 
                     // Increment Global Stats Atomicially
+                    // Increment Global Stats (Non-blocking / Fire-and-forget)
+                    // We don't await this so the user isn't stuck waiting for the DB
                     const statsRef = doc(db, "marketing", "stats");
-                    try {
-                        await updateDoc(statsRef, {
-                            optimizations: increment(1)
-                        });
-                    } catch (err) {
-                        // If doc doesn't exist, create it starting at 1
-                        await setDoc(statsRef, { optimizations: 1 }, { merge: true });
-                    }
+                    updateDoc(statsRef, {
+                        optimizations: increment(1)
+                    }).catch((err) => {
+                        // If doc doesn't exist, try creating it (also background)
+                        setDoc(statsRef, { optimizations: 1 }, { merge: true }).catch(e => console.warn("Stats background update failed", e));
+                    });
 
                     if (isMounted) {
                         setTimeout(() => onComplete(result), 800);
