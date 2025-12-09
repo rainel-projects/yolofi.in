@@ -12,25 +12,43 @@ export default function IntroPage({ onContinue }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let isMounted = true;
+
+        // Fail-safe: If DB hangs, show default after 1.5s
+        const safeTimeout = setTimeout(() => {
+            if (isMounted) setLoading(false);
+        }, 1500);
+
         // Fetch stats once on mount (Update on refresh)
         const fetchStats = async () => {
             const statsRef = doc(db, "marketing", "stats");
             try {
                 const docSnap = await getDoc(statsRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    setStats(prev => ({ ...prev, issuesResolved: data.optimizations || 0 }));
-                } else {
-                    setDoc(statsRef, { optimizations: 0 });
+                if (isMounted) {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        setStats(prev => ({ ...prev, issuesResolved: data.optimizations || 0 }));
+                    } else {
+                        // Initialize if missing
+                        setDoc(statsRef, { optimizations: 0 }).catch(e => console.warn("Init stats failed", e));
+                    }
                 }
             } catch (e) {
                 console.warn("Stats fetch failed", e);
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    clearTimeout(safeTimeout);
+                    setLoading(false);
+                }
             }
         };
 
         fetchStats();
+
+        return () => {
+            isMounted = false;
+            clearTimeout(safeTimeout);
+        };
     }, []);
 
     const formatNumber = (num) => {
