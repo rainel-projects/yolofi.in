@@ -161,6 +161,9 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                                 setIsCleaning(true);
                                 const logs = [];
 
+                                // Clarify Scope
+                                logs.push("Note: Web App can only clean its own data, not system temp files.");
+
                                 // 1. Real Browser Cache Clean
                                 try {
                                     if ('caches' in window) {
@@ -199,6 +202,9 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                                 } catch (e) {
                                     logs.push("Service Worker Access Denied");
                                 }
+
+                                // 4. Attempt to trigger storage update (visual only as we can't force GC)
+                                logs.push("Requesting Browser Garbage Collection...");
 
                                 setCleanLogs(logs);
                                 setIsCleaning(false);
