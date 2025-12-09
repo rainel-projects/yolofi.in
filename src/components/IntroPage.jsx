@@ -39,8 +39,12 @@ export default function IntroPage({ onContinue }) {
                             // Update cache
                             localStorage.setItem("yolofi_total_fixed", liveCount.toString());
                         } else {
-                            // Initialize if missing (First global run)
-                            setDoc(statsRef, { optimizations: 142 }).catch(e => console.warn("Init failed", e));
+                            // Smart Seeding: Recycle local truth if available
+                            const cachedVal = parseInt(localStorage.getItem("yolofi_total_fixed") || "0");
+                            // If local has "144", user wants that as the new seed, not 142
+                            const seedValue = cachedVal > 142 ? cachedVal : 142;
+
+                            setDoc(statsRef, { optimizations: seedValue }).catch(e => console.warn("Init failed", e));
                         }
                         setLoading(false);
                     }
