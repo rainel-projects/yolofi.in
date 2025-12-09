@@ -5,12 +5,11 @@ import FeedbackForm from "./FeedbackForm";
 import AutoFillTop from "./AutoFillTop";
 import useAutoFillSpace from "./useAutoFillSpace";
 import Optimizer from "./Optimizer";
-import DownloadPage from "./DownloadPage";
 import GamifiedResults from "./GamifiedResults";
 import { classifyStorage, getMemoryStatus, warmNetwork } from "../utils/OptimizerBrain";
 
 const Diagnose = () => {
-    // viewState: "IDLE" | "SCANNING" | "REPORT" | "OPTIMIZING" | "DOWNLOAD" | "RESULTS"
+    // viewState: "IDLE" | "SCANNING" | "REPORT" | "OPTIMIZING" | "RESULTS"
     const [viewState, setViewState] = useState("IDLE");
     const [diagnosticReport, setDiagnosticReport] = useState(null);
     const [optimizationResult, setOptimizationResult] = useState(null);
@@ -35,11 +34,7 @@ const Diagnose = () => {
 
     const handleOptimizationComplete = (result) => {
         setOptimizationResult(result);
-        setViewState("DOWNLOAD"); // Go to Download page first
-    };
-
-    const handleDownloadContinue = () => {
-        setViewState("RESULTS"); // User skipped/clicked continue -> Show Analysis
+        setViewState("RESULTS");
     };
 
     const handleRescan = () => {
@@ -273,12 +268,7 @@ const Diagnose = () => {
                     <Optimizer onComplete={handleOptimizationComplete} />
                 )}
 
-                {/* 4. DOWNLOAD STATE (New Interstitial) */}
-                {viewState === "DOWNLOAD" && (
-                    <DownloadPage onContinue={handleDownloadContinue} />
-                )}
-
-                {/* 5. RESULTS STATE */}
+                {/* 4. RESULTS STATE */}
                 {viewState === "RESULTS" && (
                     <GamifiedResults
                         onRescan={handleRescan}
