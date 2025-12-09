@@ -15,7 +15,7 @@ const GoogleAd = ({ slot, format = 'auto', fullWidthResponsive = 'true', style =
             {/* AdSense Display Unit */}
             <ins className="adsbygoogle"
                 style={{ display: 'block' }}
-                data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" // PLACEHOLDER: Replace this!
+                data-ad-client="ca-pub-5518844041121398" // Updated to real ID
                 data-ad-slot={slot || "0000000000"}      // PLACEHOLDER: Replace this!
                 data-ad-format={format}
                 data-full-width-responsive={fullWidthResponsive}
