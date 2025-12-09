@@ -5,7 +5,7 @@ import "./GetStarted.css";
 
 export default function IntroPage({ onContinue }) {
     const [stats, setStats] = useState({
-        issuesResolved: 12845,
+        issuesResolved: 0,
         successRate: 99,
         avgFixTime: '< 45s'
     });
@@ -19,11 +19,11 @@ export default function IntroPage({ onContinue }) {
                 const data = docSnap.data();
                 setStats(prev => ({
                     ...prev,
-                    issuesResolved: data.optimizations || 12845
+                    issuesResolved: data.optimizations || 0
                 }));
             } else {
-                // Initialize if missing (First Run)
-                setDoc(statsRef, { optimizations: 12845 });
+                // Initialize if missing (Real Start)
+                setDoc(statsRef, { optimizations: 0 });
             }
             setLoading(false);
         }, (error) => {

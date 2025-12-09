@@ -23,8 +23,8 @@ const Optimizer = ({ onComplete }) => {
                             optimizations: increment(1)
                         });
                     } catch (err) {
-                        // If doc doesn't exist, create it (fallback)
-                        await setDoc(statsRef, { optimizations: 12846 }, { merge: true });
+                        // If doc doesn't exist, create it starting at 1
+                        await setDoc(statsRef, { optimizations: 1 }, { merge: true });
                     }
 
                     if (isMounted) {
