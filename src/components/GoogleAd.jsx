@@ -11,16 +11,15 @@ const GoogleAd = ({ slot, format = 'auto', fullWidthResponsive = 'true', style =
     }, []);
 
     return (
-        <div className="google-ad-container" style={{ margin: '1rem 0', textAlign: 'center', minHeight: '90px', ...style }}>
-            {/* AdSense Display Unit */}
+        <div className="google-ad-container" style={{ textAlign: 'center', ...style }}>
+            {/* AdSense Display Unit - Collapses automatically if empty */}
             <ins className="adsbygoogle"
                 style={{ display: 'block' }}
-                data-ad-client="ca-pub-5518844041121398" // Updated to real ID
-                data-ad-slot={slot || "0000000000"}      // PLACEHOLDER: Replace this!
+                data-ad-client="ca-pub-5518844041121398"
+                data-ad-slot={slot || "0000000000"}
                 data-ad-format={format}
                 data-full-width-responsive={fullWidthResponsive}
             ></ins>
-            <span style={{ fontSize: '10px', color: '#9ca3af', textTransform: 'uppercase' }}>Advertisement</span>
         </div>
     );
 };
