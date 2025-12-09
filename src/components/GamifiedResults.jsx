@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./GamifiedResults.css";
+import GoogleAd from "./GoogleAd";
 import { CheckCircleIcon, ScanIcon, NetworkIcon, TrashIcon, CpuIcon, ShieldIcon, BoltIcon } from "./Icons";
 
 const GamifiedResults = ({ onRescan, results, baseline }) => {
@@ -88,6 +89,9 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                     <span style={{ marginLeft: "6px" }}>Level 5: {currentLevel} (+{xpGained} XP)</span>
                 </div>
             </div>
+
+            {/* HIGH REVENUE PLACEMENT: Top of Results */}
+            <GoogleAd slot="1234567890" style={{ marginBottom: '2rem' }} />
 
             <div className="stats-comparison">
                 {/* NETWORK CARD */}

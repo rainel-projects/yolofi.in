@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import "./Diagnose.css";
+import GoogleAd from "./GoogleAd";
 import { ScanIcon, CheckCircleIcon, BoltIcon } from "./Icons";
 import FeedbackForm from "./FeedbackForm";
 import AutoFillTop from "./AutoFillTop";
@@ -276,6 +277,9 @@ const Diagnose = () => {
                         baseline={diagnosticReport?.baseline}
                     />
                 )}
+
+                {/* REVENUE PLACEMENT: Bottom of Diagnosis */}
+                <GoogleAd slot="1234567890" style={{ marginTop: '4rem', width: '100%', maxWidth: '800px' }} />
 
             </section>
         </>
