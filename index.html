@@ -12,8 +12,22 @@
   <meta name="google-adsense-account" content="ca-pub-5518844041121398">
   <title>Yolofi</title>
   <!-- GOOGLE ADSENSE (AUTO ADS) -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5518844041121398"
     crossorigin="anonymous"></script>
+
+  <!-- FORCE CLEANUP: Unregister Service Workers to prevent caching old versions -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+  </script>
 </head>
 
 <body>
