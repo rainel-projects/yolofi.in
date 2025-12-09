@@ -41,6 +41,22 @@ export const classifyStorage = () => {
     return report;
 };
 
+// --- NEW: Real Storage API Estimation ---
+export const getStorageEstimate = async () => {
+    if (navigator.storage && navigator.storage.estimate) {
+        try {
+            const estimate = await navigator.storage.estimate();
+            return {
+                usage: estimate.usage || 0,
+                quota: estimate.quota || 0
+            };
+        } catch (e) {
+            console.warn("Storage API failed", e);
+        }
+    }
+    return { usage: 0, quota: 0 };
+};
+
 // --- 2. Intelligent Memory Monitoring ---
 export const getMemoryStatus = () => {
     // Note: performance.memory is Chrome/Chromium only standard
@@ -153,9 +169,14 @@ export const cleanServiceWorkers = async () => {
 export const runRealOptimization = async () => {
     console.log("🧠 Yolofi Brain: Starting Optimization Sequence...");
 
-    // 1. Storage Cleanup
-    const storageScan = classifyStorage();
+    // 1. Storage Cleanup and Real Analysis
+    const [storageScan, storageEstimate] = await Promise.all([
+        Promise.resolve(classifyStorage()), // Sync ref wrapper
+        getStorageEstimate()
+    ]);
+
     let freedBytes = 0;
+    // Clean LocalStorage Trash
     storageScan.trash.forEach(key => {
         try {
             const val = localStorage.getItem(key) || "";
@@ -173,11 +194,26 @@ export const runRealOptimization = async () => {
     // 4. Memory Re-check
     const finalMemory = getMemoryStatus();
 
+    // 5. Deterministic Score Calculation
+    // Base: 10
+    // +5 if any bytes freed
+    // +2 per worker removed (capped at 10)
+    // +5 if Network is Fast or Lightning
+    // +5 if Memory is Smooth
+    let scoreBoost = 10;
+    if (freedBytes > 0) scoreBoost += 5;
+    scoreBoost += Math.min(workersRemoved * 2, 10);
+    if (networkStat.status.includes("Fast")) scoreBoost += 5;
+    if (finalMemory.status === "Smooth") scoreBoost += 5;
+
+
     // Return the "Actions Taken" Report
     return {
         actions: {
             storage: {
-                scanned: storageScan.totalSize,
+                // Return REAL usage estimate as 'scanned' to show scope
+                // Fallback to totalSize if estimate is 0 (unlikely in modern browsers)
+                scanned: storageEstimate.usage > 0 ? storageEstimate.usage : storageScan.totalSize,
                 cleaned: freedBytes,
                 filesRemoved: storageScan.trash.length,
                 keptSafe: storageScan.safe.length + storageScan.critical.length,
@@ -185,7 +221,8 @@ export const runRealOptimization = async () => {
                     critical: storageScan.critical.length,
                     useful: storageScan.safe.length,
                     trash: storageScan.trash.length
-                }
+                },
+                quota: storageEstimate.quota
             },
             network: {
                 latency: networkStat.latency,
@@ -200,6 +237,6 @@ export const runRealOptimization = async () => {
                 percent: finalMemory.percent
             }
         },
-        scoreImprovement: Math.floor(Math.random() * 15) + 10 // Simulated "Score Boost"
+        scoreImprovement: scoreBoost
     };
 };
