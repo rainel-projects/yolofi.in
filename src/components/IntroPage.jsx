@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import "./GetStarted.css";
 
 export default function IntroPage({ onContinue }) {
@@ -13,57 +13,57 @@ export default function IntroPage({ onContinue }) {
 
     useEffect(() => {
         let isMounted = true;
+        let unsubscribe = () => { };
 
-        // Fail-safe: If DB hangs (Firewall), switch to Offline Mode after 1.2s
-        const safeTimeout = setTimeout(() => {
-            if (isMounted) {
-                // console.warn(">> INTRO: Network Timeout. Switching to Offline Data.");
-                const offlineCount = localStorage.getItem("yolofi_total_fixed");
-                if (offlineCount) {
-                    setStats(prev => ({ ...prev, issuesResolved: parseInt(offlineCount) }));
-                }
-                setLoading(false);
-            }
-        }, 1200);
+        // 1. Initial Local Load (Instant feedback while connecting)
+        const cached = localStorage.getItem("yolofi_total_fixed");
+        if (cached) {
+            setStats(prev => ({ ...prev, issuesResolved: parseInt(cached) }));
+        }
 
-        // Fetch stats once on mount (Update on refresh)
-        const fetchStats = async () => {
-            const statsRef = doc(db, "marketing", "stats");
-            try {
-                const docSnap = await getDoc(statsRef);
-                if (isMounted) {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        // Database is live -> Update local mirror too
-                        const globalCount = data.optimizations || 0;
-                        localStorage.setItem("yolofi_total_fixed", globalCount.toString());
-                        setStats(prev => ({ ...prev, issuesResolved: globalCount }));
-                    } else {
-                        // Seed with a realistic starting number for social proof if empty
-                        await setDoc(statsRef, { optimizations: 142 });
-                        setStats(prev => ({ ...prev, issuesResolved: 142 }));
+        // 2. Real-time Listener (The "Truth")
+        const statsRef = doc(db, "marketing", "stats");
+
+        try {
+            unsubscribe = onSnapshot(statsRef,
+                (docSnap) => {
+                    if (isMounted) {
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            const liveCount = data.optimizations || 0;
+
+                            // console.log(">> SYNC: Received live update:", liveCount);
+                            setStats(prev => ({ ...prev, issuesResolved: liveCount }));
+
+                            // Update cache
+                            localStorage.setItem("yolofi_total_fixed", liveCount.toString());
+                        } else {
+                            // Initialize if missing (First global run)
+                            setDoc(statsRef, { optimizations: 142 }).catch(e => console.warn("Init failed", e));
+                        }
+                        setLoading(false);
                     }
+                },
+                (error) => {
+                    // console.warn(">> SYNC: Real-time connection failed (Firewall?)", error);
+                    // Listener failed, we rely on the cached value loaded at step 1
+                    if (isMounted) setLoading(false);
                 }
-            } catch (e) {
-                // console.error(">> INTRO: STATS FETCH ERROR (Network Blocked):", e);
-                // Fallback to Offline Mirror
-                const offlineCount = localStorage.getItem("yolofi_total_fixed");
-                if (offlineCount && isMounted) {
-                    setStats(prev => ({ ...prev, issuesResolved: parseInt(offlineCount) }));
-                }
-            } finally {
-                if (isMounted) {
-                    clearTimeout(safeTimeout);
-                    setLoading(false);
-                }
-            }
-        };
+            );
+        } catch (e) {
+            console.error("Setup failed", e);
+            if (isMounted) setLoading(false);
+        }
 
-        fetchStats();
+        // Safety Timeout: Stop loading spinner if DB is silent for 2.5s
+        const safety = setTimeout(() => {
+            if (isMounted) setLoading(false);
+        }, 2500);
 
         return () => {
             isMounted = false;
-            clearTimeout(safeTimeout);
+            unsubscribe();
+            clearTimeout(safety);
         };
     }, []);
 
@@ -91,7 +91,7 @@ export default function IntroPage({ onContinue }) {
                 <div className="intro-stats">
                     <div className="stat-item">
                         <div className="stat-value">
-                            {loading ? '...' : formatNumber(stats.issuesResolved)}
+                            {loading && stats.issuesResolved === 0 ? '...' : formatNumber(stats.issuesResolved)}
                         </div>
                         <div className="stat-label">Issues Resolved</div>
                     </div>
