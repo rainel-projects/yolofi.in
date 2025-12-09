@@ -20,10 +20,10 @@
 
   <!-- FORCE CLEANUP: Unregister Service Workers to prevent caching old versions -->
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function (registrations) {
-        for (let registration of registrations) {
-          registration.unregister();
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        for (let reg of regs) {
+          reg.unregister();
         }
       });
     }
