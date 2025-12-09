@@ -295,7 +295,7 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                 <div style={{ textAlign: "center" }}>
                     <h4 style={{ margin: "0 0 4px 0", color: "#92400e" }}>Support the Project</h4>
                     <p style={{ margin: 0, fontSize: "0.9rem", color: "#b45309" }}>
-                        Yolofi is 100% free to use. If this tool saved you time or fixed your device, consider supporting our server costs.
+                        Yolofi is 100% free to use. If this tool saved you time or fixed your device, consider supporting future development.
                     </p>
                 </div>
                 <a
