@@ -16,25 +16,31 @@ export default function IntroPage({ onContinue }) {
 
         // Fail-safe: If DB hangs, show default after 1.5s
         const safeTimeout = setTimeout(() => {
-            if (isMounted) setLoading(false);
+            if (isMounted) {
+                console.warn(">> INTRO: Timeout reached (1.5s). Showing default stats.");
+                setLoading(false);
+            }
         }, 1500);
 
         // Fetch stats once on mount (Update on refresh)
         const fetchStats = async () => {
+            console.log(">> INTRO: Starting stats fetch...");
             const statsRef = doc(db, "marketing", "stats");
             try {
                 const docSnap = await getDoc(statsRef);
                 if (isMounted) {
                     if (docSnap.exists()) {
                         const data = docSnap.data();
+                        console.log(">> INTRO: Stats found in DB:", data);
                         setStats(prev => ({ ...prev, issuesResolved: data.optimizations || 0 }));
                     } else {
+                        console.log(">> INTRO: No stats document exists. Creating default (0).");
                         // Initialize if missing
                         setDoc(statsRef, { optimizations: 0 }).catch(e => console.warn("Init stats failed", e));
                     }
                 }
             } catch (e) {
-                console.warn("Stats fetch failed", e);
+                console.error(">> INTRO: STATS FETCH ERROR:", e);
             } finally {
                 if (isMounted) {
                     clearTimeout(safeTimeout);

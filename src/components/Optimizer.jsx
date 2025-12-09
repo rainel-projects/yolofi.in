@@ -30,14 +30,25 @@ const Optimizer = ({ onComplete }) => {
                 try {
                     const result = await optimizationPromise;
 
-                    // Increment Global Stats (Single count for the 'Compilation' event)
-                    // Fire-and-forget (non-blocking)
+                    // Calculate Total Issues Resolved
+                    // Files Removed + Service Workers Removed + 1 (Network) + 1 (Memory)
+                    const totalResolved = (result.actions?.storage?.filesRemoved || 0)
+                        + (result.actions?.workers?.removed || 0)
+                        + 2; // Base tasks (Network + Memory)
+
+                    // Increment Global Stats
+                    console.log(`>> ANALYTICS: Incrementing stats by ${totalResolved}...`);
                     const statsRef = doc(db, "marketing", "stats");
                     updateDoc(statsRef, {
-                        optimizations: increment(1)
+                        optimizations: increment(totalResolved)
+                    }).then(() => {
+                        console.log(">> ANALYTICS: Stats incremented successfully!");
                     }).catch((err) => {
-                        // Background fallback: Start at 1 if missing
-                        setDoc(statsRef, { optimizations: 1 }, { merge: true }).catch(e => console.warn("Stats background update failed", e));
+                        console.warn(">> ANALYTICS: Update failed, trying setDoc fallback...", err);
+                        // Background fallback
+                        setDoc(statsRef, { optimizations: totalResolved }, { merge: true })
+                            .then(() => console.log(">> ANALYTICS: Fallback setDoc success!"))
+                            .catch(e => console.error(">> ANALYTICS: ALL UPDATES FAILED", e));
                     });
 
                     if (isMounted) {
