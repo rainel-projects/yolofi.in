@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import "./GetStarted.css";
 
 export default function IntroPage({ onContinue }) {
@@ -12,26 +12,25 @@ export default function IntroPage({ onContinue }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const statsRef = doc(db, "marketing", "stats");
-
-        const unsubscribe = onSnapshot(statsRef, (docSnap) => {
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                setStats(prev => ({
-                    ...prev,
-                    issuesResolved: data.optimizations || 0
-                }));
-            } else {
-                // Initialize if missing (Real Start)
-                setDoc(statsRef, { optimizations: 0 });
+        // Fetch stats once on mount (Update on refresh)
+        const fetchStats = async () => {
+            const statsRef = doc(db, "marketing", "stats");
+            try {
+                const docSnap = await getDoc(statsRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    setStats(prev => ({ ...prev, issuesResolved: data.optimizations || 0 }));
+                } else {
+                    setDoc(statsRef, { optimizations: 0 });
+                }
+            } catch (e) {
+                console.warn("Stats fetch failed", e);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
-        }, (error) => {
-            // Quietly fail to default
-            setLoading(false);
-        });
+        };
 
-        return () => unsubscribe();
+        fetchStats();
     }, []);
 
     const formatNumber = (num) => {

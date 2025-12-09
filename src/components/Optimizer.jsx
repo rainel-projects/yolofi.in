@@ -30,19 +30,14 @@ const Optimizer = ({ onComplete }) => {
                 try {
                     const result = await optimizationPromise;
 
-                    // Calculate Total Issues Resolved in this run
-                    // (Junk files + Service Workers + 1 for Network Boost)
-                    const issuesCount = (result?.actions?.storage?.filesRemoved || 0) +
-                        (result?.actions?.workers?.removed || 0) +
-                        1; // Network boost always counts as 1 optimization
-
-                    // Increment Global Stats (Non-blocking / Fire-and-forget)
+                    // Increment Global Stats (Single count for the 'Compilation' event)
+                    // Fire-and-forget (non-blocking)
                     const statsRef = doc(db, "marketing", "stats");
                     updateDoc(statsRef, {
-                        optimizations: increment(issuesCount)
+                        optimizations: increment(1)
                     }).catch((err) => {
-                        // If doc doesn't exist, try creating it (also background)
-                        setDoc(statsRef, { optimizations: issuesCount }, { merge: true }).catch(e => console.warn("Stats background update failed", e));
+                        // Background fallback: Start at 1 if missing
+                        setDoc(statsRef, { optimizations: 1 }, { merge: true }).catch(e => console.warn("Stats background update failed", e));
                     });
 
                     if (isMounted) {
@@ -54,7 +49,6 @@ const Optimizer = ({ onComplete }) => {
                 }
                 return;
             }
-            // ... rest of function
 
             const task = tasks[index];
             if (isMounted) setCurrentTask(task.label);
