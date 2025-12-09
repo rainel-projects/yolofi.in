@@ -286,6 +286,67 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                 </div>
             )}
 
+            {/* --- MONETIZATION 1: RECOMMENDED UPGRADES (Affiliate Placeholders) --- */}
+            <div style={{ marginTop: "3rem", textAlign: "left" }}>
+                <h3 style={{ fontSize: "1.1rem", color: "#111827", marginBottom: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <BoltIcon size={20} color="#f59e0b" />
+                    Recommended Upgrades
+                </h3>
+                <div className="stats-comparison" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", marginBottom: "1.5rem" }}>
+                    {/* PRODUCT 1 */}
+                    <a href="https://www.amazon.in/s?k=external+ssd" target="_blank" rel="noopener noreferrer" className="stat-card" style={{ textDecoration: "none", cursor: "pointer", border: "1px solid #e5e7eb", transition: "all 0.2s" }}>
+                        <div style={{ fontSize: "0.85rem", color: "#6b7280", fontWeight: "600", textTransform: "uppercase", marginBottom: "0.5rem" }}>
+                            SPEED BOOST
+                        </div>
+                        <div style={{ color: "#111827", fontWeight: "600", marginBottom: "4px" }}>External SSD</div>
+                        <div style={{ fontSize: "0.85rem", color: "#4f46e5" }}>View on Amazon →</div>
+                    </a>
+
+                    {/* PRODUCT 2 */}
+                    <a href="https://www.amazon.in/s?k=laptop+cooling+pad" target="_blank" rel="noopener noreferrer" className="stat-card" style={{ textDecoration: "none", cursor: "pointer", border: "1px solid #e5e7eb", transition: "all 0.2s" }}>
+                        <div style={{ fontSize: "0.85rem", color: "#6b7280", fontWeight: "600", textTransform: "uppercase", marginBottom: "0.5rem" }}>
+                            THERMAL MGMT
+                        </div>
+                        <div style={{ color: "#111827", fontWeight: "600", marginBottom: "4px" }}>Cooling Pad</div>
+                        <div style={{ fontSize: "0.85rem", color: "#4f46e5" }}>View on Amazon →</div>
+                    </a>
+
+                    {/* PRODUCT 3 */}
+                    <a href="https://www.amazon.in/s?k=screen+cleaner+kit" target="_blank" rel="noopener noreferrer" className="stat-card" style={{ textDecoration: "none", cursor: "pointer", border: "1px solid #e5e7eb", transition: "all 0.2s" }}>
+                        <div style={{ fontSize: "0.85rem", color: "#6b7280", fontWeight: "600", textTransform: "uppercase", marginBottom: "0.5rem" }}>
+                            HYGIENE
+                        </div>
+                        <div style={{ color: "#111827", fontWeight: "600", marginBottom: "4px" }}>Screen Cleaner</div>
+                        <div style={{ fontSize: "0.85rem", color: "#4f46e5" }}>View on Amazon →</div>
+                    </a>
+                </div>
+            </div>
+
+            {/* --- MONETIZATION 2: VOLUNTARY SUPPORT (Donation) --- */}
+            <div style={{
+                marginBottom: "2rem", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: "12px",
+                padding: "1.5rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem"
+            }}>
+                <div style={{ textAlign: "center" }}>
+                    <h4 style={{ margin: "0 0 4px 0", color: "#92400e" }}>Keep Yolofi Free & Ad-Light</h4>
+                    <p style={{ margin: 0, fontSize: "0.9rem", color: "#b45309" }}>
+                        We troubleshoot millions of devices for free. If we helped you, consider buying us a coffee.
+                    </p>
+                </div>
+                <a
+                    href="https://www.buymeacoffee.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                        background: "#ffdd00", color: "#000", padding: "10px 24px", borderRadius: "24px",
+                        textDecoration: "none", fontWeight: "700", fontSize: "0.9rem",
+                        boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", display: "inline-flex", alignItems: "center", gap: "8px"
+                    }}
+                >
+                    <span>☕</span> Buy us a Coffee
+                </a>
+            </div>
+
             <div className="weekly-suggestion" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
                 <div className="suggestion-icon">
                     <CheckCircleIcon size={24} color="#10b981" />
