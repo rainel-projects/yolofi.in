@@ -21,61 +21,65 @@ const LinkSystem = () => {
     const startHosting = async () => {
         setMode("HOST_WAITING");
 
-        try {
-            // COLLISION CHECK LOOP (Scale to Trillions)
-            // Ensure ID is truly unique before creating it
-            let newId = "";
-            let isUnique = false;
-            let retries = 0;
+        // OPTIMISTIC UPDATE: Generate and show ID immediately so user isn't stuck waiting
+        let newId = generateRoomId();
+        setMySessionId(newId);
 
-            while (!isUnique && retries < 5) {
-                newId = generateRoomId();
-                const checkRef = doc(db, "sessions", newId);
-                const checkSnap = await getDoc(checkRef);
-                if (!checkSnap.exists()) {
-                    isUnique = true;
-                } else {
-                    retries++;
+        try {
+            // COLLISION CHECK (Best Effort)
+            // If network is offline, we SKIP the check to allow the UI to function
+            try {
+                let isUnique = false;
+                let retries = 0;
+                while (!isUnique && retries < 3) {
+                    const checkRef = doc(db, "sessions", newId);
+                    const checkSnap = await getDoc(checkRef);
+                    if (!checkSnap.exists()) {
+                        isUnique = true;
+                    } else {
+                        // Collision! Generate new one
+                        newId = generateRoomId();
+                        setMySessionId(newId); // Update UI
+                        retries++;
+                    }
                 }
+            } catch (networkError) {
+                console.warn("Offline/Network Error during check. Proceeding optimistically.", networkError);
+                // Proceed to 'setDoc' anyway - Firebase handles offline writes
             }
 
-            if (!isUnique) throw new Error("Server busy (ID Collision). Please try again.");
-
-            setMySessionId(newId);
-
-            // 1. Create Private Session Doc (for handshake)
+            // 1. Create Private Sesion Doc
             const sessionRef = doc(db, "sessions", newId);
             await setDoc(sessionRef, {
                 created: Date.now(),
-                status: "WAITING", // Changes to ACTIVE when Guest joins
+                status: "WAITING",
                 hostJoined: true
             });
 
-            // 2. Publish to 'public_hosts' for Discovery (TTL Heartbeat)
-            // separate collection so 'sessions' doesn't get flooded with reads
+            // 2. Publish to 'public_hosts'
             await setDoc(doc(db, "public_hosts", newId), {
                 id: newId,
                 lastActive: Date.now(),
                 status: "ONLINE"
             });
 
-            // 3. Listen for Guest Join directly on the Session
+            // 3. Listen for Guest Join
             const unsub = onSnapshot(sessionRef, (snap) => {
                 const data = snap.data();
                 if (data && data.guestJoined) {
-                    // Guest has arrived!
                     sessionStorage.setItem("yolofi_session_id", newId);
                     sessionStorage.setItem("yolofi_session_role", "HOST");
-                    // Cleanup public listing so no one else tries to join
                     deleteDoc(doc(db, "public_hosts", newId)).catch(console.error);
                     navigate('/diagnose');
                 }
+            }, (error) => {
+                console.error("Snapshot Error:", error);
             });
 
-            // 4. Heatbeat Loop (Keep 'public_hosts' entry alive)
+            // 4. Heatbeat Loop
             const interval = setInterval(() => {
                 updateDoc(doc(db, "public_hosts", newId), { lastActive: Date.now() })
-                    .catch(() => { }); // ignore errors (e.g. if doc deleted)
+                    .catch(() => { });
             }, 4000);
 
             return () => {
@@ -85,14 +89,16 @@ const LinkSystem = () => {
 
         } catch (e) {
             console.error("Host Error:", e);
-            alert("Error Creating Session: " + e.message);
-            setMode("MENU");
-            setStatus("ERROR");
+            // Even on error, we stay in "WAITING" mode if state was set
+            // Only alert if we critically failed before generating ID
+            if (!newId) {
+                alert("Error: " + e.message);
+                setMode("MENU");
+            }
         }
     };
 
     // --- GUEST LOGIC ---
-    // Fetch top 20 recent hosts
     useEffect(() => {
         if (mode === "GUEST_FIND") {
             const q = query(
@@ -101,24 +107,27 @@ const LinkSystem = () => {
                 limit(20)
             );
 
+            // Using try/catch specifically for the listener setup isn't standard,
+            // but we can handle the error callback
             const unsub = onSnapshot(q, (snapshot) => {
                 const valid = [];
                 const now = Date.now();
                 snapshot.forEach(d => {
                     const data = d.data();
-                    // Client-side stale check (10s)
                     if (now - data.lastActive < 10000) {
                         valid.push(data);
                     }
                 });
                 setRecentHosts(valid);
+            }, (error) => {
+                console.log("Guest list unavailable (Offline?):", error);
+                // Cannot fetch list, but manual search might still work if cache exists
             });
             return () => unsub();
         }
     }, [mode]);
 
     const joinSession = async (targetIdInput) => {
-        // Sanitize Input (Remove spaces, dashes)
         const targetId = targetIdInput.replace(/\D/g, "");
 
         if (!targetId || targetId.length !== 9) {
@@ -133,8 +142,6 @@ const LinkSystem = () => {
             const sessionSnap = await getDoc(sessionRef);
 
             if (sessionSnap.exists()) {
-                // Determine if this is a valid room
-                // Join the room
                 await updateDoc(sessionRef, {
                     guestJoined: true,
                     status: "ACTIVE"
@@ -144,7 +151,7 @@ const LinkSystem = () => {
                 sessionStorage.setItem("yolofi_session_role", "GUEST");
                 navigate(`/remote/${targetId}`);
             } else {
-                alert("Session ID not found or expired. Check the code and try again.");
+                alert("Session ID not found. The host may be offline or the code is incorrect.");
                 setStatus("IDLE");
             }
         } catch (e) {
@@ -157,7 +164,6 @@ const LinkSystem = () => {
     // Helper to format ID nicely (123 456 789)
     const formatIdDisplay = (id) => {
         if (!id) return [];
-        // Insert spaces every 3 chars for readability
         return id.match(/.{1,3}/g) || [];
     };
 
@@ -224,10 +230,9 @@ const LinkSystem = () => {
                             <input
                                 type="text"
                                 placeholder="ID: 123 456 789"
-                                maxLength={11} // Allow spaces
+                                maxLength={11}
                                 value={searchId}
                                 onChange={(e) => {
-                                    // Auto-format with spaces
                                     const val = e.target.value.replace(/\D/g, '');
                                     let formatted = val;
                                     if (val.length > 3) formatted = val.slice(0, 3) + " " + val.slice(3);
