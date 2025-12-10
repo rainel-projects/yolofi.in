@@ -8,6 +8,19 @@ export default function LiveActivity() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [loading, setLoading] = useState(true);
 
+    const getTimeAgo = (timestamp) => {
+        if (!timestamp) return 'Just now';
+
+        const now = new Date();
+        const then = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        const seconds = Math.floor((now - then) / 1000);
+
+        if (seconds < 60) return 'Just now';
+        if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
+        if (seconds < 86400) return `${Math.floor(seconds / 3600)} hr ago`;
+        return `${Math.floor(seconds / 86400)} days ago`;
+    };
+
     useEffect(() => {
         // Real-time listener for testimonials
         const q = query(
@@ -43,18 +56,7 @@ export default function LiveActivity() {
         return () => clearInterval(interval);
     }, [activities.length]);
 
-    const getTimeAgo = (timestamp) => {
-        if (!timestamp) return 'Just now';
 
-        const now = new Date();
-        const then = timestamp.toDate();
-        const seconds = Math.floor((now - then) / 1000);
-
-        if (seconds < 60) return 'Just now';
-        if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
-        if (seconds < 86400) return `${Math.floor(seconds / 3600)} hr ago`;
-        return `${Math.floor(seconds / 86400)} days ago`;
-    };
 
     if (loading) {
         return (

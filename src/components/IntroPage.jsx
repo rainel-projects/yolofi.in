@@ -1,26 +1,25 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
 // Real-time stats sync enabled
-import { doc, getDoc, setDoc, updateDoc, increment, onSnapshot } from 'firebase/firestore';
+// Real-time stats sync enabled
+import { doc, setDoc, updateDoc, increment, onSnapshot } from 'firebase/firestore';
 import "./GetStarted.css";
+import { CpuIcon, NetworkIcon, ShieldIcon, BoltIcon } from './Icons';
 
 export default function IntroPage({ onContinue }) {
-    const [stats, setStats] = useState({
-        issuesResolved: 0,
-        successRate: 99,
-        avgFixTime: '< 45s'
+    const [stats, setStats] = useState(() => {
+        const cached = localStorage.getItem("yolofi_total_fixed");
+        return {
+            issuesResolved: cached ? parseInt(cached) : 0,
+            successRate: 99,
+            avgFixTime: '< 45s'
+        };
     });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         let isMounted = true;
         let unsubscribe = () => { };
-
-        // 1. Initial Local Load (Instant feedback while connecting)
-        const cached = localStorage.getItem("yolofi_total_fixed");
-        if (cached) {
-            setStats(prev => ({ ...prev, issuesResolved: parseInt(cached) }));
-        }
 
         // 2. Real-time Listener (The "Truth")
         const statsRef = doc(db, "marketing", "stats");
@@ -48,7 +47,7 @@ export default function IntroPage({ onContinue }) {
                         setLoading(false);
                     }
                 },
-                (error) => {
+                () => {
                     if (isMounted) setLoading(false);
                 }
             );
@@ -158,6 +157,60 @@ export default function IntroPage({ onContinue }) {
                 </div>
             </div>
 
-        </div >
+            {/* VISUAL SIDE - ANIMATED DASHBOARD */}
+            <div className="intro-visual">
+                <div className="glass-dashboard">
+                    <div className="dashboard-header">
+                        <div className="traffic-lights">
+                            <div className="light red"></div>
+                            <div className="light yellow"></div>
+                            <div className="light green"></div>
+                        </div>
+                        <div className="header-title">System Status: Active</div>
+                    </div>
+
+                    <div className="dashboard-body">
+                        {/* Central Scanner */}
+                        <div className="scanner-container">
+                            <div className="radar-circle"></div>
+                            <div className="radar-sweep"></div>
+                            <div className="shield-center">
+                                <ShieldIcon size={32} color="#4f46e5" />
+                            </div>
+                        </div>
+
+                        {/* Floating Metrics */}
+                        <div className="metric-floating item-1">
+                            <div className="metric-icon"><CpuIcon size={18} color="#10b981" /></div>
+                            <div className="metric-info">
+                                <div className="metric-label">CPU Load</div>
+                                <div className="metric-bar"><div className="fill cpu-fill"></div></div>
+                            </div>
+                        </div>
+
+                        <div className="metric-floating item-2">
+                            <div className="metric-icon"><NetworkIcon size={18} color="#3b82f6" /></div>
+                            <div className="metric-info">
+                                <div className="metric-label">Network Latency</div>
+                                <div className="metric-bar"><div className="fill net-fill"></div></div>
+                            </div>
+                        </div>
+
+                        <div className="metric-floating item-3">
+                            <div className="metric-icon"><BoltIcon size={18} color="#f59e0b" /></div>
+                            <div className="metric-info">
+                                <div className="metric-label">Optimization</div>
+                                <div className="metric-bar"><div className="fill opt-fill"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Background Decor */}
+                <div className="glow-orb orb-1"></div>
+                <div className="glow-orb orb-2"></div>
+            </div>
+
+        </div>
     );
 }
