@@ -1,4 +1,5 @@
-import { useState } from "react";
+import React from "react";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Splash from "./components/Splash";
 import IntroPage from "./components/IntroPage";
 import Navigation from "./components/Navigation";
@@ -6,56 +7,54 @@ import Hero from "./components/Hero";
 import HowItWorks from "./components/HowItWorks";
 import Diagnose from "./components/Diagnose";
 import LiveActivity from "./components/LiveActivity";
+import LinkSystem from "./components/LinkSystem";
+import RemoteView from "./components/RemoteView";
 import "./App.css";
 
-// Navigation flow: Splash → GetStarted → Home
-export default function App() {
-  const [currentPage, setCurrentPage] = useState("splash");
+// Wrapper for Splash to handle navigation context
+const SplashWrapper = () => {
+  const navigate = useNavigate();
+  return <Splash onFinish={() => navigate('/start')} />;
+};
 
-  // Auto-advance from splash after it finishes
-  const handleSplashFinish = () => {
-    setCurrentPage("getstarted");
-  };
-
-  // Navigate from GetStarted directly to Diagnose
-  const handleGetStartedContinue = () => {
-    setCurrentPage("diagnose");
-  };
-
-  return (
-    <>
-      {/* Splash Screen */}
-      {currentPage === "splash" && <Splash onFinish={handleSplashFinish} />}
-
-      {/* Intro/Get Started Page */}
-      {currentPage === "getstarted" && (
-        <IntroPage onContinue={handleGetStartedContinue} />
-      )}
-
-      {/* Diagnose Page - Clean, focused diagnostic interface */}
-      {currentPage === "diagnose" && (
-        <div className="diagnose-page">
-          <Diagnose />
-        </div>
-      )}
-
-      {/* Home Page with all sections - Not used in main flow anymore */}
-      {currentPage === "home" && (
-        <HomePage />
-      )}
-    </>
-  );
+// Wrapper for Intro to handle navigation
+const IntroWrapper = () => {
+  const navigate = useNavigate();
+  return <IntroPage onContinue={() => navigate('/diagnose')} />;
 }
 
-// Home Page Component with Navigation and all sections
-function HomePage() {
+// Legacy Home Page
+const HomePage = () => (
+  <div className="home-page">
+    <Navigation />
+    <Hero />
+    <HowItWorks />
+    <LiveActivity />
+    <Diagnose />
+  </div>
+);
+
+export default function App() {
   return (
-    <div className="home-page">
-      <Navigation />
-      <Hero />
-      <HowItWorks />
-      <LiveActivity />
-      <Diagnose />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        {/* Flow: Splash -> Start(Intro) -> Diagnose */}
+        <Route path="/" element={<SplashWrapper />} />
+        <Route path="/start" element={<IntroWrapper />} />
+
+        <Route path="/diagnose" element={
+          <div className="diagnose-page">
+            <Diagnose />
+          </div>
+        } />
+
+        {/* New "Yolofi Link" Features */}
+        <Route path="/link" element={<LinkSystem />} />
+        <Route path="/remote/:sessionId" element={<RemoteView />} />
+
+        {/* Legacy/Dev Routes */}
+        <Route path="/home" element={<HomePage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
