@@ -137,6 +137,36 @@ const LinkSystem = () => {
 
         setStatus("CONNECTING");
 
+        // BROADCAST CHECK (Offline Strategy)
+        // If the ID is already in our local list, we trust it and skip the network check
+        const isCached = recentHosts.some(h => h.id === targetId);
+
+        if (isCached) {
+            console.log("Found in broadcast cache. Joining optimistically...");
+            try {
+                // Determine if this is a valid room
+                const sessionRef = doc(db, "sessions", targetId);
+                // We attempt updateDoc - if offline, it queues.
+                // If we are truly offline, we can't 'verify' the session doc exists via getDoc first.
+                // But since we saw it in 'public_hosts', it likely exists.
+                await updateDoc(sessionRef, {
+                    guestJoined: true,
+                    status: "ACTIVE"
+                });
+
+                // If update throws (e.g. permission/offline), we catch below. 
+                // However, offline persistence writes don't throw immediately, they resolve.
+
+                sessionStorage.setItem("yolofi_session_id", targetId);
+                sessionStorage.setItem("yolofi_session_role", "GUEST");
+                navigate(`/remote/${targetId}`);
+                return;
+            } catch (e) {
+                console.warn("Optimistic join failed, falling back...", e);
+            }
+        }
+
+        // FALLBACK: Standard Check (Requires Network or Cache Hit on Session Doc)
         try {
             const sessionRef = doc(db, "sessions", targetId);
             const sessionSnap = await getDoc(sessionRef);
@@ -156,7 +186,15 @@ const LinkSystem = () => {
             }
         } catch (e) {
             console.error("Join Error:", e);
-            alert("Connection Failed: " + e.message);
+
+            // Helpful error for user
+            let msg = "Connection Failed";
+            if (e.code === 'unavailable' || e.message.includes('offline')) {
+                msg = "Network Error: You are offline and this ID is not in your local cache.";
+            } else {
+                msg += ": " + e.message;
+            }
+            alert(msg);
             setStatus("IDLE");
         }
     };
