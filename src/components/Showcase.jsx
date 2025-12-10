@@ -56,17 +56,6 @@ const Showcase = () => {
                     >
                         <BoltIcon size={20} color="white" /> Launch Application
                     </button>
-
-                    <a
-                        href="https://github.com/rohan-yolofi" target="_blank" rel="noreferrer"
-                        style={{
-                            padding: '1rem 2rem', fontSize: '1.1rem', background: 'white', color: '#374151',
-                            border: '1px solid #e5e7eb', borderRadius: '12px', fontWeight: '600',
-                            textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px'
-                        }}
-                    >
-                        View Source
-                    </a>
                 </div>
 
                 {/* Mobile Note */}
