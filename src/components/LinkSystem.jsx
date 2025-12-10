@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { db } from "../firebase/config";
+import { db, auth } from "../firebase/config";
+import { signInAnonymously } from "firebase/auth";
 import { doc, setDoc, getDoc, updateDoc, collection, onSnapshot, query, where, orderBy, limit, deleteDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { BoltIcon, ShieldIcon, ScanIcon, SearchIcon, CheckCircleIcon } from "./Icons";
@@ -16,6 +17,18 @@ const LinkSystem = () => {
     const [recentHosts, setRecentHosts] = useState([]);
     const [searchId, setSearchId] = useState("");
     const [status, setStatus] = useState("IDLE");
+
+    // AUTH: Ensure user is signed in (Anonymous) to allow Firestore access
+    // This is critical for reading/writing if security rules block unauth users
+    useEffect(() => {
+        if (auth) {
+            signInAnonymously(auth).then(() => {
+                console.log("Signed in anonymously");
+            }).catch((error) => {
+                console.error("Auth Failed:", error);
+            });
+        }
+    }, []);
 
     // --- HOST LOGIC ---
     const startHosting = async () => {
@@ -46,12 +59,13 @@ const LinkSystem = () => {
                 console.warn("Offline/Network Error during check. Proceeding optimistically.", networkError);
             }
 
-            // 1. Create Private Session Doc
+            // 1. Create Private Sesion Doc
             const sessionRef = doc(db, "sessions", newId);
             await setDoc(sessionRef, {
                 created: Date.now(),
                 status: "WAITING",
-                hostJoined: true
+                hostJoined: true,
+                hostUid: auth.currentUser ? auth.currentUser.uid : "anon"
             });
 
             // 2. Publish to 'public_hosts'
@@ -105,16 +119,14 @@ const LinkSystem = () => {
 
             const unsub = onSnapshot(q, (snapshot) => {
                 const valid = [];
-                const now = Date.now();
+                // REMOVED STRICT CLIENT-SIDE FILTERING (10s) 
+                // Rely on the server query order. This fixes Time Sync issues.
                 snapshot.forEach(d => {
-                    const data = d.data();
-                    if (now - data.lastActive < 10000) {
-                        valid.push(data);
-                    }
+                    valid.push(d.data());
                 });
                 setRecentHosts(valid);
             }, (error) => {
-                console.log("Guest list unavailable (Offline?):", error);
+                console.log("Guest list error:", error);
             });
             return () => unsub();
         }
@@ -130,7 +142,7 @@ const LinkSystem = () => {
 
         setStatus("CONNECTING");
 
-        // 1. BROADCAST CACHE CHECK (Offline Strategy)
+        // 1. BROADCAST CACHE CHECK
         const isCached = recentHosts.some(h => h.id === targetId);
 
         if (isCached) {
@@ -150,8 +162,8 @@ const LinkSystem = () => {
             }
         }
 
-        // 2. GLOBAL REALTIME SEARCH (Online Strategy)
-        // Uses onSnapshot to wait for ID to propagate globally (Australia -> India latency)
+        // 2. GLOBAL REALTIME SEARCH
+        // Uses onSnapshot to wait for ID to propagate
         let found = false;
         const sessionRef = doc(db, "sessions", targetId);
 
@@ -172,7 +184,7 @@ const LinkSystem = () => {
                     navigate(`/remote/${targetId}`);
                 } catch (writeErr) {
                     console.error("Write failed:", writeErr);
-                    // Handle offline write queuing optimistically
+                    // Optimistic nav
                     sessionStorage.setItem("yolofi_session_id", targetId);
                     sessionStorage.setItem("yolofi_session_role", "GUEST");
                     navigate(`/remote/${targetId}`);
