@@ -135,6 +135,18 @@ export default function IntroPage({ onContinue }) {
                     </svg>
                 </button>
 
+                <div style={{ marginTop: "1rem" }}>
+                    <button
+                        onClick={() => window.location.href = '/link'}
+                        style={{
+                            background: "none", border: "none", color: "#6b7280",
+                            fontSize: "0.9rem", textDecoration: "underline", cursor: "pointer"
+                        }}
+                    >
+                        Use on Remote PC (Yolofi Link)
+                    </button>
+                </div>
+
                 <div className="trust-indicators">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <path d="M8 14L3 11V6L8 3L13 6V11L8 14Z" stroke="#10b981" strokeWidth="1.5" fill="none" />
