@@ -5,7 +5,12 @@ import { BoltIcon, ShieldIcon, ScanIcon } from "./Icons";
 import "./LinkSystem.css";
 
 // 12-Digit ID
-const generateId = () => Math.floor(100000000000 + Math.random() * 900000000000).toString();
+// Secure High-Entropy ID
+const generateId = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const segment = () => Array(4).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join("");
+    return `${segment()}-${segment()}-${segment()}-${segment()}`;
+};
 
 const LinkSystem = () => {
     const navigate = useNavigate();
@@ -48,49 +53,20 @@ const LinkSystem = () => {
             // O(1) Write - INSTANT
             peerRelay.registerHost(newId);
 
-            // Listen for registration confirmation
-            peerRelay.on('REGISTERED', (msg) => {
-                if (msg.id === newId) {
-                    setStatus("ONLINE_WAITING");
-                    console.log('✅ Host registered successfully');
-                }
-            });
-
-            // Listen for available guests (Searching)
-            peerRelay.on('GUEST_AVAILABLE', (msg) => {
-                setAvailableGuests(prev => {
-                    if (!prev.find(g => g.id === msg.guestId)) {
-                        return [...prev, { id: msg.guestId, timestamp: Date.now() }];
-                    }
-                    return prev;
-                });
-            });
-
-            // Listen for Connected Guests (Fanout)
-            peerRelay.on('GUESTS_UPDATE', (msg) => {
-                console.log('👥 Connected Guests Updated:', msg.guests);
-                // We could store this in a global state or pass it via navigation
-                // For now, we rely on MATCHED to trigger the flow
-            });
-
-            // Listen for match
-            peerRelay.on('MATCHED', (msg) => {
+            // Listen for registration confirmation (Implicitly ready when socket opens, but we can assume done)
+            // Wait for GUEST to join to go LIVE
+            peerRelay.on('CONNECTED', (guestId) => {
+                console.log(`✅ P2P Established with ${guestId}`);
                 setStatus("MATCHED");
+                // Save for consistency
                 sessionStorage.setItem("yolofi_session_id", newId);
                 sessionStorage.setItem("yolofi_session_role", "HOST");
-
-                // For Fanout, we might want to stay here or go to Diagnose.
-                // Current flow: Go to Diagnose on first match.
-                // Subsequent matches will happen in background while in Diagnose.
-                setTimeout(() => navigate('/host-live'), 500);
+                setTimeout(() => navigate('/host-live'), 800);
             });
 
-            // Heartbeat
-            const hb = setInterval(() => {
-                peerRelay.heartbeat(newId);
-            }, 5000);
+            setStatus("ONLINE_WAITING");
 
-            return () => clearInterval(hb);
+            return () => { };
 
         } catch (e) {
             console.error(e);
@@ -99,75 +75,38 @@ const LinkSystem = () => {
         }
     };
 
-    // --- GUEST: O(1) SCAN & CLAIM ---
+    // --- GUEST: O(1) LOOKUP & P2P ---
     const startGuestSearch = async () => {
+        const key = prompt("Enter Host Key (e.g. A7K9...):");
+        if (!key) return;
+
         setMode("GUEST_AUTO");
-        setStatus("REGISTERING");
+        setStatus("CONNECTING");
         setErrorMsg(null);
 
-        const guestId = generateId();
-        setMySessionId(guestId);
+        // We don't generate ID here, server assigns socket ID. we handle connection.
 
         try {
-            // O(1) Write - INSTANT
-            peerRelay.registerGuest(guestId);
+            // Register as GUEST
+            peerRelay.joinHost(key);
 
-            setStatus("SCANNING");
-
-            // Listen for available hosts
-            peerRelay.on('HOSTS_LIST', (msg) => {
-                console.log('📋 Available hosts:', msg.hosts);
-                setAvailableHosts(msg.hosts);
-
-                if (msg.hosts.length > 0) {
-                    // Auto-claim random available host (Distributes load)
-                    const randomHost = msg.hosts[Math.floor(Math.random() * msg.hosts.length)];
-                    attemptClaim(randomHost, guestId);
-                } else {
-                    setStatus("WAITING_FOR_HOSTS");
-                }
-            });
-
-            // Listen for new hosts
-            peerRelay.on('HOST_AVAILABLE', (msg) => {
-                setAvailableHosts(prev => [...prev, msg.hostId]);
-                // Auto-claim if we're waiting
-                if (status === "WAITING_FOR_HOSTS") {
-                    attemptClaim(msg.hostId, guestId);
-                }
-            });
-
-            // Listen for match
-            peerRelay.on('MATCHED', (msg) => {
+            peerRelay.on('READY', () => {
                 setStatus("MATCHED");
-                sessionStorage.setItem("yolofi_session_id", msg.hostId);
+                sessionStorage.setItem("yolofi_session_id", key);
                 sessionStorage.setItem("yolofi_session_role", "GUEST");
-                setTimeout(() => navigate(`/remote/${msg.hostId}`), 500);
+                setTimeout(() => navigate(`/remote/${key}`), 500);
             });
 
-            // Listen for claim failure
-            peerRelay.on('CLAIM_FAILED', (msg) => {
-                console.warn('Claim failed:', msg.reason);
-                setStatus("SCANNING");
+            peerRelay.on('ERROR', (err) => {
+                setErrorMsg(err);
+                setStatus("ERROR");
             });
-
-            // Heartbeat
-            const hb = setInterval(() => {
-                peerRelay.heartbeat(guestId);
-            }, 5000);
-
-            return () => clearInterval(hb);
 
         } catch (e) {
             console.error(e);
-            setErrorMsg("Scan Error: " + e.message);
+            setErrorMsg("Connection Error: " + e.message);
             setStatus("ERROR");
         }
-    };
-
-    const attemptClaim = (targetId, guestId) => {
-        setStatus("CLAIMING");
-        peerRelay.claimHost(targetId, guestId);
     };
 
     // Helper

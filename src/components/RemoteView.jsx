@@ -22,28 +22,32 @@ const RemoteView = () => {
 
         const setupConnection = async () => {
             try {
-                await peerRelay.connect(); // Ensure connection
+                await peerRelay.connect();
 
-                const guestId = guestIdRef.current;
-                console.log(`🔑 Initializing Guest: ${guestId} -> Host: ${sessionId}`);
+                console.log(`🔑 Joining Host: ${sessionId}`);
 
-                // 2. Register (Essential for routing)
-                peerRelay.registerGuest(guestId);
+                // P2P JOIN
+                peerRelay.joinHost(sessionId);
 
-                // 3. Listen for Handshake Confirmations
-                peerRelay.on('MATCHED', (msg) => {
-                    if (msg.hostId === sessionId) {
-                        console.log("🤝 Connected to Host Swarm!");
-                        setStatus("MATCHED");
-
-                        // 4. NOW Request Initial State (Sync Handshake)
-                        peerRelay.multiplex('sync', { type: 'request-sync' }, sessionId);
-                    }
+                // Wait for DataChannel READY
+                peerRelay.on('READY', () => {
+                    console.log("⚡ P2P Link Active!");
+                    setStatus("MATCHED");
+                    // Request Initial State
+                    peerRelay.multiplex('sync', { type: 'request-sync' });
                 });
 
-                peerRelay.on('CLAIM_FAILED', (msg) => {
-                    console.error("Join failed:", msg.reason);
+                peerRelay.on('ERROR', (msg) => {
+                    console.error("Link Error:", msg);
                     setStatus("DISCONNECTED");
+                });
+
+                peerRelay.onStream('sync', (msg, fromId) => {
+                    // ... Sync logic ...
+                    if (msg && msg.type === 'state-update') {
+                        setData(msg.data);
+                        setStatus("LIVE");
+                    }
                 });
 
                 peerRelay.on('CONNECTION_LOST', () => setStatus("DISCONNECTED"));

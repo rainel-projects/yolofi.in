@@ -3,294 +3,128 @@ const WebSocket = require('ws');
 const PORT = process.env.PORT || 8080;
 const wss = new WebSocket.Server({ port: PORT });
 
-// O(1) Data Structures
-// hostId -> { id, ws, timestamp, guests: Set<guestId> }
+// O(1) Lookup: hostKey -> hostSocket
 const hosts = new Map();
-// guestId -> { id, ws, timestamp, connectedHostId: string|null }
-const guests = new Map();
 
-console.log(`🚀 WebSocket Relay Server running on port ${PORT}`);
-console.log(`⚡ Features: Edge-First Multiplexing, Fanout, Resilient Shards`);
+console.log(`🚀 SIGNALING Server running on port ${PORT}`);
+console.log(`📡 Mode: WebRTC Signaling (SDP/ICE Routes Only)`);
 
 wss.on('connection', (ws) => {
-    console.log('New connection established');
+    ws.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
+    ws.isAlive = true;
+
+    ws.on('pong', () => { ws.isAlive = true; });
 
     ws.on('message', (data) => {
         try {
             const msg = JSON.parse(data);
 
             switch (msg.type) {
-                case 'HOST_REGISTER':
-                    // O(1) Write
-                    hosts.set(msg.id, {
-                        id: msg.id,
-                        ws: ws,
-                        timestamp: Date.now(),
-                        guests: new Set()
-                    });
-
-                    // Attach metadata for O(1) cleanup
-                    ws.isAlive = true;
-                    ws.sessionId = msg.id;
+                // 1. Host Registers (O(1) Write)
+                case 'REGISTER':
+                    // msg: { type: 'REGISTER', key: 'A7K9...' }
+                    hosts.set(msg.key, ws);
                     ws.role = 'HOST';
-
-                    console.log(`✅ Host registered: ${msg.id}`);
-
-                    // Send confirmation
-                    ws.send(JSON.stringify({
-                        type: 'REGISTERED',
-                        role: 'HOST',
-                        id: msg.id
-                    }));
-
-                    // Broadcast to ALL guests (Fanout Availability)
-                    broadcastToGuests({
-                        type: 'HOST_AVAILABLE',
-                        hostId: msg.id
-                    });
+                    ws.key = msg.key;
+                    console.log(`✅ Host Active: ${msg.key}`);
                     break;
 
-                case 'GUEST_REGISTER':
-                    guests.set(msg.id, {
-                        id: msg.id,
-                        ws: ws,
-                        timestamp: Date.now(),
-                        connectedHostId: null
-                    });
+                // 2. Guest Joins (O(1) Lookup)
+                case 'JOIN':
+                    // msg: { type: 'JOIN', key: 'A7K9...' }
+                    const hostWs = hosts.get(msg.key);
+                    if (hostWs && hostWs.readyState === WebSocket.OPEN) {
+                        console.log(`🔗 Match Found: Guest -> ${msg.key}`);
 
-                    ws.isAlive = true;
-                    ws.sessionId = msg.id;
-                    ws.role = 'GUEST';
-
-                    console.log(`🔍 Guest registered: ${msg.id}`);
-
-                    // Send available hosts immediately
-                    const availableHosts = Array.from(hosts.keys());
-                    if (ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'HOSTS_LIST',
-                            hosts: availableHosts
+                        // Tell Host a guest is here, Host will initiate Offer
+                        hostWs.send(JSON.stringify({
+                            type: 'GUEST_JOINED',
+                            guestId: ws.id
                         }));
+
+                        // Store ephemeral link for signaling routing if needed
+                        // Or just rely on ID routing in SIGNAL messages
+                        ws.role = 'GUEST';
+                        ws.connectedHostKey = msg.key;
+                    } else {
+                        ws.send(JSON.stringify({ type: 'ERROR', message: 'Host not found' }));
                     }
-
-                    // Notify hosts of new guest
-                    broadcastToHosts({
-                        type: 'GUEST_AVAILABLE',
-                        guestId: msg.id
-                    });
                     break;
 
-                case 'CLAIM_HOST':
-                    handleClaimHost(ws, msg);
-                    break;
+                // 3. Signaling (SDP / ICE) - The Relay
+                case 'SIGNAL':
+                    // msg: { type: 'SIGNAL', targetId: '...', payload: { sdp/ice } }
+                    // Route directly to target
+                    // Note: In this simple model, Host needs Guest's socket ID and vice versa.
+                    // We can find socket by ID if we keep a map, or efficient routing.
 
-                case 'MULTIPLEX':
-                    handleMultiplex(ws, msg);
-                    break;
+                    // For massive scale, we might look up by ID. 
+                    // To keep it simple O(1) & fast for now:
 
-                case 'HEARTBEAT':
-                    ws.isAlive = true;
-                    if (hosts.has(msg.id)) hosts.get(msg.id).timestamp = Date.now();
-                    if (guests.has(msg.id)) guests.get(msg.id).timestamp = Date.now();
-                    break;
+                    // If Host sending -> send to specific Guest (using ID)
+                    // If Guest sending -> send to their Connected Host
 
-                default:
-                    console.warn(`Unknown message type: ${msg.type}`);
+                    if (ws.role === 'GUEST') {
+                        const h = hosts.get(ws.connectedHostKey);
+                        if (h && h.readyState === WebSocket.OPEN) {
+                            h.send(JSON.stringify({
+                                type: 'SIGNAL',
+                                from: ws.id,
+                                payload: msg.payload
+                            }));
+                        }
+                    }
+                    else if (ws.role === 'HOST') {
+                        // Host needs to broadcast to all or specific guest?
+                        // WebRTC is 1:1 usually, so Host needs to know WHICH guest.
+                        // We will assume `msg.targetId` is provided by Host.
+
+                        // We need a global lookup for socket by ID? 
+                        // Or we broadcast to all clients?
+                        // A global ID map is best.
+
+                        // For this implementation, let's add a global clients map.
+                        // Or just iterate (slow)? No, user wants O(1).
+
+                        const target = clients.get(msg.targetId);
+                        if (target && target.readyState === WebSocket.OPEN) {
+                            target.send(JSON.stringify({
+                                type: 'SIGNAL',
+                                from: ws.id,
+                                payload: msg.payload
+                            }));
+                        }
+                    }
+                    break;
             }
+
         } catch (e) {
-            console.error('Message parse error:', e);
+            console.error(e);
         }
     });
 
+    // Cleanup
     ws.on('close', () => {
-        handleDisconnect(ws);
+        if (ws.role === 'HOST' && ws.key) {
+            hosts.delete(ws.key);
+            console.log(`🛑 Host Offline: ${ws.key}`);
+        }
+        clients.delete(ws.id);
     });
 
-    ws.on('error', (error) => {
-        console.error('WebSocket error:', error);
-    });
+    // Track all clients for O(1) routing
+    clients.set(ws.id, ws);
 });
 
-function handleClaimHost(ws, msg) {
-    const host = hosts.get(msg.hostId);
-    const guest = guests.get(msg.guestId);
+// Global Client Map for O(1) Routing
+const clients = new Map();
 
-    if (host && guest) {
-        console.log(`🤝 Fanout Connect: Host ${msg.hostId} <- Guest ${msg.guestId}`);
-
-        // Update Relationships
-        host.guests.add(msg.guestId);
-        guest.connectedHostId = msg.hostId;
-
-        // Notify Host
-        if (host.ws.readyState === WebSocket.OPEN) {
-            host.ws.send(JSON.stringify({
-                type: 'MATCHED',
-                guestId: msg.guestId
-            }));
-        }
-
-        // Notify Guest
-        if (guest.ws.readyState === WebSocket.OPEN) {
-            guest.ws.send(JSON.stringify({
-                type: 'MATCHED',
-                hostId: msg.hostId
-            }));
-        }
-
-        // Send current guest list to Host (Sync)
-        sendGuestListToHost(host);
-
-    } else {
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({
-                type: 'CLAIM_FAILED',
-                reason: 'Host or Guest not found'
-            }));
-        }
-    }
-}
-
-function handleMultiplex(ws, msg) {
-    // msg: { type: 'MULTIPLEX', channel, targetId?, payload, timestamp }
-    const senderId = ws.sessionId;
-    const senderRole = ws.role;
-
-    // console.log(`🔀 Mux: ${senderRole} ${senderId} -> ${msg.channel}`);
-
-    if (msg.targetId) {
-        // Direct routing
-        let targetWs = null;
-        if (hosts.has(msg.targetId)) targetWs = hosts.get(msg.targetId).ws;
-        else if (guests.has(msg.targetId)) targetWs = guests.get(msg.targetId).ws;
-
-        if (targetWs && targetWs.readyState === WebSocket.OPEN) {
-            targetWs.send(JSON.stringify({ ...msg, from: senderId }));
-        }
-    } else {
-        // Broadcast / Fanout Logic
-        if (senderRole === 'HOST') {
-            // Host -> All Connected Guests
-            const host = hosts.get(senderId);
-            if (host) {
-                host.guests.forEach(guestId => {
-                    const guest = guests.get(guestId);
-                    if (guest && guest.ws.readyState === WebSocket.OPEN) {
-                        guest.ws.send(JSON.stringify({ ...msg, from: senderId }));
-                    }
-                });
-            }
-        } else if (senderRole === 'GUEST') {
-            // Guest -> Connected Host
-            const guest = guests.get(senderId);
-            if (guest && guest.connectedHostId) {
-                const host = hosts.get(guest.connectedHostId);
-                if (host && host.ws.readyState === WebSocket.OPEN) {
-                    host.ws.send(JSON.stringify({ ...msg, from: senderId }));
-                }
-            }
-        }
-    }
-}
-
-function handleDisconnect(ws) {
-    if (ws.sessionId && ws.role) {
-        if (ws.role === 'HOST') {
-            // Check if active
-            const host = hosts.get(ws.sessionId);
-            if (host) {
-                // Notify all guests
-                host.guests.forEach(guestId => {
-                    const guest = guests.get(guestId);
-                    if (guest && guest.ws.readyState === WebSocket.OPEN) {
-                        guest.ws.send(JSON.stringify({ type: 'HOST_DISCONNECTED', hostId: ws.sessionId }));
-                        guest.connectedHostId = null;
-                    }
-                });
-                hosts.delete(ws.sessionId);
-                console.log(`🗑️ Host removed: ${ws.sessionId}`);
-            }
-        } else if (ws.role === 'GUEST') {
-            const guest = guests.get(ws.sessionId);
-            if (guest) {
-                // Remove from Host's guest list
-                if (guest.connectedHostId) {
-                    const host = hosts.get(guest.connectedHostId);
-                    if (host) {
-                        host.guests.delete(ws.sessionId);
-                        // Notify Host
-                        sendGuestListToHost(host);
-                        if (host.ws.readyState === WebSocket.OPEN) {
-                            host.ws.send(JSON.stringify({ type: 'GUEST_LEFT', guestId: ws.sessionId }));
-                        }
-                    }
-                }
-                guests.delete(ws.sessionId);
-                console.log(`🗑️ Guest removed: ${ws.sessionId}`);
-            }
-        }
-    }
-}
-
-// Helpers
-function broadcastToGuests(msg) {
-    guests.forEach(guest => {
-        if (guest.ws.readyState === WebSocket.OPEN) {
-            guest.ws.send(JSON.stringify(msg));
-        }
-    });
-}
-
-function broadcastToHosts(msg) {
-    hosts.forEach(host => {
-        if (host.ws.readyState === WebSocket.OPEN) {
-            host.ws.send(JSON.stringify(msg));
-        }
-    });
-}
-
-function sendGuestListToHost(host) {
-    if (host.ws.readyState === WebSocket.OPEN) {
-        host.ws.send(JSON.stringify({
-            type: 'GUESTS_UPDATE',
-            guests: Array.from(host.guests)
-        }));
-    }
-}
-
-// Cleanup stale connections
+// Heartbeat
 setInterval(() => {
-    const now = Date.now();
-    const STALE_THRESHOLD = 30000;
-
-    for (let [id, data] of hosts) {
-        if (now - data.timestamp > STALE_THRESHOLD) {
-            console.log(`⏱️ Host timeout: ${id}`);
-            // Notify guests before deleting
-            if (data.guests && data.guests.size > 0) {
-                data.guests.forEach(guestId => {
-                    const guest = guests.get(guestId);
-                    if (guest && guest.ws.readyState === WebSocket.OPEN) {
-                        try {
-                            guest.ws.send(JSON.stringify({ type: 'HOST_DISCONNECTED', hostId: id }));
-                            guest.connectedHostId = null;
-                        } catch (e) {
-                            console.error("Failed to notify guest of timeout", e);
-                        }
-                    }
-                });
-            }
-            hosts.delete(id);
-        }
-    }
-    for (let [id, data] of guests) {
-        if (now - data.timestamp > STALE_THRESHOLD) {
-            guests.delete(id);
-        }
-    }
-}, 10000);
-
-// Status endpoint
-setInterval(() => {
-    console.log(`📊 Status: ${hosts.size} hosts, ${guests.size} guests`);
+    wss.clients.forEach((ws) => {
+        if (ws.isAlive === false) return ws.terminate();
+        ws.isAlive = false;
+        ws.ping();
+    });
+    console.log(`📊 Status: ${hosts.size} Hosts | ${clients.size} Peers`);
 }, 30000);
