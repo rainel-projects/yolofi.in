@@ -296,10 +296,10 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
             }}>
                 <div style={{ textAlign: "center", maxWidth: "400px" }}>
                     <h4 style={{ margin: "0 0 6px 0", color: "#1e293b", fontSize: "1.1rem", fontWeight: "600" }}>
-                        Support the Project
+                        Project Support
                     </h4>
                     <p style={{ margin: 0, fontSize: "0.9rem", color: "#475569", lineHeight: "1.5" }}>
-                        Yolofi is a free tool built to help you fix your PC. If it saved you time or money today, a small contribution helps us keep it alive for everyone.
+                        Yolofi is free to use. If you found value in these diagnostics, you are welcome to support the project.
                     </p>
                 </div>
                 <a
