@@ -74,20 +74,7 @@ class ManualPeerService {
         const offer = await this.peerConnection.createOffer();
         await this.peerConnection.setLocalDescription(offer);
 
-        // Wait for ICE gathering to complete
-        return new Promise((resolve) => {
-            if (this.peerConnection.iceGatheringState === 'complete') {
-                resolve(this._encodeSDP(this.peerConnection.localDescription));
-            } else {
-                const checkIce = () => {
-                    if (this.peerConnection.iceGatheringState === 'complete') {
-                        this.peerConnection.removeEventListener('icegatheringstatechange', checkIce);
-                        resolve(this._encodeSDP(this.peerConnection.localDescription));
-                    }
-                };
-                this.peerConnection.addEventListener('icegatheringstatechange', checkIce);
-            }
-        });
+        return this._waitForGathering();
     }
 
     // GUEST: Process Offer and Generate Answer
@@ -101,20 +88,33 @@ class ManualPeerService {
         const answer = await this.peerConnection.createAnswer();
         await this.peerConnection.setLocalDescription(answer);
 
-        // Wait for ICE gathering
-        return new Promise((resolve) => {
-            if (this.peerConnection.iceGatheringState === 'complete') {
-                resolve(this._encodeSDP(this.peerConnection.localDescription));
-            } else {
-                const checkIce = () => {
-                    if (this.peerConnection.iceGatheringState === 'complete') {
-                        this.peerConnection.removeEventListener('icegatheringstatechange', checkIce);
-                        resolve(this._encodeSDP(this.peerConnection.localDescription));
-                    }
-                };
-                this.peerConnection.addEventListener('icegatheringstatechange', checkIce);
-            }
+        return this._waitForGathering();
+    }
+
+    // Wait for ICE gathering with a timeout race
+    async _waitForGathering() {
+        if (this.peerConnection.iceGatheringState === 'complete') {
+            return this._encodeSDP(this.peerConnection.localDescription);
+        }
+
+        const gatheringPromise = new Promise(resolve => {
+            const checkIce = () => {
+                if (this.peerConnection.iceGatheringState === 'complete') {
+                    this.peerConnection.removeEventListener('icegatheringstatechange', checkIce);
+                    resolve(this.peerConnection.localDescription);
+                }
+            };
+            this.peerConnection.addEventListener('icegatheringstatechange', checkIce);
         });
+
+        // Race: Wait max 800ms for candidates to gather, then just take what we have.
+        // This speeds up the UX significantly while usually capturing local/STUN candidates.
+        const timeoutPromise = new Promise(resolve =>
+            setTimeout(() => resolve(this.peerConnection.localDescription), 800)
+        );
+
+        const finalDesc = await Promise.race([gatheringPromise, timeoutPromise]);
+        return this._encodeSDP(finalDesc);
     }
 
     // HOST: Process Answer to finalize connection
