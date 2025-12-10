@@ -174,20 +174,20 @@ const Diagnose = () => {
 
                         <div className="info-grid">
                             <div className="info-item">
-                                <span className="info-label">Storage Junk</span>
-                                <span className="info-value">{report.storage.issues.length} Files</span>
+                                <span className="info-label">Storage Items</span>
+                                <span className="info-value">{report.storage?.keyCount || 0} Keys</span>
                             </div>
                             <div className="info-item">
                                 <span className="info-label">Memory Heap</span>
-                                <span className="info-value">{report.memory.usage}</span>
+                                <span className="info-value">{report.memory?.usedJSHeap || "N/A"}</span>
                             </div>
                             <div className="info-item">
-                                <span className="info-label">Network Latency</span>
-                                <span className="info-value">{report.network.latency}</span>
+                                <span className="info-label">Device Tier</span>
+                                <span className="info-value">{report.deviceScore || "Standard"}</span>
                             </div>
                             <div className="info-item">
                                 <span className="info-label">DOM Nodes</span>
-                                <span className="info-value">{report.dom.totalNodes}</span>
+                                <span className="info-value">{report.memory?.domNodes || 0}</span>
                             </div>
                         </div>
 
