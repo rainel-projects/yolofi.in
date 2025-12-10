@@ -33,13 +33,15 @@ const LinkSystem = () => {
         setStatus("CONNECTING_DB");
         setErrorMsg(null);
 
+        try {
+            await enableNetwork(db);
+        } catch (e) { console.warn("Network enable warning:", e); }
+
         const newId = generateId();
         setMySessionId(newId);
 
         try {
-            // OPTIMIZATION: Use Batch Write (1 Network Request instead of 2 or 3)
             setStatus("BROADCASTING");
-
             const batch = writeBatch(db);
 
             // 1. Session Ref
@@ -58,13 +60,17 @@ const LinkSystem = () => {
                 timestamp: Date.now()
             });
 
-            // Commit both instantly
-            await batch.commit();
+            // 3. Commit with Timeout
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Network Timed Out")), 7000)
+            );
 
-            // 3. No Verification Loop needed - if commit() OK, we are live.
+            await Promise.race([batch.commit(), timeoutPromise]);
+
+            // Success
             setStatus("ONLINE_WAITING");
 
-            // 4. Listen for Connection
+            // 4. Listen for Match
             const unsub = onSnapshot(sessionRef, (snap) => {
                 const data = snap.data();
                 if (data && data.guestJoined) {
@@ -77,7 +83,7 @@ const LinkSystem = () => {
                 }
             });
 
-            // Heartbeat (Low priority)
+            // Heartbeat
             const hb = setInterval(() => {
                 updateDoc(hostRef, { timestamp: Date.now() }).catch(() => { });
             }, 5000);
@@ -86,7 +92,7 @@ const LinkSystem = () => {
 
         } catch (e) {
             console.error(e);
-            setErrorMsg("Broadcast Error: " + e.message);
+            setErrorMsg("Connection Failed: " + (e.message || "Unknown Error"));
             setStatus("ERROR");
         }
     };
@@ -101,18 +107,17 @@ const LinkSystem = () => {
         const q = query(
             collection(db, "public_hosts"),
             where("status", "==", "AVAILABLE"),
-            limit(1) // Just need one
+            limit(1)
         );
 
         guestListenerRef.current = onSnapshot(q, (snapshot) => {
             setStatus("SCANNING");
 
             if (snapshot.empty) {
-                setStatus("WAITING_FOR_HOSTS"); // "Pool Empty"
+                setStatus("WAITING_FOR_HOSTS");
                 return;
             }
 
-            // Found one!
             const target = snapshot.docs[0].data();
             attemptClaim(target.id);
 
@@ -124,31 +129,19 @@ const LinkSystem = () => {
     };
 
     const attemptClaim = async (targetId) => {
-        // Stop listening to prevent loops while claiming
         if (guestListenerRef.current) guestListenerRef.current();
-
         setStatus("CLAIMING");
 
         try {
-            // 1. Mark BUSY (Atomic Lock)
-            await updateDoc(doc(db, "public_hosts", targetId), {
-                status: "BUSY"
-            });
+            await updateDoc(doc(db, "public_hosts", targetId), { status: "BUSY" });
+            await updateDoc(doc(db, "sessions", targetId), { guestJoined: true, status: "ACTIVE" });
 
-            // 2. Join Session
-            await updateDoc(doc(db, "sessions", targetId), {
-                guestJoined: true,
-                status: "ACTIVE"
-            });
-
-            // Success
             sessionStorage.setItem("yolofi_session_id", targetId);
             sessionStorage.setItem("yolofi_session_role", "GUEST");
             navigate(`/remote/${targetId}`);
 
         } catch (e) {
-            console.warn("Claim Failed (Race?):", e);
-            // If failed, restart scan
+            console.warn("Claim Failed:", e);
             startGuestSearch();
         }
     };
@@ -163,14 +156,14 @@ const LinkSystem = () => {
                     <>
                         <div className="intro-text">
                             <h2>Remote Diagnostics</h2>
-                            <p>Global Network • Realtime</p>
+                            <p>Global Network • Low Latency</p>
                         </div>
                         <div className="role-grid">
                             <button className="role-card host" onClick={startHosting}>
                                 <div className="role-icon-bg"><ShieldIcon size={32} /></div>
                                 <div className="role-content">
                                     <div className="role-title">I Need Help (Host)</div>
-                                    <div className="role-desc">Register & Wait</div>
+                                    <div className="role-desc">Broadcast Signal</div>
                                 </div>
                             </button>
 
@@ -178,7 +171,7 @@ const LinkSystem = () => {
                                 <div className="role-icon-bg"><BoltIcon size={32} /></div>
                                 <div className="role-content">
                                     <div className="role-title">I Want to Help (Guest)</div>
-                                    <div className="role-desc">Auto-Connect</div>
+                                    <div className="role-desc">Scan Network</div>
                                 </div>
                             </button>
                         </div>
@@ -192,12 +185,12 @@ const LinkSystem = () => {
 
                         {status === "ERROR" ? (
                             <>
-                                <h3>Connection Error</h3>
+                                <h3>Broadcast Failed</h3>
                                 <p className="error-text">{errorMsg}</p>
                             </>
                         ) : (
                             <>
-                                <h3>{status === "ONLINE_WAITING" ? "You Are Live" : "Registering..."}</h3>
+                                <h3>{status === "ONLINE_WAITING" ? "You Are Live" : "Connecting..."}</h3>
                                 {status === "ONLINE_WAITING" && <p>Registered in Global Pool. Waiting for Guest...</p>}
 
                                 <div className="code-display" style={{ gap: '12px' }}>
@@ -207,11 +200,10 @@ const LinkSystem = () => {
                                 </div>
 
                                 <div className="status-badge">
-                                    {status === "CONNECTING_DB" && "Checking Network..."}
-                                    {status === "REGISTERING_POOL" && "Writing to Data Structure..."}
-                                    {status === "VERIFYING" && "Verifying Registration..."}
+                                    {status === "CONNECTING_DB" && "Initializing Network..."}
+                                    {status === "BROADCASTING" && "Broadcasting Signal..."}
                                     {status === "ONLINE_WAITING" && "Waiting for Peer..."}
-                                    {status === "MATCHED" && "Success! Connecting..."}
+                                    {status === "MATCHED" && "Peer Found! Connecting..."}
                                 </div>
                             </>
                         )}
@@ -232,12 +224,12 @@ const LinkSystem = () => {
                         ) : (
                             <>
                                 <h3>Scanning...</h3>
-                                <p>Watching Data Structure for Hosts.</p>
+                                <p>Locating Available Hosts.</p>
 
                                 <div className="status-badge">
                                     {status === "CONNECTING_DB" && "Check Network..."}
-                                    {status === "SCANNING" && "Querying Pool..."}
-                                    {status === "WAITING_FOR_HOSTS" && "Pool Empty. Waiting for Host..."}
+                                    {status === "SCANNING" && "Searching Pool..."}
+                                    {status === "WAITING_FOR_HOSTS" && "Pool Empty. Waiting..."}
                                     {status === "CLAIMING" && "Host Found! Connecting..."}
                                 </div>
                             </>
@@ -246,7 +238,7 @@ const LinkSystem = () => {
                     </div>
                 )}
 
-                <div className="footer-credit">Realtime Verified Link • v8.0</div>
+                <div className="footer-credit">Low-Latency Link • v9.1</div>
             </div>
         </div>
     );
