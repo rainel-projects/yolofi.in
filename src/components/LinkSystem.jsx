@@ -56,10 +56,10 @@ const LinkSystem = () => {
                 timestamp: Date.now()
             });
 
-            // 3. Optimistic Commit
-            batch.commit().catch(e => console.warn("Background Sync Warning:", e));
+            // 3. Commit and Wait for Success
+            await batch.commit();
 
-            // 4. Update UI Instantly
+            // 4. Update UI After Write Success
             setStatus("ONLINE_WAITING");
 
             // 5. Listen for Guests (NEW)
