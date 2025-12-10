@@ -265,8 +265,22 @@ setInterval(() => {
 
     for (let [id, data] of hosts) {
         if (now - data.timestamp > STALE_THRESHOLD) {
+            console.log(`⏱️ Host timeout: ${id}`);
+            // Notify guests before deleting
+            if (data.guests && data.guests.size > 0) {
+                data.guests.forEach(guestId => {
+                    const guest = guests.get(guestId);
+                    if (guest && guest.ws.readyState === WebSocket.OPEN) {
+                        try {
+                            guest.ws.send(JSON.stringify({ type: 'HOST_DISCONNECTED', hostId: id }));
+                            guest.connectedHostId = null;
+                        } catch (e) {
+                            console.error("Failed to notify guest of timeout", e);
+                        }
+                    }
+                });
+            }
             hosts.delete(id);
-            // Could notify guests here too
         }
     }
     for (let [id, data] of guests) {

@@ -47,6 +47,10 @@ const RemoteView = () => {
                 });
 
                 peerRelay.on('CONNECTION_LOST', () => setStatus("DISCONNECTED"));
+                peerRelay.on('HOST_DISCONNECTED', () => {
+                    console.log("Host disconnected/timed out");
+                    setStatus("DISCONNECTED");
+                });
 
                 // 5. Listen for Updates
                 peerRelay.onStream('sync', (msg, fromId) => {
@@ -91,9 +95,18 @@ const RemoteView = () => {
     if (status === "DISCONNECTED") {
         return (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#f9fafb" }}>
-                <div style={{ textAlign: "center", padding: "2rem", background: "white", borderRadius: "16px", border: "1px solid #fee2e2" }}>
+                <div style={{ textAlign: "center", padding: "2rem", background: "white", borderRadius: "16px", border: "1px solid #fee2e2", maxWidth: "400px" }}>
                     <h2 style={{ color: "#ef4444", marginBottom: "1rem" }}>Signal Lost</h2>
-                    <p style={{ color: "#6b7280", marginBottom: "2rem" }}>The remote session has ended or is invalid.</p>
+                    <p style={{ color: "#6b7280", marginBottom: "1rem" }}>The remote session has ended or is invalid.</p>
+
+                    {/* Debug Info for Production */}
+                    <div style={{ background: "#f3f4f6", padding: "10px", borderRadius: "8px", marginBottom: "1.5rem", fontSize: "0.75rem", color: "#374151", textAlign: "left" }}>
+                        <strong>Debug Info:</strong><br />
+                        Target: {sessionId}<br />
+                        Relay: {import.meta.env.VITE_RELAY_URL || window.location.hostname}<br />
+                        Error: {peerRelay.getLastError()?.message || "Unknown Connection Error"}
+                    </div>
+
                     <button onClick={() => navigate('/link')} className="scan-button" style={{ background: "#ef4444", border: "none" }}>Return to Hub</button>
                 </div>
             </div>

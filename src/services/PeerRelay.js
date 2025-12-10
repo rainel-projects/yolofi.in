@@ -13,10 +13,17 @@ class PeerRelay {
         this.baseReconnectDelay = 1000;
 
         // Edge Shards ( prioritized by latency )
+        // Edge Shards ( prioritized by latency )
+        const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const hostname = window.location.hostname;
+        const port = 8080;
+
+        // Dynamic URL based on where the app is served from
+        const primaryShard = import.meta.env.VITE_RELAY_URL || `${protocol}://${hostname}:${port}`;
+
         this.shards = [
-            'ws://localhost:8080',
-            'ws://localhost:8081', // Fallback/Failover shards
-            'ws://localhost:8082'
+            primaryShard,
+            // Fallbacks can be added here if needed, but for now we prioritize correct IP
         ];
         this.currentShard = null;
 
@@ -114,6 +121,7 @@ class PeerRelay {
 
                 this.ws.onerror = (error) => {
                     console.error('WebSocket error:', error);
+                    this.lastError = { type: 'WS_ERROR', message: 'Connection Failed', details: error };
                     // Only reject if it's the initial explicit connect call
                     if (this.reconnectAttempts === 0 && !this.connected) reject(error);
                 };
@@ -141,8 +149,13 @@ class PeerRelay {
             }, delay);
         } else {
             console.error('Max reconnection attempts reached');
+            this.lastError = { type: 'TIMEOUT', message: 'Max reconnection attempts reached' };
             if (this.callbacks['CONNECTION_LOST']) this.callbacks['CONNECTION_LOST']();
         }
+    }
+
+    getLastError() {
+        return this.lastError || null;
     }
 
     // --- MULTIPLEXING ---
