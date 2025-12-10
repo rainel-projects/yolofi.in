@@ -14,6 +14,7 @@ const LinkSystem = () => {
     const [status, setStatus] = useState("IDLE");
     const [mySessionId, setMySessionId] = useState(null);
     const [errorMsg, setErrorMsg] = useState(null);
+    const [availableGuests, setAvailableGuests] = useState([]);
     const guestListenerRef = useRef(null);
 
     // Initial Network Check
@@ -30,7 +31,6 @@ const LinkSystem = () => {
     // --- HOST: OFFLINE-FIRST REGISTER ---
     const startHosting = async () => {
         setMode("HOST_WAITING");
-        // Optimistic: We are "Connecting" but effectively "Live" locally immediately
         setStatus("BROADCASTING");
         setErrorMsg(null);
 
@@ -56,14 +56,24 @@ const LinkSystem = () => {
                 timestamp: Date.now()
             });
 
-            // 3. FIRE & FORGET (Optimistic)
-            // We do NOT await this. We trust Firestore's offline persistence queue.
+            // 3. Optimistic Commit
             batch.commit().catch(e => console.warn("Background Sync Warning:", e));
 
             // 4. Update UI Instantly
             setStatus("ONLINE_WAITING");
 
-            // 5. Listen for Match
+            // 5. Listen for Guests (NEW)
+            const guestQuery = query(
+                collection(db, "public_guests"),
+                where("status", "==", "SEARCHING")
+            );
+            const unsubGuests = onSnapshot(guestQuery, (snapshot) => {
+                const guests = [];
+                snapshot.forEach(doc => guests.push(doc.data()));
+                setAvailableGuests(guests);
+            });
+
+            // 6. Listen for Match
             const unsub = onSnapshot(sessionRef, (snap) => {
                 const data = snap.data();
                 if (data && data.guestJoined) {
@@ -81,7 +91,7 @@ const LinkSystem = () => {
                 updateDoc(hostRef, { timestamp: Date.now() }).catch(() => { });
             }, 5000);
 
-            return () => { clearInterval(hb); unsub(); };
+            return () => { clearInterval(hb); unsub(); unsubGuests(); };
 
         } catch (e) {
             console.error(e);
@@ -93,8 +103,21 @@ const LinkSystem = () => {
     // --- GUEST: REALTIME SCAN & CLAIM ---
     const startGuestSearch = () => {
         setMode("GUEST_AUTO");
-        setStatus("CONNECTING_DB");
+        setStatus("REGISTERING");
         setErrorMsg(null);
+
+        const guestId = generateId();
+        setMySessionId(guestId);
+
+        // Register as Guest in public pool
+        const guestRef = doc(db, "public_guests", guestId);
+        setDoc(guestRef, {
+            id: guestId,
+            status: "SEARCHING",
+            timestamp: Date.now()
+        }).catch(e => console.warn("Guest Registration:", e));
+
+        setStatus("SCANNING");
 
         // Realtime Listener for ANY available host
         const q = query(
@@ -104,15 +127,13 @@ const LinkSystem = () => {
         );
 
         guestListenerRef.current = onSnapshot(q, (snapshot) => {
-            setStatus("SCANNING");
-
             if (snapshot.empty) {
                 setStatus("WAITING_FOR_HOSTS");
                 return;
             }
 
             const target = snapshot.docs[0].data();
-            attemptClaim(target.id);
+            attemptClaim(target.id, guestId);
 
         }, (err) => {
             console.error(err);
@@ -121,11 +142,14 @@ const LinkSystem = () => {
         });
     };
 
-    const attemptClaim = async (targetId) => {
+    const attemptClaim = async (targetId, guestId) => {
         if (guestListenerRef.current) guestListenerRef.current();
         setStatus("CLAIMING");
 
         try {
+            // Cleanup guest registration
+            deleteDoc(doc(db, "public_guests", guestId)).catch(() => { });
+
             await updateDoc(doc(db, "public_hosts", targetId), { status: "BUSY" });
             await updateDoc(doc(db, "sessions", targetId), { guestJoined: true, status: "ACTIVE" });
 
@@ -191,6 +215,24 @@ const LinkSystem = () => {
                                         <span key={i} className="code-chunk large">{chunk}</span>
                                     )) : "..."}
                                 </div>
+
+                                {status === "ONLINE_WAITING" && availableGuests.length > 0 && (
+                                    <div className="guest-list" style={{ marginTop: '20px', padding: '15px', background: 'rgba(37,99,235,0.1)', borderRadius: '12px' }}>
+                                        <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#60a5fa' }}>
+                                            {availableGuests.length} Guest{availableGuests.length > 1 ? 's' : ''} Searching
+                                        </h4>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            {availableGuests.slice(0, 5).map((guest, idx) => (
+                                                <div key={guest.id} style={{ fontSize: '12px', color: '#94a3b8', fontFamily: 'monospace' }}>
+                                                    Guest #{formatId(guest.id).join('')}
+                                                </div>
+                                            ))}
+                                            {availableGuests.length > 5 && (
+                                                <div style={{ fontSize: '12px', color: '#64748b' }}>+{availableGuests.length - 5} more...</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="status-badge">
                                     {status === "CONNECTING_DB" && "Initializing Network..."}
