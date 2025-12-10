@@ -7,10 +7,10 @@ class PeerRelay {
         const port = 8080;
 
         // Dynamic URL based on where the app is served from
-        // If VITE_RELAY_URL is set, use it. Otherwise, construct likely URL.
-        // If testing on 'yolofi.in', using 'wss://yolofi.in:8080' is a good default assumption if not overridden.
-        // But for localhost, we stick to standard.
-        this.signalingUrl = import.meta.env.VITE_RELAY_URL || `${protocol}://${hostname}:${port}`;
+        // If VITE_RELAY_URL is set, use it. Otherwise, use Production by default as requested.
+        const prodUrl = 'wss://yolofi.in';
+
+        this.signalingUrl = import.meta.env.VITE_RELAY_URL || prodUrl;
 
         this.ws = null;
         this.peers = new Map(); // guestId -> RTCPeerConnection

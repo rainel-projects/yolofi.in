@@ -30,7 +30,8 @@ const LinkSystem = () => {
                 console.log('✅ Connected to relay server');
             } catch (e) {
                 console.error('❌ Failed to connect to relay server:', e);
-                setErrorMsg("Relay server offline. Please start the server.");
+                setStatus("ERROR");
+                setErrorMsg("Server Offline. Start 'relay.js' locally.");
             }
         };
 
@@ -120,6 +121,11 @@ const LinkSystem = () => {
                         <div className="intro-text">
                             <h2>Remote Diagnostics</h2>
                             <p>WebSocket Network • O(1) Discovery</p>
+                            {status === "ERROR" && (
+                                <div style={{ background: '#fecaca', color: '#dc2626', padding: '8px', borderRadius: '8px', fontSize: '12px', marginTop: '10px' }}>
+                                    ⚠️ {errorMsg || "Relay Endpoint Unreachable"}
+                                </div>
+                            )}
                         </div>
                         <div className="role-grid">
                             <button className="role-card host" onClick={startHosting}>
