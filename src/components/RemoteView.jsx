@@ -93,7 +93,7 @@ const RemoteView = () => {
 
     return (
         <div style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem" }}>
-            {/* HERADER */}
+            {/* HEADER */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", borderBottom: "1px solid #e5e7eb", paddingBottom: "1rem" }}>
                 <div>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -146,19 +146,19 @@ const RemoteView = () => {
                 <h3 style={{ margin: "0 0 1rem", borderBottom: "1px solid #374151", paddingBottom: "0.5rem" }}>Live Event Log</h3>
                 <div style={{ fontFamily: "monospace", fontSize: "0.9rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                     <div style={{ color: "#10b981" }}>
-                        > Connection Established: Stable
+                        &gt; Connection Established: Stable
                     </div>
                     <div style={{ color: "#9ca3af" }}>
-                        > System: {displayData.systemInfo?.os || "Unknown OS"} {displayData.systemInfo?.browser || ""}
+                        &gt; System: {displayData.systemInfo?.os || "Unknown OS"} {displayData.systemInfo?.browser || ""}
                     </div>
                     {displayData.issues?.issues?.map((issue, idx) => (
                         <div key={idx} style={{ color: "#ef4444" }}>
-                            > Warning: {issue.title}
+                            &gt; Warning: {issue.title}
                         </div>
                     ))}
                     {data.scoreImprovement && (
                         <div style={{ color: "#60a5fa", marginTop: "1rem" }}>
-                             > OPTIMIZATION COMPLETED. PERFORMANCE IMPROVED BY {data.scoreImprovement}%.
+                            &gt; OPTIMIZATION COMPLETED. PERFORMANCE IMPROVED BY {data.scoreImprovement}%.
                         </div>
                     )}
                 </div>

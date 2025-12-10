@@ -136,7 +136,7 @@ export const warmNetwork = async () => {
         else if (results.latency < 150) results.status = "Fast";
         else results.status = "Standard";
 
-    } catch (e) {
+    } catch {
         results.status = "Offline/Unstable";
     }
 
@@ -182,7 +182,7 @@ export const runRealOptimization = async () => {
             const val = localStorage.getItem(key) || "";
             freedBytes += (key.length + val.length);
             localStorage.removeItem(key);
-        } catch (e) { }
+        } catch { /* ignore */ }
     });
 
     // 2. Service Worker Cleanup

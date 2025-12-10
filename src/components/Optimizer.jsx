@@ -55,7 +55,7 @@ const Optimizer = ({ onComplete }) => {
                         const currentLocal = parseInt(localStorage.getItem("yolofi_total_fixed") || "0");
                         const newTotal = currentLocal + totalResolved;
                         localStorage.setItem("yolofi_total_fixed", newTotal.toString());
-                    } catch (e) { }
+                    } catch { /* ignore */ }
 
                     if (isMounted) {
                         onComplete(result);
