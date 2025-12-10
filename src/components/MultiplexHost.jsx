@@ -43,6 +43,10 @@ const MultiplexHost = () => {
         try {
             await peerRelay.connect();
 
+            // CRITICAL: Register as Host so guests can find us
+            console.log(`📡 Registering Host Session: ${sessionId}`);
+            peerRelay.registerHost(sessionId);
+
             // Listen for Sync Requests (Multiplex Channel 'sync')
             peerRelay.onStream('sync', (payload, fromId) => {
                 if (payload.type === 'request-sync') {
