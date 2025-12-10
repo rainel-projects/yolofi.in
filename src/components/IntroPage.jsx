@@ -122,34 +122,6 @@ export default function IntroPage({ onContinue }) {
                         <div className="stat-label">Success Rate</div>
                     </div>
                     <div className="stat-divider"></div>
-                    <div className="stat-item">
-                        <div className="stat-value">{stats.avgFixTime}</div>
-                        <div className="stat-label">Avg. Fix Time</div>
-                    </div>
-                </div>
-
-                <button className="intro-cta" onClick={onContinue}>
-                    Start Free Diagnosis
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                </button>
-
-                <div style={{ marginTop: "1rem" }}>
-                    <button
-                        onClick={() => window.location.href = '/link'}
-                        style={{
-                            background: "none", border: "none", color: "#6b7280",
-                            fontSize: "0.9rem", textDecoration: "underline", cursor: "pointer"
-                        }}
-                    >
-                        Use on Remote PC (Yolofi Link)
-                    </button>
-                </div>
-
-                <div className="trust-indicators">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path d="M8 14L3 11V6L8 3L13 6V11L8 14Z" stroke="#10b981" strokeWidth="1.5" fill="none" />
                         <path d="M6 8L7.5 9.5L10.5 6.5" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     <span>No installation required</span>
@@ -191,6 +163,6 @@ export default function IntroPage({ onContinue }) {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
