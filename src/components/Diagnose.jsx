@@ -3,7 +3,8 @@ import { doc, updateDoc, setDoc, increment } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { useNavigate } from "react-router-dom";
 import BrowserEngine from "../utils/BrowserEngine";
-import ChatSystem from "./ChatSystem";
+import CommandDeck from "./CommandDeck";
+import SignalOverlay from "./SignalOverlay";
 import FundingPrompt from "./FundingPrompt";
 import "./Diagnose.css";
 // Icons
@@ -18,7 +19,6 @@ const Diagnose = () => {
     const [loadingText, setLoadingText] = useState("Initializing Brain...");
     const [report, setReport] = useState(null);
     const [sessionId, setSessionId] = useState(null);
-    const [showChat, setShowChat] = useState(false); // Floating chat toggle
 
     // Sync state for remote view
     const isHost = sessionStorage.getItem("yolofi_session_role") === "HOST";
@@ -27,7 +27,6 @@ const Diagnose = () => {
         const storedSession = sessionStorage.getItem("yolofi_session_id");
         if (storedSession) {
             setSessionId(storedSession);
-            setShowChat(true);
 
             // INITIALIZE FIRESTORE SESSION (Vital for Guest to see anything)
             const initSession = async () => {
@@ -131,6 +130,7 @@ const Diagnose = () => {
     // --- RENDERING ---
     return (
         <div style={{ position: "relative", minHeight: "100vh" }}>
+            <SignalOverlay />
             <div className="diagnose-path">
 
                 {view === "IDLE" && (
@@ -232,46 +232,15 @@ const Diagnose = () => {
 
             </div>
 
-            {/* FLOATING CHAT WIDGET (Bottom Right) */}
-            {sessionId && (
-                <div style={{
-                    position: "fixed", bottom: "20px", right: "20px", zIndex: 1000,
-                    width: showChat ? "350px" : "60px",
-                    height: showChat ? "500px" : "60px",
-                    transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
-                }}>
-                    {!showChat && (
-                        <button
-                            onClick={() => setShowChat(true)}
-                            style={{
-                                width: "100%", height: "100%", borderRadius: "50%",
-                                background: "#2563eb", color: "white", border: "none",
-                                boxShadow: "0 4px 12px rgba(37, 99, 235, 0.4)",
-                                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center"
-                            }}
-                        >
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                        </button>
-                    )}
 
-                    {showChat && (
-                        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
-                            {/* Custom Header to allow minimize */}
-                            <div style={{
-                                background: "#2563eb", padding: "8px 16px",
-                                borderRadius: "16px 16px 0 0", color: "white",
-                                display: "flex", justifyContent: "space-between", alignItems: "center",
-                                cursor: "pointer"
-                            }} onClick={() => setShowChat(false)}>
-                                <span style={{ fontSize: "0.9rem", fontWeight: "600" }}>Session Chat</span>
-                                <span>_</span>
-                            </div>
-                            <ChatSystem sessionId={sessionId} role="HOST" />
-                        </div>
-                    )}
-                </div>
-            )}
-        </div>
+
+            {/* LIVE COMMAND DECK (Host Receiver) */}
+            {
+                sessionId && (
+                    <CommandDeck role="HOST" sessionId={sessionId} />
+                )
+            }
+        </div >
     );
 };
 

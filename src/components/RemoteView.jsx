@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../firebase/config";
 import { doc, onSnapshot } from "firebase/firestore";
-import ChatSystem from "./ChatSystem";
+import CommandDeck from "./CommandDeck";
+import SignalOverlay from "./SignalOverlay";
 import FundingPrompt from "./FundingPrompt";
 import { ShieldIcon, BrainIcon, CheckCircleIcon, ScanIcon, NetworkIcon } from "./Icons";
 import "./Diagnose.css"; // Shared styles
@@ -12,13 +13,9 @@ const RemoteView = () => {
     const navigate = useNavigate();
     const [data, setData] = useState(null);
     const [status, setStatus] = useState("CONNECTING"); // CONNECTING, LIVE, DISCONNECTED
-    const [showChat, setShowChat] = useState(false); // Floating chat
 
     useEffect(() => {
         if (!sessionId) return;
-
-        // Auto-open chat for guests too
-        setShowChat(true);
 
         const sessionRef = doc(db, "sessions", sessionId);
         const unsubscribe = onSnapshot(sessionRef, (docSnap) => {
@@ -64,6 +61,7 @@ const RemoteView = () => {
     if (!data) {
         return (
             <div className="diagnose-path">
+                <SignalOverlay />
                 <div className="section-content">
                     <h2 style={{ fontSize: "2.5rem", marginBottom: "1.5rem" }}>Connected to Host</h2>
                     <p style={{ fontSize: "1.25rem", color: "#10b981", marginBottom: "2rem", fontWeight: "600" }}>
@@ -79,8 +77,9 @@ const RemoteView = () => {
                         <ShieldIcon size={80} color="#10b981" />
                     </div>
                 </div>
-                {/* FLOATING CHAT */}
-                {renderFloatingChat()}
+
+                {/* COMMAND DECK */}
+                <CommandDeck role="GUEST" sessionId={sessionId} />
             </div>
         );
     }
@@ -89,6 +88,7 @@ const RemoteView = () => {
     // Reuse layout from Diagnose.jsx
     return (
         <div style={{ position: "relative", minHeight: "100vh" }}>
+            <SignalOverlay />
             <div className="diagnose-path">
 
                 {data.status.includes("Running") || data.status.includes("Optimizing") || data.status.includes("Check") || data.status.includes("Scanning") ? (
@@ -152,49 +152,11 @@ const RemoteView = () => {
                 )}
 
             </div>
-            {renderFloatingChat()}
+
+            {/* COMMAND DECK */}
+            <CommandDeck role="GUEST" sessionId={sessionId} />
         </div>
     );
-
-    function renderFloatingChat() {
-        return (
-            <div style={{
-                position: "fixed", bottom: "20px", right: "20px", zIndex: 1000,
-                width: showChat ? "350px" : "60px",
-                height: showChat ? "500px" : "60px",
-                transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
-            }}>
-                {!showChat && (
-                    <button
-                        onClick={() => setShowChat(true)}
-                        style={{
-                            width: "100%", height: "100%", borderRadius: "50%",
-                            background: "#2563eb", color: "white", border: "none",
-                            boxShadow: "0 4px 12px rgba(37, 99, 235, 0.4)",
-                            cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center"
-                        }}
-                    >
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                    </button>
-                )}
-
-                {showChat && (
-                    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
-                        <div style={{
-                            background: "#2563eb", padding: "8px 16px",
-                            borderRadius: "16px 16px 0 0", color: "white",
-                            display: "flex", justifyContent: "space-between", alignItems: "center",
-                            cursor: "pointer"
-                        }} onClick={() => setShowChat(false)}>
-                            <span style={{ fontSize: "0.9rem", fontWeight: "600" }}>Session Chat</span>
-                            <span>_</span>
-                        </div>
-                        <ChatSystem sessionId={sessionId} role="GUEST" />
-                    </div>
-                )}
-            </div>
-        );
-    }
 };
 
 export default RemoteView;
