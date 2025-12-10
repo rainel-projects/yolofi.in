@@ -74,7 +74,7 @@ export const getMemoryStatus = () => {
 
     if (percent < 35) {
         status = "Smooth";
-        label = "Your device is operating efficiently.";
+        label = "Your PC is operating efficiently.";
         color = "#10b981";
     } else if (percent < 65) {
         status = "Active";

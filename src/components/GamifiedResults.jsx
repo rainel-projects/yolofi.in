@@ -58,7 +58,11 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
 
     // GAMIFICATION: Level & XP
     const xpGained = 45; // Fixed per run for habit building
-    const currentLevel = "Device Guardian";
+    const currentLevel = "System Guardian";
+
+...
+
+                        Yolofi is 100 % free to use.If this tool saved you time or fixed your PC, consider supporting future development.
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -73,257 +77,257 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
         return () => clearInterval(interval);
     }, [finalScore]);
 
-    return (
-        <div className="gamified-results-container">
+return (
+    <div className="gamified-results-container">
 
-            <div className="results-header">
-                <div className="score-badge">
-                    <span className="score-value">{score}</span>
-                    <span className="score-label">System ID</span>
+        <div className="results-header">
+            <div className="score-badge">
+                <span className="score-value">{score}</span>
+                <span className="score-label">System ID</span>
+            </div>
+            <h2>Optimization Complete</h2>
+            <div className="subtitle" style={{ marginBottom: "1rem" }}>
+                Performance restored to peak levels.
+            </div>
+            <div className="level-badge">
+                <ShieldIcon size={16} color="#4338ca" />
+                <span style={{ marginLeft: "6px" }}>Level 5: {currentLevel} (+{xpGained} XP)</span>
+            </div>
+        </div>
+
+        {/* HIGH REVENUE PLACEMENT: Top of Results */}
+        <GoogleAd slot="5915755780" style={{ marginBottom: '2rem' }} />
+
+        <div className="stats-comparison">
+            {/* NETWORK CARD */}
+            <div className="stat-card improved">
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                    <NetworkIcon size={20} color="#10b981" />
+                    <span className="stat-label">Network Latency</span>
                 </div>
-                <h2>Optimization Complete</h2>
-                <div className="subtitle" style={{ marginBottom: "1rem" }}>
-                    Performance restored to peak levels.
-                </div>
-                <div className="level-badge">
-                    <ShieldIcon size={16} color="#4338ca" />
-                    <span style={{ marginLeft: "6px" }}>Level 5: {currentLevel} (+{xpGained} XP)</span>
+                <div className="stat-change plain-text">
+                    <span className="new-val">
+                        {/* If we have baseline, show comparison. Else just current. */}
+                        {hasBaseline ? (
+                            `${Math.round(beforeLatency)}ms ➔ ${Math.round(afterLatency)}ms`
+                        ) : (
+                            `Current: ${Math.round(afterLatency)}ms`
+                        )}
+                    </span>
+                    <span className="sub-text">{networkStatus}</span>
                 </div>
             </div>
 
-            {/* HIGH REVENUE PLACEMENT: Top of Results */}
-            <GoogleAd slot="5915755780" style={{ marginBottom: '2rem' }} />
-
-            <div className="stats-comparison">
-                {/* NETWORK CARD */}
-                <div className="stat-card improved">
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                        <NetworkIcon size={20} color="#10b981" />
-                        <span className="stat-label">Network Latency</span>
-                    </div>
-                    <div className="stat-change plain-text">
-                        <span className="new-val">
-                            {/* If we have baseline, show comparison. Else just current. */}
-                            {hasBaseline ? (
-                                `${Math.round(beforeLatency)}ms ➔ ${Math.round(afterLatency)}ms`
-                            ) : (
-                                `Current: ${Math.round(afterLatency)}ms`
-                            )}
-                        </span>
-                        <span className="sub-text">{networkStatus}</span>
-                    </div>
+            {/* STORAGE CARD */}
+            <div className="stat-card improved">
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                    <TrashIcon size={20} color="#10b981" />
+                    <span className="stat-label">Browser Storage</span>
                 </div>
-
-                {/* STORAGE CARD */}
-                <div className="stat-card improved">
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                        <TrashIcon size={20} color="#10b981" />
-                        <span className="stat-label">Browser Storage</span>
-                    </div>
-                    <div className="stat-change plain-text">
-                        <span className="new-val">{storageMsg}</span>
-                        <div className="smart-details">
-                            {/* Show what was actually done */}
-                            {totalCleanedBytes > 0 ? (
-                                <span className="detail-tag">Cleaned {formatBytes(totalCleanedBytes)} Junk</span>
-                            ) : (
-                                <span className="detail-tag protected" style={{ background: "#d1fae5", color: "#065f46" }}>
-                                    System Pristine
-                                </span>
-                            )}
-                            <span className="detail-tag protected">Protected Critical Data</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* BACKGROUND CARD */}
-                <div className="stat-card improved">
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                        <CpuIcon size={20} color="#10b981" />
-                        <span className="stat-label">Memory Optimization</span>
-                    </div>
-                    <div className="stat-change plain-text">
-                        <span className="new-val">{beforeMemStatus} ➔ {afterMemStatus}</span>
-                        <span className="sub-text">{workerMsg}</span>
-                    </div>
-                </div>
-            </div>
-
-
-            <div className="stat-card" style={{ marginTop: "1rem", borderColor: "#818cf855", background: "#eef2ff" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <BoltIcon size={20} color="#4f46e5" />
-                        <span className="stat-label" style={{ color: "#4f46e5" }}>Deep System Scrub</span>
-                    </div>
-                    {!deepCleanDone ? (
-                        <button
-                            onClick={async () => {
-                                setIsCleaning(true);
-                                const logs = [];
-
-                                // Clarify Scope
-                                logs.push("Note: Web App can only clean its own data, not system temp files.");
-
-                                // 1. Real Browser Cache Clean
-                                try {
-                                    if ('caches' in window) {
-                                        const keys = await caches.keys();
-                                        for (const key of keys) {
-                                            await caches.delete(key);
-                                            logs.push(`Deleted Cache Storage: ${key}`);
-                                        }
-                                        if (keys.length === 0) logs.push("Cache Storage: Already Clean");
-                                    } else {
-                                        logs.push("Cache API not supported");
-                                    }
-                                } catch (e) {
-                                    logs.push(`Cache Access Error: ${e.message}`);
-                                }
-
-                                // 2. Session Storage Purge
-                                try {
-                                    const sessionCount = sessionStorage.length;
-                                    sessionStorage.clear();
-                                    logs.push(`Purged Session Storage (${sessionCount} items)`);
-                                } catch (e) {
-                                    logs.push("Session Storage: Access Denied");
-                                }
-
-                                // 3. Service Workers
-                                try {
-                                    if ('serviceWorker' in navigator) {
-                                        const registrations = await navigator.serviceWorker.getRegistrations();
-                                        for (const registration of registrations) {
-                                            await registration.unregister();
-                                            logs.push(`Unregistered Service Worker: ${registration.scope}`);
-                                        }
-                                        if (registrations.length === 0) logs.push("Background Workers: None Active");
-                                    }
-                                } catch (e) {
-                                    logs.push("Service Worker Access Denied");
-                                }
-
-                                // 4. Attempt to trigger storage update (visual only as we can't force GC)
-                                logs.push("Requesting Browser Garbage Collection...");
-
-                                setCleanLogs(logs);
-                                setIsCleaning(false);
-                                setDeepCleanDone(true);
-                                setShowLogModal(true);
-                            }}
-                            disabled={isCleaning}
-                            style={{
-                                background: isCleaning ? "#9ca3af" : "#4f46e5",
-                                color: "white",
-                                border: "none",
-                                padding: "0.5rem 1rem",
-                                borderRadius: "8px",
-                                cursor: isCleaning ? "wait" : "pointer",
-                                fontSize: "0.9rem",
-                                fontWeight: "600"
-                            }}
-                        >
-                            {isCleaning ? "Scrubbing..." : "Deep Scrub"}
-                        </button>
-                    ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                            <span style={{ color: "#10b981", fontWeight: "600", fontSize: "0.9rem" }}>
-                                Optimization Verified
+                <div className="stat-change plain-text">
+                    <span className="new-val">{storageMsg}</span>
+                    <div className="smart-details">
+                        {/* Show what was actually done */}
+                        {totalCleanedBytes > 0 ? (
+                            <span className="detail-tag">Cleaned {formatBytes(totalCleanedBytes)} Junk</span>
+                        ) : (
+                            <span className="detail-tag protected" style={{ background: "#d1fae5", color: "#065f46" }}>
+                                System Pristine
                             </span>
-                            <button
-                                onClick={() => setShowLogModal(true)}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    textDecoration: 'underline',
-                                    fontSize: '0.8rem',
-                                    color: '#4f46e5',
-                                    cursor: 'pointer',
-                                    padding: 0
-                                }}
-                            >
-                                View Log
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* VERIFICATION LOG MODAL */}
-            {showLogModal && (
-                <div style={{
-                    position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-                    background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999
-                }}>
-                    <div style={{
-                        background: "white", padding: "2rem", borderRadius: "16px", maxWidth: "400px", width: "90%",
-                        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
-                    }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-                            <h3 style={{ margin: 0, color: "#111827", fontSize: "1.2rem" }}>Cleanup Verification</h3>
-                            <CheckCircleIcon size={24} color="#10b981" />
-                        </div>
-                        <div style={{
-                            background: "#1f2937", color: "#10b981", padding: "1rem", borderRadius: "8px",
-                            fontFamily: "monospace", fontSize: "0.85rem", height: "150px", overflowY: "auto",
-                            marginBottom: "1.5rem"
-                        }}>
-                            {cleanLogs.map((log, i) => (
-                                <div key={i} style={{ marginBottom: "4px" }}>{`> ${log}`}</div>
-                            ))}
-                            <div style={{ marginTop: "8px", color: "white" }}>STATUS: OPTIMIZED</div>
-                        </div>
-                        <button
-                            onClick={() => setShowLogModal(false)}
-                            style={{
-                                width: "100%", padding: "0.8rem", background: "#4f46e5", color: "white",
-                                border: "none", borderRadius: "8px", fontWeight: "600", cursor: "pointer"
-                            }}
-                        >
-                            Close Report
-                        </button>
+                        )}
+                        <span className="detail-tag protected">Protected Critical Data</span>
                     </div>
                 </div>
-            )}
+            </div>
 
-            {/* --- MONETIZATION 2: VOLUNTARY SUPPORT (Donation) --- */}
+            {/* BACKGROUND CARD */}
+            <div className="stat-card improved">
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                    <CpuIcon size={20} color="#10b981" />
+                    <span className="stat-label">Memory Optimization</span>
+                </div>
+                <div className="stat-change plain-text">
+                    <span className="new-val">{beforeMemStatus} ➔ {afterMemStatus}</span>
+                    <span className="sub-text">{workerMsg}</span>
+                </div>
+            </div>
+        </div>
+
+
+        <div className="stat-card" style={{ marginTop: "1rem", borderColor: "#818cf855", background: "#eef2ff" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <BoltIcon size={20} color="#4f46e5" />
+                    <span className="stat-label" style={{ color: "#4f46e5" }}>Deep System Scrub</span>
+                </div>
+                {!deepCleanDone ? (
+                    <button
+                        onClick={async () => {
+                            setIsCleaning(true);
+                            const logs = [];
+
+                            // Clarify Scope
+                            logs.push("Note: Web App can only clean its own data, not system temp files.");
+
+                            // 1. Real Browser Cache Clean
+                            try {
+                                if ('caches' in window) {
+                                    const keys = await caches.keys();
+                                    for (const key of keys) {
+                                        await caches.delete(key);
+                                        logs.push(`Deleted Cache Storage: ${key}`);
+                                    }
+                                    if (keys.length === 0) logs.push("Cache Storage: Already Clean");
+                                } else {
+                                    logs.push("Cache API not supported");
+                                }
+                            } catch (e) {
+                                logs.push(`Cache Access Error: ${e.message}`);
+                            }
+
+                            // 2. Session Storage Purge
+                            try {
+                                const sessionCount = sessionStorage.length;
+                                sessionStorage.clear();
+                                logs.push(`Purged Session Storage (${sessionCount} items)`);
+                            } catch (e) {
+                                logs.push("Session Storage: Access Denied");
+                            }
+
+                            // 3. Service Workers
+                            try {
+                                if ('serviceWorker' in navigator) {
+                                    const registrations = await navigator.serviceWorker.getRegistrations();
+                                    for (const registration of registrations) {
+                                        await registration.unregister();
+                                        logs.push(`Unregistered Service Worker: ${registration.scope}`);
+                                    }
+                                    if (registrations.length === 0) logs.push("Background Workers: None Active");
+                                }
+                            } catch (e) {
+                                logs.push("Service Worker Access Denied");
+                            }
+
+                            // 4. Attempt to trigger storage update (visual only as we can't force GC)
+                            logs.push("Requesting Browser Garbage Collection...");
+
+                            setCleanLogs(logs);
+                            setIsCleaning(false);
+                            setDeepCleanDone(true);
+                            setShowLogModal(true);
+                        }}
+                        disabled={isCleaning}
+                        style={{
+                            background: isCleaning ? "#9ca3af" : "#4f46e5",
+                            color: "white",
+                            border: "none",
+                            padding: "0.5rem 1rem",
+                            borderRadius: "8px",
+                            cursor: isCleaning ? "wait" : "pointer",
+                            fontSize: "0.9rem",
+                            fontWeight: "600"
+                        }}
+                    >
+                        {isCleaning ? "Scrubbing..." : "Deep Scrub"}
+                    </button>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                        <span style={{ color: "#10b981", fontWeight: "600", fontSize: "0.9rem" }}>
+                            Optimization Verified
+                        </span>
+                        <button
+                            onClick={() => setShowLogModal(true)}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                textDecoration: 'underline',
+                                fontSize: '0.8rem',
+                                color: '#4f46e5',
+                                cursor: 'pointer',
+                                padding: 0
+                            }}
+                        >
+                            View Log
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+
+        {/* VERIFICATION LOG MODAL */}
+        {showLogModal && (
             <div style={{
-                marginBottom: "2rem", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: "12px",
-                padding: "1.5rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem"
+                position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+                background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999
             }}>
-                <div style={{ textAlign: "center" }}>
-                    <h4 style={{ margin: "0 0 4px 0", color: "#92400e" }}>Support the Project</h4>
-                    <p style={{ margin: 0, fontSize: "0.9rem", color: "#b45309" }}>
-                        Yolofi is 100% free to use. If this tool saved you time or fixed your device, consider supporting future development.
-                    </p>
+                <div style={{
+                    background: "white", padding: "2rem", borderRadius: "16px", maxWidth: "400px", width: "90%",
+                    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+                        <h3 style={{ margin: 0, color: "#111827", fontSize: "1.2rem" }}>Cleanup Verification</h3>
+                        <CheckCircleIcon size={24} color="#10b981" />
+                    </div>
+                    <div style={{
+                        background: "#1f2937", color: "#10b981", padding: "1rem", borderRadius: "8px",
+                        fontFamily: "monospace", fontSize: "0.85rem", height: "150px", overflowY: "auto",
+                        marginBottom: "1.5rem"
+                    }}>
+                        {cleanLogs.map((log, i) => (
+                            <div key={i} style={{ marginBottom: "4px" }}>{`> ${log}`}</div>
+                        ))}
+                        <div style={{ marginTop: "8px", color: "white" }}>STATUS: OPTIMIZED</div>
+                    </div>
+                    <button
+                        onClick={() => setShowLogModal(false)}
+                        style={{
+                            width: "100%", padding: "0.8rem", background: "#4f46e5", color: "white",
+                            border: "none", borderRadius: "8px", fontWeight: "600", cursor: "pointer"
+                        }}
+                    >
+                        Close Report
+                    </button>
                 </div>
-                <a
-                    href={MonetizationConfig.donationUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                        background: "#ffdd00", color: "#000", padding: "10px 24px", borderRadius: "24px",
-                        textDecoration: "none", fontWeight: "700", fontSize: "0.9rem",
-                        boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", display: "inline-flex", alignItems: "center", gap: "8px"
-                    }}
-                >
-                    <span>☕</span> Buy us a Coffee
-                </a>
             </div>
+        )}
 
-            <div className="weekly-suggestion" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
-                <div className="suggestion-icon">
-                    <CheckCircleIcon size={24} color="#10b981" />
-                </div>
-                <div className="suggestion-text">
-                    <h4 style={{ color: "#1f2937", fontSize: "1rem" }}>System Status: Healthy</h4>
-                    <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>Recommended next scan: 2 Days</p>
-                </div>
+        {/* --- MONETIZATION 2: VOLUNTARY SUPPORT (Donation) --- */}
+        <div style={{
+            marginBottom: "2rem", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: "12px",
+            padding: "1.5rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem"
+        }}>
+            <div style={{ textAlign: "center" }}>
+                <h4 style={{ margin: "0 0 4px 0", color: "#92400e" }}>Support the Project</h4>
+                <p style={{ margin: 0, fontSize: "0.9rem", color: "#b45309" }}>
+                    Yolofi is 100% free to use. If this tool saved you time or fixed your PC, consider supporting future development.
+                </p>
             </div>
+            <a
+                href={MonetizationConfig.donationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                    background: "#ffdd00", color: "#000", padding: "10px 24px", borderRadius: "24px",
+                    textDecoration: "none", fontWeight: "700", fontSize: "0.9rem",
+                    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", display: "inline-flex", alignItems: "center", gap: "8px"
+                }}
+            >
+                <span>☕</span> Buy us a Coffee
+            </a>
+        </div>
 
-        </div >
-    );
+        <div className="weekly-suggestion" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
+            <div className="suggestion-icon">
+                <CheckCircleIcon size={24} color="#10b981" />
+            </div>
+            <div className="suggestion-text">
+                <h4 style={{ color: "#1f2937", fontSize: "1rem" }}>System Status: Healthy</h4>
+                <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>Recommended next scan: 2 Days</p>
+            </div>
+        </div>
+
+    </div >
+);
 };
 
 export default GamifiedResults;

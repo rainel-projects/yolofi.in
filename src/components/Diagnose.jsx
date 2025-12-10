@@ -176,7 +176,7 @@ const Diagnose = () => {
                             System Diagnostics
                         </h2>
                         <p style={{ maxWidth: "480px", margin: "auto", color: "#6b7280", marginBottom: "1.5rem" }}>
-                            Let Yolofi examine your device performance & system condition.
+                            Let Yolofi examine your PC performance & system condition.
                         </p>
 
                         {viewState === "IDLE" && (
