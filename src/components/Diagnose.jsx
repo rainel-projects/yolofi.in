@@ -19,7 +19,7 @@ const Diagnose = () => {
     const [loadingText, setLoadingText] = useState("Initializing Brain...");
     const [report, setReport] = useState(null);
     const [sessionId, setSessionId] = useState(null);
-
+    const [sessionStatus, setSessionStatus] = useState("INIT"); // INIT, CREATING, ACTIVE, ERROR
 
 
     useEffect(() => {
@@ -29,6 +29,7 @@ const Diagnose = () => {
 
             // INITIALIZE FIRESTORE SESSION (Vital for Guest to see anything)
             const initSession = async () => {
+                setSessionStatus("CREATING");
                 try {
                     await setDoc(doc(db, "sessions", storedSession), {
                         hostData: {
@@ -39,13 +40,30 @@ const Diagnose = () => {
                         timestamp: Date.now()
                     }, { merge: true });
                     console.log("✅ Session Document Initialized:", storedSession);
+                    setSessionStatus("ACTIVE");
                 } catch (e) {
                     console.error("Failed to init session:", e);
+                    setSessionStatus("ERROR");
                 }
             };
             initSession();
         }
     }, []);
+
+    const forceActivate = async () => {
+        if (!sessionId) return;
+        setSessionStatus("RETRYING");
+        try {
+            await setDoc(doc(db, "sessions", sessionId), {
+                hostData: { status: "Host Ready", progress: 0, report: null },
+                timestamp: Date.now()
+            }, { merge: true });
+            setSessionStatus("ACTIVE");
+        } catch (e) {
+            console.error(e);
+            setSessionStatus("ERROR");
+        }
+    };
 
     // Helper: Push updates to Firebase
     const syncToRemote = async (status, progressVal, reportData = null) => {
@@ -143,8 +161,18 @@ const Diagnose = () => {
                                 <ScanIcon size={24} /> Start Full Scan
                             </button>
                             {sessionId && (
-                                <div style={{ marginTop: "1rem", color: "#10b981", fontWeight: "600" }}>
-                                    ● Sharing Session: {sessionId}
+                                <div style={{ marginTop: "1rem" }}>
+                                    <div style={{ color: sessionStatus === "ACTIVE" ? "#10b981" : "#f59e0b", fontWeight: "600", marginBottom: "5px" }}>
+                                        ● Session: {sessionId} ({sessionStatus})
+                                    </div>
+                                    {sessionStatus !== "ACTIVE" && (
+                                        <button onClick={forceActivate} style={{
+                                            padding: "6px 12px", background: "#f59e0b", color: "white",
+                                            border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem"
+                                        }}>
+                                            ⚠️ Force Start Connection
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
