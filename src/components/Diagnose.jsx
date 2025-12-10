@@ -4,6 +4,7 @@ import { db } from "../firebase/config";
 import { useNavigate } from "react-router-dom";
 import BrowserEngine from "../utils/BrowserEngine";
 import ChatSystem from "./ChatSystem";
+import FundingPrompt from "./FundingPrompt";
 import "./Diagnose.css";
 // Icons
 import {
@@ -191,30 +192,18 @@ const Diagnose = () => {
                         </div>
 
                         {view === "REPORT" && (
-                            <button className="scan-button" onClick={startOptimization}>
-                                <ShieldIcon size={20} /> Resolve All Issues
-                            </button>
+                            <>
+                                <button className="scan-button" onClick={startOptimization}>
+                                    <ShieldIcon size={20} /> Resolve All Issues
+                                </button>
+                                <FundingPrompt />
+                            </>
                         )}
 
                         {view === "RESULTS" && (
                             <div style={{ textAlign: "center" }}>
                                 <p>System is now running at peak efficiency.</p>
-
-                                <div style={{ margin: "2rem 0", padding: "1.5rem", background: "#fffbeb", borderRadius: "8px", border: "1px solid #fcd34d" }}>
-                                    <p style={{ fontWeight: "600", color: "#92400e", marginBottom: "1rem" }}>
-                                        Running these heavy diagnostics costs server resources.
-                                    </p>
-                                    <a href="https://www.buymeacoffee.com" target="_blank" rel="noopener noreferrer"
-                                        style={{
-                                            display: "inline-flex", alignItems: "center", gap: "8px",
-                                            background: "#ffdd00", color: "#000", padding: "10px 20px",
-                                            borderRadius: "50px", textDecoration: "none", fontWeight: "bold",
-                                            boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
-                                        }}>
-                                        <span>☕</span> Buy me a coffee to fund
-                                    </a>
-                                </div>
-
+                                <FundingPrompt />
                                 <button className="feedback-btn" onClick={() => navigate('/')}>Return to Dashboard</button>
                             </div>
                         )}

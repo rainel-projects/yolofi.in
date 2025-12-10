@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../firebase/config";
 import { doc, onSnapshot } from "firebase/firestore";
 import ChatSystem from "./ChatSystem";
+import FundingPrompt from "./FundingPrompt";
 import { ShieldIcon, BrainIcon, CheckCircleIcon, ScanIcon, NetworkIcon } from "./Icons";
 import "./Diagnose.css"; // Shared styles
 
@@ -143,6 +144,7 @@ const RemoteView = () => {
                             {data.status.includes("Optimization Complete") && (
                                 <div style={{ textAlign: "center", marginTop: "2rem", color: "#10b981" }}>
                                     <p>Host system has been optimized.</p>
+                                    <FundingPrompt />
                                 </div>
                             )}
                         </div>
