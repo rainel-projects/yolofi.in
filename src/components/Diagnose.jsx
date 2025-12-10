@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { doc, updateDoc, increment } from "firebase/firestore";
-import { db } from "../firebase/config";
 import { useNavigate } from "react-router-dom";
 import BrowserEngine from "../utils/BrowserEngine";
 import peerRelay from "../services/PeerRelay"; // Import PeerRelay
@@ -17,11 +15,10 @@ const Diagnose = () => {
     const navigate = useNavigate();
     const [view, setView] = useState("IDLE");
     const [progress, setProgress] = useState(0);
-    const [loadingText, setLoadingText] = useState("Initializing Brain...");
+    const [loadingText, setLoadingText] = useState("Initializing System Intelligence...");
     const [report, setReport] = useState(null);
     const [sessionId, setSessionId] = useState(null);
-    const [sessionStatus, setSessionStatus] = useState("INIT"); // INIT, ACTIVE
-    
+
     // Keep track of latest state to send to new guests
     const latestStateRef = useRef({
         status: "Host Ready",
@@ -33,49 +30,20 @@ const Diagnose = () => {
         const storedSession = sessionStorage.getItem("yolofi_session_id");
         if (storedSession) {
             setSessionId(storedSession);
-            setSessionStatus("ACTIVE");
-
-            // Ensure Connection & Setup Listeners
-            const setupConnection = async () => {
-                try {
-                    await peerRelay.connect(); // Idempotent
-                    
-                    // Listen for Sync Requests from new Guests (Fanout Support)
-                    peerRelay.onStream('sync', (payload, fromId) => {
-                        if (payload.type === 'request-sync') {
-                            console.log(`🔄 Sync requested by ${fromId}`);
-                            // Send current state specifically to that guest (or broadcast)
-                            // We broadcast to ensure everyone is consistent
-                            syncToRemote(latestStateRef.current.status, latestStateRef.current.progress, latestStateRef.current.report);
-                        }
-                    });
-
-                } catch (e) {
-                    console.error("Relay connection failed:", e);
-                }
-            };
-            setupConnection();
+            // No automatic connection here - reliance on ManualPeerService handled in LinkSystem
         }
     }, []);
 
-    const forceActivate = async () => {
-       // No-op or just ensure connection
-       peerRelay.connect();
-       setSessionStatus("ACTIVE");
-    };
-
-    // Helper: Push updates via WebSocket Multiplexing (Edge First)
+    // Helper: Push updates via WebSocket/WebRTC
     const syncToRemote = (status, progressVal, reportData = null) => {
         if (!sessionId) return;
-        
+
         // Update Ref
         latestStateRef.current = { status, progress: progressVal, report: reportData };
 
-        // Broadcast to Session Channel 'sync'
-        peerRelay.multiplex('sync', {
-            type: 'state-update',
-            data: latestStateRef.current
-        });
+        // Broadcast to Session Channel 'sync' if using relay/manual peer (Legacy support here)
+        // If ManualPeerService is active, it handles sync via MultiplexHost, but Diagnose is local.
+        // We will leave this hook for now.
     };
 
     const runDiagnostics = async () => {
@@ -123,15 +91,6 @@ const Diagnose = () => {
             await new Promise(r => setTimeout(r, 800));
         }
 
-        try {
-            await updateDoc(doc(db, "marketing", "stats"), {
-                issuesResolved: increment(5),
-                totalOptimizations: increment(1)
-            });
-        } catch (err) {
-            console.error("Stats update failed (non-fatal):", err);
-        }
-
         const finalScore = Math.min(100, (report.score || 80) + 15);
         const finalReport = { ...report, score: finalScore, optimized: true };
 
@@ -149,47 +108,34 @@ const Diagnose = () => {
                 {view === "IDLE" && (
                     <>
                         <div className="section-content">
-                            <h2 style={{ fontSize: "3rem", marginBottom: "1.5rem" }}>System Intelligence</h2>
-                            <p style={{ fontSize: "1.25rem", color: "#4b5563", marginBottom: "2rem" }}>
+                            <h2 style={{ fontSize: "3.5rem", marginBottom: "1.5rem", lineHeight: 1.1 }}>
+                                System<br />Intelligence
+                            </h2>
+                            <p style={{ fontSize: "1.25rem", color: "#64748b", marginBottom: "2.5rem" }}>
                                 Advanced runtime diagnostics engine. Detects memory leaks, storage bloat, and network latency in real-time.
                             </p>
                             <button className="scan-button" onClick={runDiagnostics}>
                                 <ScanIcon size={24} /> Start Full Scan
                             </button>
-                            {sessionId && (
-                                <div style={{ marginTop: "1rem" }}>
-                                    <div style={{ color: sessionStatus === "ACTIVE" ? "#10b981" : "#f59e0b", fontWeight: "600", marginBottom: "5px" }}>
-                                        ● Session: {sessionId} ({sessionStatus})
-                                    </div>
-                                    {sessionStatus !== "ACTIVE" && (
-                                        <button onClick={forceActivate} style={{
-                                            padding: "6px 12px", background: "#f59e0b", color: "white",
-                                            border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem"
-                                        }}>
-                                            ⚠️ Force Start Connection
-                                        </button>
-                                    )}
-                                </div>
-                            )}
                         </div>
                         <div className="section-visual">
                             <div className="scanner-ring">
                                 <div className="scan-pulse"></div>
-                                <BrainIcon size={80} color="#2563eb" />
+                                <BrainIcon size={100} color="#2563eb" />
                             </div>
                         </div>
                     </>
                 )}
 
                 {(view === "SCANNING" || view === "OPTIMIZING") && (
-                    <div className="section-content" style={{ textAlign: "center", width: "100%" }}>
-                        <div className="scanner-ring" style={{ margin: "0 auto 2rem" }}>
+                    <div className="section-content" style={{ textAlign: "center", width: "100%", maxWidth: "600px" }}>
+                        <div className="scanner-ring" style={{ margin: "0 auto 3rem" }}>
                             <div className="scan-pulse" style={{ animationDuration: "1s" }}></div>
-                            <ScanIcon size={60} color="#2563eb" />
+                            <ScanIcon size={80} color="#2563eb" />
                         </div>
-                        <h2>{loadingText}</h2>
-                        <div style={{ width: "100%", maxWidth: "400px", height: "8px", background: "#e5e7eb", borderRadius: "4px", margin: "1.5rem auto", overflow: "hidden" }}>
-                            <div style={{ width: `${progress}%`, height: "100%", background: "#2563eb", transition: "width 0.3s ease" }}></div>
+                        <h2 style={{ marginBottom: '1rem' }}>{loadingText}</h2>
+                        <div style={{ width: "100%", height: "12px", background: "#f1f5f9", borderRadius: "6px", margin: "0 auto 1rem", overflow: "hidden", border: "1px solid #e2e8f0" }}>
+                            <div style={{ width: `${progress}%`, height: "100%", background: "#2563eb", transition: "width 0.3s ease", borderRadius: "6px" }}></div>
                         </div>
                         <p className="scan-time">{progress}% COMPLETE</p>
                     </div>
@@ -199,25 +145,25 @@ const Diagnose = () => {
                     <div className="diagnostic-report">
                         <div className="report-header">
                             <div style={{
-                                width: "48px", height: "48px", borderRadius: "50%",
+                                width: "64px", height: "64px", borderRadius: "50%",
                                 background: view === "RESULTS" ? "#dcfce7" : "#fee2e2",
                                 display: "flex", alignItems: "center", justifyContent: "center",
                                 color: view === "RESULTS" ? "#166534" : "#991b1b"
                             }}>
-                                {view === "RESULTS" ? <CheckCircleIcon size={28} /> : <ShieldIcon size={28} />}
+                                {view === "RESULTS" ? <CheckCircleIcon size={32} /> : <ShieldIcon size={32} />}
                             </div>
                             <div>
-                                <h3>{view === "RESULTS" ? "Optimization Successful" : "System Analysis Report"}</h3>
-                                <p className="scan-time">SESSION ID: {sessionId || "LOCAL-" + Date.now().toString().slice(-6)}</p>
+                                <h3>{view === "RESULTS" ? "System Optimized" : "Analysis Report"}</h3>
+                                <p className="scan-time">SESSION ID: {sessionId || "LOCAL-" + Date.now().toString().slice(-4)}</p>
                             </div>
-                            <div style={{ marginLeft: "auto", fontSize: "2rem", fontWeight: "800", color: view === "RESULTS" ? "#10b981" : "#f59e0b" }}>
-                                {report.score} <span style={{ fontSize: "1rem", color: "#6b7280" }}>/ 100</span>
+                            <div style={{ marginLeft: "auto", fontSize: "2.5rem", fontWeight: "800", color: view === "RESULTS" ? "#10b981" : "#f59e0b" }}>
+                                {report.score} <span style={{ fontSize: "1rem", color: "#94a3b8", fontWeight: 600 }}>/ 100</span>
                             </div>
                         </div>
 
                         <div className="info-grid">
                             <div className="info-item">
-                                <span className="info-label">Storage Items</span>
+                                <span className="info-label">Storage Vectors</span>
                                 <span className="info-value">{report.storage?.keyCount || 0} Keys</span>
                             </div>
                             <div className="info-item">
@@ -229,23 +175,23 @@ const Diagnose = () => {
                                 <span className="info-value">{report.deviceScore || "Standard"}</span>
                             </div>
                             <div className="info-item">
-                                <span className="info-label">DOM Nodes</span>
-                                <span className="info-value">{report.memory?.domNodes || 0}</span>
+                                <span className="info-label">DOM Density</span>
+                                <span className="info-value">{report.memory?.domNodes || 0} Nodes</span>
                             </div>
                         </div>
 
                         {view === "REPORT" && (
-                            <>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'flex-start' }}>
                                 <button className="scan-button" onClick={startOptimization}>
                                     <ShieldIcon size={20} /> Resolve All Issues
                                 </button>
                                 <FundingPrompt />
-                            </>
+                            </div>
                         )}
 
                         {view === "RESULTS" && (
                             <div style={{ textAlign: "center" }}>
-                                <p>System is now running at peak efficiency.</p>
+                                <p style={{ fontSize: '1.25rem', fontWeight: 600, color: '#10b981' }}>System is running at peak efficiency.</p>
                                 <FundingPrompt />
                                 <button className="feedback-btn" onClick={() => navigate('/')}>Return to Dashboard</button>
                             </div>
@@ -254,8 +200,6 @@ const Diagnose = () => {
                 )}
 
             </div>
-
-
 
             {/* LIVE COMMAND DECK (Host Receiver) */}
             {
