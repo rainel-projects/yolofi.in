@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { db } from "../firebase/config";
-import { doc, setDoc, updateDoc, collection, onSnapshot, query, orderBy, limit, deleteDoc, enableNetwork, getDocs } from "firebase/firestore";
+import { doc, setDoc, updateDoc, collection, onSnapshot, query, limit, deleteDoc, enableNetwork, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { BoltIcon, ShieldIcon, ScanIcon } from "./Icons";
 import "./LinkSystem.css";
@@ -10,118 +10,122 @@ const generateId = () => Math.floor(100000000000 + Math.random() * 900000000000)
 
 const LinkSystem = () => {
     const navigate = useNavigate();
-    const [mode, setMode] = useState("MENU"); // MENU, POOL_HOST, POOL_GUEST
+    const [mode, setMode] = useState("MENU");
     const [status, setStatus] = useState("IDLE");
-    const [_sessionId, setSessionId] = useState(null);
-    const retryRef = useRef(null);
+    const [mySessionId, setMySessionId] = useState(null);
+    const guestListenerRef = useRef(null);
 
     useEffect(() => {
         try { enableNetwork(db); } catch (e) { }
-        return () => clearInterval(retryRef.current);
+        return () => {
+            if (guestListenerRef.current) guestListenerRef.current();
+        };
     }, []);
 
-    // --- HOST: ENTER POOL ---
+    // --- HOST LOGIC: JOIN POOL ---
     const enterHostPool = async () => {
         setMode("POOL_HOST");
         setStatus("PUBLISHING");
 
         const myId = generateId();
-        setSessionId(myId);
+        setMySessionId(myId);
 
         try {
-            // 1. Create Session
+            // 1. Create Private
             await setDoc(doc(db, "sessions", myId), {
                 created: Date.now(),
                 status: "WAITING",
                 hostJoined: true
             });
 
-            // 2. Add to Global Pool
+            // 2. Publish to Pool
             await setDoc(doc(db, "public_hosts", myId), {
                 id: myId,
-                lastActive: Date.now(),
-                type: "HOST_WAITING"
+                limit: 1 // Single seat
             });
             setStatus("WAITING_MATCH");
 
-            // 3. Listen for Match
+            // 3. Wait for Guest Assignment
             const unsub = onSnapshot(doc(db, "sessions", myId), (snap) => {
                 const data = snap.data();
                 if (data && data.guestJoined) {
                     sessionStorage.setItem("yolofi_session_id", myId);
                     sessionStorage.setItem("yolofi_session_role", "HOST");
-                    deleteDoc(doc(db, "public_hosts", myId)).catch(() => { });
                     navigate('/diagnose');
                 }
             });
 
-            // 4. Heartbeat
+            // Heartbeat
             const hb = setInterval(() => {
                 updateDoc(doc(db, "public_hosts", myId), { lastActive: Date.now() }).catch(() => { });
-            }, 4000);
+            }, 5000);
 
             return () => { clearInterval(hb); unsub(); };
 
         } catch (e) {
-            console.error(e);
-            alert("Error joining pool: " + e.message);
+            alert("Host Error: " + e.message);
             setMode("MENU");
         }
     };
 
-    // --- GUEST: HUNT FOR MATCH ---
+    // --- GUEST LOGIC: FIND & ASSIGN ---
     const enterGuestPool = () => {
         setMode("POOL_GUEST");
         setStatus("SCANNING");
-        findRandomHost();
-    };
 
-    const findRandomHost = async () => {
-        try {
-            // Fetch recent 50 hosts
-            // Note: We bypass 'orderBy' for now to avoid Index Issues, fetch 50 and sort/pick
-            const q = query(collection(db, "public_hosts"), limit(50));
-            const snap = await getDocs(q);
-            const hosts = [];
-            snap.forEach(d => hosts.push(d.data()));
+        // 1. Realtime Listen for AVAILABLE Hosts
+        const q = query(collection(db, "public_hosts"), limit(20));
 
-            if (hosts.length === 0) {
-                setStatus("NO_HOSTS_RETRYING");
-                retryRef.current = setTimeout(findRandomHost, 2500); // Retry loop
-                return;
+        guestListenerRef.current = onSnapshot(q, (snapshot) => {
+            const availableHosts = [];
+            snapshot.forEach(d => availableHosts.push(d.data()));
+
+            if (availableHosts.length > 0) {
+                // FOUND ONE!
+                const target = availableHosts[Math.floor(Math.random() * availableHosts.length)];
+                assignHost(target.id);
+            } else {
+                setStatus("WAITING_FOR_HOSTS");
             }
-
-            // FILTER & RANDOM PICK
-            const candidate = hosts[Math.floor(Math.random() * hosts.length)];
-
-            attemptMatch(candidate.id);
-
-        } catch (e) {
-            console.error("Scan Error", e);
-            retryRef.current = setTimeout(findRandomHost, 3000);
-        }
+        });
     };
 
-    const attemptMatch = async (targetId) => {
-        setStatus("MATCHING");
+    const assignHost = async (targetId) => {
+        if (status === "ASSIGNING") return; // Prevent double trigger
+        setStatus("ASSIGNING");
+
+        // Stop listening so we don't try to match others
+        if (guestListenerRef.current) guestListenerRef.current();
+
         try {
-            // ATOMIC CLAIM attempt
+            console.log("Attempting to assign:", targetId);
+
+            // 1. REMOVE FROM POOL (Lock it)
+            // This prevents other Guests from finding it.
+            await deleteDoc(doc(db, "public_hosts", targetId));
+
+            // 2. CLAIM SESSION
             await updateDoc(doc(db, "sessions", targetId), {
                 guestJoined: true,
                 status: "MATCHED"
             });
 
-            // Success
+            // 3. CONNECT
             sessionStorage.setItem("yolofi_session_id", targetId);
             sessionStorage.setItem("yolofi_session_role", "GUEST");
             navigate(`/remote/${targetId}`);
 
         } catch (e) {
-            console.warn("Match Failed (Race Condition?), retrying...", e);
-            // Failed to claim (maybe someone else took it). Pick another.
-            findRandomHost();
+            console.warn("Assignment Failed (Taken?):", e);
+            setStatus("SCANNING");
+            // If failed, restart listener is complex here, better to reload or let user retry
+            alert("Match failed (someone else took it). Try again.");
+            setMode("MENU");
         }
     };
+
+    // Helper to format ID for display
+    const formatIdDisplay = (id) => (id ? id.match(/.{1,4}/g) || [] : []);
 
     return (
         <div className="link-system-container">
@@ -137,7 +141,7 @@ const LinkSystem = () => {
                                 <div className="role-icon-bg"><ShieldIcon size={32} /></div>
                                 <div className="role-content">
                                     <div className="role-title">I Need Help (Join Pool)</div>
-                                    <div className="role-desc">Connect with random expert</div>
+                                    <div className="role-desc">Wait for assignment</div>
                                 </div>
                             </button>
 
@@ -145,44 +149,46 @@ const LinkSystem = () => {
                                 <div className="role-icon-bg"><BoltIcon size={32} /></div>
                                 <div className="role-content">
                                     <div className="role-title">I Want to Help (Find)</div>
-                                    <div className="role-desc">Match with random request</div>
+                                    <div className="role-desc">Assign random host</div>
                                 </div>
                             </button>
                         </div>
                     </>
                 )}
 
-                {/* --- HOST POOL --- */}
+                {/* --- HOST VIEW --- */}
                 {mode === "POOL_HOST" && (
                     <div className="center-view">
                         <div className="pulse-ring"><ShieldIcon size={64} color="#2563eb" /></div>
-                        <h3>Matching...</h3>
-                        <p>You are in the Global Host Pool.</p>
-                        <div className="status-badge">
-                            {status === "PUBLISHING" && "Joining Network..."}
-                            {status === "WAITING_MATCH" && "Waiting for Expert..."}
+                        <h3>In The Pool</h3>
+                        <div className="code-display" style={{ gap: '12px' }}>
+                            {mySessionId ? formatIdDisplay(mySessionId).map((chunk, i) => (
+                                <span key={i} className="code-chunk large">{chunk}</span>
+                            )) : "Generating..."}
                         </div>
-                        <p className="sub-text">Please wait while we find a helper.</p>
+                        <div className="status-badge">
+                            {status === "PUBLISHING" && "Publishing..."}
+                            {status === "WAITING_MATCH" && "Waiting for Assignment..."}
+                        </div>
                         <button className="text-btn" onClick={() => window.location.reload()}>Leave Pool</button>
                     </div>
                 )}
 
-                {/* --- GUEST POOL --- */}
+                {/* --- GUEST VIEW --- */}
                 {mode === "POOL_GUEST" && (
                     <div className="center-view">
                         <div className="pulse-ring"><ScanIcon size={64} color="#4ade80" /></div>
                         <h3>Finding Session...</h3>
-                        <p>Scanning Global Pool for Hosts.</p>
                         <div className="status-badge">
-                            {status === "SCANNING" && "Scanning..."}
-                            {status === "NO_HOSTS_RETRYING" && "No Hosts Found. Retrying..."}
-                            {status === "MATCHING" && "Attempting Connection..."}
+                            {status === "SCANNING" && "Scanning Network..."}
+                            {status === "WAITING_FOR_HOSTS" && "Pool Empty. Waiting for Host..."}
+                            {status === "ASSIGNING" && "Host Found! Assigning..."}
                         </div>
-                        <button className="text-btn" onClick={() => window.location.reload()}>Stop Search</button>
+                        <button className="text-btn" onClick={() => window.location.reload()}>Cancel</button>
                     </div>
                 )}
 
-                <div className="footer-credit">Random P2P Matching • Trillion-User Ready</div>
+                <div className="footer-credit">Automated Assignment System • v4.0</div>
             </div>
         </div>
     );
