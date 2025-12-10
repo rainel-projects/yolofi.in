@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldIcon, ScanIcon, BoltIcon, CheckCircleIcon } from './Icons';
+import { ShieldIcon, ScanIcon, BoltIcon, CheckCircleIcon, ActivityIcon, HeartIcon } from './Icons';
 import CoffeePopup from './CoffeePopup';
 
 const Showcase = () => {
@@ -22,9 +22,9 @@ const Showcase = () => {
                 <div style={{
                     marginBottom: '1.5rem', background: '#eff6ff', color: '#2563eb',
                     padding: '0.5rem 1rem', borderRadius: '50px', fontWeight: '600', fontSize: '0.9rem',
-                    boxShadow: '0 0 0 4px #eff6ff'
+                    boxShadow: '0 0 0 4px #eff6ff', display: 'inline-flex', alignItems: 'center', gap: '8px'
                 }}>
-                    🚀 Now Live: Version 3.0
+                    <ActivityIcon size={16} /> Now Live: Version 3.0
                 </div>
 
                 <h1 style={{
@@ -108,7 +108,9 @@ const Showcase = () => {
 
             {/* FOOTER */}
             <footer style={{ padding: '3rem 1.5rem', textAlign: 'center', color: '#6b7280' }}>
-                <p style={{ fontWeight: '500' }}>built with ❤️ for the web.</p>
+                <p style={{ fontWeight: '500', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    built with <HeartIcon size={16} color="#ef4444" style={{ fill: '#ef4444' }} /> for the web.
+                </p>
                 <div style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
                     © 2025 Yolofi Inc.
                 </div>

@@ -114,3 +114,8 @@ export const HandshakeIcon = ({ size = 24, color = "currentColor" }) => (
         <path d="M9 11L12.5 14.5L16 11M9 11V14M9 11L4 16C4 16 2.5 17.5 5 20C7.5 22.5 9 21 9 21L12.5 17.5M12.5 14.5V17.5M12.5 14.5L16 11M16 11L21 6C21 6 22.5 4.5 20 2C17.5 -0.5 16 1 16 1L12.5 4.5" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
 );
+export const HeartIcon = ({ size = 24, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
