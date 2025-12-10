@@ -20,8 +20,8 @@ const FundingPrompt = () => {
                 Fund The Development
             </p>
             <p style={{ color: "#b45309", marginBottom: "1.5rem", fontSize: "0.95rem" }}>
-                Running these heavy diagnostics costs server resources. <br />
-                Support the project to keep it free for everyone.
+                Help us keep improving the diagnosis engine. <br />
+                Fund for future development.
             </p>
             <a href="https://www.buymeacoffee.com" target="_blank" rel="noopener noreferrer"
                 style={{
