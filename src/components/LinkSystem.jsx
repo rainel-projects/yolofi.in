@@ -115,12 +115,14 @@ const LinkSystem = () => {
                 {/* --- HOST: SHOW OFFER --- */}
                 {mode === "HOST_GENERATE" && (
                     <div className="center-view">
-                        <h3>Session Token Generated</h3>
-                        <p style={{ marginBottom: '10px' }}>1. Copy this token and send it to your Guest.</p>
+                        <h3>{status === "GENERATING_OFFER" ? "Generating Token..." : "Session Token Generated"}</h3>
+                        <p style={{ marginBottom: '10px' }}>
+                            {status === "GENERATING_OFFER" ? "Gathering secure candidates (this may take a few seconds)..." : "1. Copy this token and send it to your Guest."}
+                        </p>
 
                         <div className="token-box">
-                            <textarea readOnly value={localCode} className="code-area" />
-                            <button className="copy-btn" onClick={copyToClipboard}>{copyStatus}</button>
+                            <textarea readOnly value={status === "GENERATING_OFFER" ? "..." : localCode} className="code-area" />
+                            {status !== "GENERATING_OFFER" && <button className="copy-btn" onClick={copyToClipboard}>{copyStatus}</button>}
                         </div>
 
                         <p style={{ marginTop: '20px', marginBottom: '10px' }}>2. Paste the Guest's response token below:</p>
