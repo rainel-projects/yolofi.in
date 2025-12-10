@@ -21,29 +21,27 @@ const LinkSystem = () => {
 
     // --- HOST LOGIC (Target) ---
     const startHosting = async () => {
-        setStatus("CREATING");
+        // OPTIMISTIC UPDATE: Show UI immediately
         const newId = generateSessionId();
+        setSessionId(newId);
+        setMode("HOST");
+        setStatus("IDLE");
 
-        try {
-            await setDoc(doc(db, "sessions", newId), {
-                created: Date.now(),
-                status: "WAITING",
-                hostData: null,
-                activeUsers: 0
-            });
+        // Save to LocalStorage immediately so they can "Open Dashboard" validation works
+        localStorage.setItem("yolofi_session_id", newId);
+        localStorage.setItem("yolofi_session_role", "HOST");
 
-            setSessionId(newId);
-            setMode("HOST");
-            setStatus("IDLE");
-
-            localStorage.setItem("yolofi_session_id", newId);
-            localStorage.setItem("yolofi_session_role", "HOST");
-
-        } catch (e) {
-            console.error("Error creating session:", e);
-            setStatus("ERROR");
-            setErrorMsg("Connection failed. Check internet.");
-        }
+        // Background: Sync to Firebase
+        // We don't await this for the UI transition, but we catch errors
+        setDoc(doc(db, "sessions", newId), {
+            created: Date.now(),
+            status: "WAITING",
+            hostData: null,
+            activeUsers: 0
+        }).catch(e => {
+            console.error("Background session creation failed:", e);
+            setErrorMsg("Network warning: Session might not be visible to guests yet.");
+        });
     };
 
     // --- JOIN LOGIC (Observer) ---
