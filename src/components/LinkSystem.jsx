@@ -27,21 +27,17 @@ const LinkSystem = () => {
         };
     }, []);
 
-    // --- HOST: HIGH-PERFORMANCE REGISTER ---
+    // --- HOST: OFFLINE-FIRST REGISTER ---
     const startHosting = async () => {
         setMode("HOST_WAITING");
-        setStatus("CONNECTING_DB");
+        // Optimistic: We are "Connecting" but effectively "Live" locally immediately
+        setStatus("BROADCASTING");
         setErrorMsg(null);
-
-        try {
-            await enableNetwork(db);
-        } catch (e) { console.warn("Network enable warning:", e); }
 
         const newId = generateId();
         setMySessionId(newId);
 
         try {
-            setStatus("BROADCASTING");
             const batch = writeBatch(db);
 
             // 1. Session Ref
@@ -60,17 +56,14 @@ const LinkSystem = () => {
                 timestamp: Date.now()
             });
 
-            // 3. Commit with Timeout
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error("Network Timed Out")), 7000)
-            );
+            // 3. FIRE & FORGET (Optimistic)
+            // We do NOT await this. We trust Firestore's offline persistence queue.
+            batch.commit().catch(e => console.warn("Background Sync Warning:", e));
 
-            await Promise.race([batch.commit(), timeoutPromise]);
-
-            // Success
+            // 4. Update UI Instantly
             setStatus("ONLINE_WAITING");
 
-            // 4. Listen for Match
+            // 5. Listen for Match
             const unsub = onSnapshot(sessionRef, (snap) => {
                 const data = snap.data();
                 if (data && data.guestJoined) {
@@ -92,7 +85,7 @@ const LinkSystem = () => {
 
         } catch (e) {
             console.error(e);
-            setErrorMsg("Connection Failed: " + (e.message || "Unknown Error"));
+            setErrorMsg("Error: " + e.message);
             setStatus("ERROR");
         }
     };
