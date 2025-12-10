@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import peerRelay from "../services/PeerRelay"; // Import PeerRelay
 import CommandDeck from "./CommandDeck";
@@ -7,11 +7,15 @@ import FundingPrompt from "./FundingPrompt";
 import { ShieldIcon, CheckCircleIcon, ScanIcon } from "./Icons";
 import "./Diagnose.css"; // Shared styles
 
+// Helper
+const generateId = () => Math.floor(100000000000 + Math.random() * 900000000000).toString();
+
 const RemoteView = () => {
     const { sessionId } = useParams();
     const navigate = useNavigate();
     const [data, setData] = useState(null); // { status, progress, report }
-    const [status, setStatus] = useState("CONNECTING"); // CONNECTING, LIVE, DISCONNECTED
+    const [status, setStatus] = useState("CONNECTING"); // CONNECTING, MATCHED, LIVE, DISCONNECTED
+    const guestIdRef = useRef(generateId());
 
     useEffect(() => {
         if (!sessionId) return;
@@ -20,16 +24,33 @@ const RemoteView = () => {
             try {
                 await peerRelay.connect(); // Ensure connection
 
-                // Request Initial State (Sync Handshake)
-                console.log("📡 Requesting sync...");
-                peerRelay.multiplex('sync', { type: 'request-sync' }, sessionId);
+                const guestId = guestIdRef.current;
+                console.log(`🔑 Initializing Guest: ${guestId} -> Host: ${sessionId}`);
 
-                // Listen for Updates
+                // 2. Register (Essential for routing)
+                peerRelay.registerGuest(guestId);
+
+                // 3. Listen for Handshake Confirmations
+                peerRelay.on('MATCHED', (msg) => {
+                    if (msg.hostId === sessionId) {
+                        console.log("🤝 Connected to Host Swarm!");
+                        setStatus("MATCHED");
+
+                        // 4. NOW Request Initial State (Sync Handshake)
+                        peerRelay.multiplex('sync', { type: 'request-sync' }, sessionId);
+                    }
+                });
+
+                peerRelay.on('CLAIM_FAILED', (msg) => {
+                    console.error("Join failed:", msg.reason);
+                    setStatus("DISCONNECTED");
+                });
+
+                peerRelay.on('CONNECTION_LOST', () => setStatus("DISCONNECTED"));
+
+                // 5. Listen for Updates
                 peerRelay.onStream('sync', (msg, fromId) => {
-                    // Check if message is essentially payload or wrapped
-                    // New peerRelay.handleStream sends (msg.payload, msg.from)
-                    // So msg here is the payload
-
+                    // Need to inspect msg structure carefully
                     if (msg && msg.type === 'state-update') {
                         console.log("📥 State Received:", msg.data);
                         setData(msg.data);
@@ -37,7 +58,11 @@ const RemoteView = () => {
                     }
                 });
 
-                peerRelay.on('CONNECTION_LOST', () => setStatus("DISCONNECTED"));
+                // 6. Attempt to Join (Claim)
+                // Give a tiny delay to ensure server processed registration
+                setTimeout(() => {
+                    peerRelay.claimHost(sessionId, guestId);
+                }, 500);
 
             } catch (e) {
                 console.error("Connection failed:", e);
@@ -47,16 +72,17 @@ const RemoteView = () => {
 
         setupConnection();
 
-        // Heartbeat / Keepalive check? handled by PeerRelay
     }, [sessionId]);
 
-    if (status === "CONNECTING") {
+    if (status === "CONNECTING" || status === "MATCHED") {
         return (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#f9fafb" }}>
                 <div style={{ textAlign: "center" }}>
                     <div className="spinner-ring" style={{ margin: "0 auto 1rem" }}></div>
-                    <div style={{ fontSize: "1.5rem", color: "#6b7280" }}>Establishing Secure Link...</div>
-                    <div style={{ fontSize: "0.8rem", color: "#9ca3af", marginTop: '1rem' }}>Connecting to Host {sessionId}...</div>
+                    <div style={{ fontSize: "1.5rem", color: "#6b7280" }}>
+                        {status === "MATCHED" ? "Synchronizing State..." : "Establishing Secure Link..."}
+                    </div>
+                    <div style={{ fontSize: "0.8rem", color: "#9ca3af", marginTop: '1rem' }}>ID: {guestIdRef.current} • Target: {sessionId}</div>
                 </div>
             </div>
         );
@@ -74,13 +100,7 @@ const RemoteView = () => {
         );
     }
 
-    // WAITING STATE (Host hasn't started yet)
-    // Adjust logic: If data exists but report is null, it's WAITING/SCANNING
-    // If data is null, we are connecting (handled above).
-
-    // We reuse Diagnose logic but based on `data`
-
-    // Initial Ready State
+    // WAITING STATE (Host hasn't started yet but we are connected)
     if (data && data.status === "Host Ready" && !data.report) {
         return (
             <div className="diagnose-path">
@@ -113,7 +133,7 @@ const RemoteView = () => {
             <SignalOverlay />
             <div className="diagnose-path">
 
-                {data && (data.status.includes("Running") || data.status.includes("Optimizing") || data.status.includes("Check") || data.status.includes("Scanning") || data.status.includes("Init")) ? (
+                {data && (data.status.includes("Running") || data.status.includes("Optimizing") || data.status.includes("Check") || data.status.includes("Scanning") || data.status.includes("Init") || data.status.includes("Analysis")) ? (
                     <div className="section-content" style={{ textAlign: "center", width: "100%" }}>
                         <div className="scanner-ring" style={{ margin: "0 auto 2rem" }}>
                             <div className="scan-pulse" style={{ animationDuration: "1s" }}></div>
