@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { db } from "../firebase/config";
-import { doc, setDoc, getDoc, updateDoc, collection, onSnapshot, query, where, limit, deleteDoc, enableNetwork } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, collection, onSnapshot, query, where, limit, deleteDoc, enableNetwork, writeBatch } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { BoltIcon, ShieldIcon, ScanIcon } from "./Icons";
 import "./LinkSystem.css";
@@ -27,7 +27,7 @@ const LinkSystem = () => {
         };
     }, []);
 
-    // --- HOST: REGISTER & VERIFY ---
+    // --- HOST: HIGH-PERFORMANCE REGISTER ---
     const startHosting = async () => {
         setMode("HOST_WAITING");
         setStatus("CONNECTING_DB");
@@ -37,58 +37,56 @@ const LinkSystem = () => {
         setMySessionId(newId);
 
         try {
-            // 1. Create Data Structure
-            setStatus("REGISTERING_POOL");
+            // OPTIMIZATION: Use Batch Write (1 Network Request instead of 2 or 3)
+            setStatus("BROADCASTING");
 
-            // Write Session (Private)
-            await setDoc(doc(db, "sessions", newId), {
+            const batch = writeBatch(db);
+
+            // 1. Session Ref
+            const sessionRef = doc(db, "sessions", newId);
+            batch.set(sessionRef, {
                 created: Date.now(),
                 status: "WAITING",
                 hostJoined: true
             });
 
-            // Write Public Listing (The "Data Structure")
+            // 2. Public Ref
             const hostRef = doc(db, "public_hosts", newId);
-            await setDoc(hostRef, {
+            batch.set(hostRef, {
                 id: newId,
                 status: "AVAILABLE",
                 timestamp: Date.now()
             });
 
-            // 2. VERIFY REGISTRATION (Read-your-writes)
-            setStatus("VERIFYING");
-            const verifySnap = await getDoc(hostRef);
-            if (!verifySnap.exists()) {
-                throw new Error("Verification Failed: Validated write but document missing.");
-            }
+            // Commit both instantly
+            await batch.commit();
 
-            // 3. CONFIRMED
+            // 3. No Verification Loop needed - if commit() OK, we are live.
             setStatus("ONLINE_WAITING");
 
             // 4. Listen for Connection
-            const unsub = onSnapshot(doc(db, "sessions", newId), (snap) => {
+            const unsub = onSnapshot(sessionRef, (snap) => {
                 const data = snap.data();
                 if (data && data.guestJoined) {
                     setStatus("MATCHED");
                     sessionStorage.setItem("yolofi_session_id", newId);
                     sessionStorage.setItem("yolofi_session_role", "HOST");
 
-                    // Cleanup public
                     deleteDoc(hostRef).catch(() => { });
                     navigate('/diagnose');
                 }
             });
 
-            // Heartbeat
+            // Heartbeat (Low priority)
             const hb = setInterval(() => {
                 updateDoc(hostRef, { timestamp: Date.now() }).catch(() => { });
-            }, 4000);
+            }, 5000);
 
             return () => { clearInterval(hb); unsub(); };
 
         } catch (e) {
             console.error(e);
-            setErrorMsg("Registration Failed: " + e.message);
+            setErrorMsg("Broadcast Error: " + e.message);
             setStatus("ERROR");
         }
     };
