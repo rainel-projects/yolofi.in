@@ -9,6 +9,7 @@ import Diagnose from "./components/Diagnose";
 import LiveActivity from "./components/LiveActivity";
 import LinkSystem from "./components/LinkSystem";
 import RemoteView from "./components/RemoteView";
+import MobileRestriction from "./components/MobileRestriction";
 import "./App.css";
 
 // Wrapper for Splash to handle navigation context
@@ -37,24 +38,26 @@ const HomePage = () => (
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Flow: Splash -> Start(Intro) -> Diagnose */}
-        <Route path="/" element={<SplashWrapper />} />
-        <Route path="/start" element={<IntroWrapper />} />
+      <MobileRestriction>
+        <Routes>
+          {/* Flow: Splash -> Start(Intro) -> Diagnose */}
+          <Route path="/" element={<SplashWrapper />} />
+          <Route path="/start" element={<IntroWrapper />} />
 
-        <Route path="/diagnose" element={
-          <div className="diagnose-page">
-            <Diagnose />
-          </div>
-        } />
+          <Route path="/diagnose" element={
+            <div className="diagnose-page">
+              <Diagnose />
+            </div>
+          } />
 
-        {/* New "Yolofi Link" Features */}
-        <Route path="/link" element={<LinkSystem />} />
-        <Route path="/remote/:sessionId" element={<RemoteView />} />
+          {/* New "Yolofi Link" Features */}
+          <Route path="/link" element={<LinkSystem />} />
+          <Route path="/remote/:sessionId" element={<RemoteView />} />
 
-        {/* Legacy/Dev Routes */}
-        <Route path="/home" element={<HomePage />} />
-      </Routes>
+          {/* Legacy/Dev Routes */}
+          <Route path="/home" element={<HomePage />} />
+        </Routes>
+      </MobileRestriction>
     </BrowserRouter>
   );
 }

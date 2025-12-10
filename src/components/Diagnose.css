@@ -14,10 +14,8 @@ body {
 /* MAIN LAYOUT - Spacious & Centered */
 .diagnose-path {
     width: 90%;
-    /* More breathing room on sides */
     max-width: 1200px;
     margin: 4rem auto;
-    /* Increased top/bottom margin */
     padding: 2rem;
     box-sizing: border-box;
 
@@ -29,6 +27,8 @@ body {
     justify-content: center;
     align-items: center;
     text-align: left;
+    position: relative;
+    /* Context for absolute positioning if needed */
 }
 
 /* CONTENT BLOCK */
@@ -288,11 +288,14 @@ p {
 @media (max-width: 900px) {
     .diagnose-path {
         flex-direction: column;
-        padding: 2rem 1rem;
+        padding: 2rem 1rem 6rem;
+        /* Extra bottom padding for chat button */
         gap: 3rem;
     }
 
     .diagnostic-report {
         padding: 1.5rem;
     }
+
+    /* Ensure chat floating button doesn't block content interacting */
 }

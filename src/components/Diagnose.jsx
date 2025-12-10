@@ -2,35 +2,35 @@ import React, { useState, useEffect } from "react";
 import { doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { useNavigate } from "react-router-dom";
-import BrowserEngine from "../utils/BrowserEngine"; // THE REAL ENGINE
+import BrowserEngine from "../utils/BrowserEngine";
 import ChatSystem from "./ChatSystem";
 import "./Diagnose.css";
 // Icons
 import {
-    CpuIcon, ShieldIcon, NetworkIcon,
-    TrashIcon, BrainIcon, ScanIcon, CheckCircleIcon
+    ShieldIcon, BrainIcon, ScanIcon, CheckCircleIcon
 } from "./Icons";
 
 const Diagnose = () => {
     const navigate = useNavigate();
-    const [view, setView] = useState("IDLE"); // IDLE, SCANNING, REPORT, OPTIMIZING, RESULTS
+    const [view, setView] = useState("IDLE");
     const [progress, setProgress] = useState(0);
     const [loadingText, setLoadingText] = useState("Initializing Brain...");
     const [report, setReport] = useState(null);
     const [sessionId, setSessionId] = useState(null);
+    const [showChat, setShowChat] = useState(false); // Floating chat toggle
 
     // Sync state for remote view
     const isHost = localStorage.getItem("yolofi_session_role") === "HOST";
 
     useEffect(() => {
-        // Check if we are hosting a session
         const storedSession = localStorage.getItem("yolofi_session_id");
         if (storedSession && isHost) {
             setSessionId(storedSession);
+            setShowChat(true); // Auto-open chat if session active
         }
     }, [isHost]);
 
-    // Helper: Push updates to Firebase for Guest to see
+    // Helper: Push updates to Firebase
     const syncToRemote = async (status, progressVal, reportData = null) => {
         if (!sessionId) return;
         try {
@@ -39,7 +39,6 @@ const Diagnose = () => {
                 "hostData.progress": progressVal
             };
             if (reportData) updatePayload["hostData.report"] = reportData;
-
             await updateDoc(doc(db, "sessions", sessionId), updatePayload);
         } catch (e) {
             console.error("Sync error:", e);
@@ -58,7 +57,6 @@ const Diagnose = () => {
             { text: "Scanning DOM Structure...", prog: 80 }
         ];
 
-        // Visual progress simulation before real results
         for (let step of steps) {
             setLoadingText(step.text);
             setProgress(step.prog);
@@ -66,9 +64,7 @@ const Diagnose = () => {
             await new Promise(r => setTimeout(r, 600));
         }
 
-        // REAL ENGINE EXECUTION
         const fullReport = await BrowserEngine.runFullDiagnostics();
-
         setReport(fullReport);
         setProgress(100);
         setView("REPORT");
@@ -90,19 +86,16 @@ const Diagnose = () => {
             const p = Math.round(((i + 1) / fixes.length) * 100);
             setProgress(p);
             syncToRemote(fixes[i].name, p);
-
-            // Execute real fix
             await fixes[i].action();
-            await new Promise(r => setTimeout(r, 800)); // Visual pacing
+            await new Promise(r => setTimeout(r, 800));
         }
 
-        // Finalize
         await updateDoc(doc(db, "marketing", "stats"), {
-            issuesResolved: increment(5), // Arbitrary "5 fixes" per run
+            issuesResolved: increment(5),
             totalOptimizations: increment(1)
         });
 
-        const finalScore = Math.min(100, (report.score || 80) + 15); // Boost score
+        const finalScore = Math.min(100, (report.score || 80) + 15);
         const finalReport = { ...report, score: finalScore, optimized: true };
 
         setReport(finalReport);
@@ -110,99 +103,145 @@ const Diagnose = () => {
         syncToRemote("Optimization Complete", 100, finalReport);
     };
 
-    // ---------------- RENDER ----------------
+    // --- RENDERING ---
     return (
-        <div className="layout-container" style={{ display: "flex", height: "100vh", overflow: "hidden", background: "#f9fafb" }}>
-
-            {/* LEFT: MAIN DIAGNOSTIC PANEL */}
-            <div className="main-panel" style={{ flex: 2, padding: "2rem", overflowY: "auto", borderRight: "1px solid #e5e7eb" }}>
+        <div style={{ position: "relative", minHeight: "100vh" }}>
+            <div className="diagnose-path">
 
                 {view === "IDLE" && (
-                    <div className="center-card">
-                        <div className="pulse-circle">
-                            <BrainIcon size={64} color="#4f46e5" />
+                    <>
+                        <div className="section-content">
+                            <h2 style={{ fontSize: "3rem", marginBottom: "1.5rem" }}>System Intelligence</h2>
+                            <p style={{ fontSize: "1.25rem", color: "#4b5563", marginBottom: "2rem" }}>
+                                Advanced runtime diagnostics engine. Detects memory leaks, storage bloat, and network latency in real-time.
+                            </p>
+                            <button className="scan-button" onClick={runDiagnostics}>
+                                <ScanIcon size={24} /> Start Full Scan
+                            </button>
+                            {sessionId && (
+                                <div style={{ marginTop: "1rem", color: "#10b981", fontWeight: "600" }}>
+                                    ● Sharing Session: {sessionId}
+                                </div>
+                            )}
                         </div>
-                        <h1>System Intelligence</h1>
-                        <p>Ready to analyze your browser runtime.</p>
-                        <button className="primary-btn" onClick={runDiagnostics}>
-                            <ScanIcon size={20} /> Start Full Scan
-                        </button>
-                    </div>
+                        <div className="section-visual">
+                            <div className="scanner-ring">
+                                <div className="scan-pulse"></div>
+                                <BrainIcon size={80} color="#2563eb" />
+                            </div>
+                        </div>
+                    </>
                 )}
 
                 {(view === "SCANNING" || view === "OPTIMIZING") && (
-                    <div className="center-card">
-                        <div className="spinner-ring"></div>
-                        <h2>{loadingText}</h2>
-                        <div className="progress-bar">
-                            <div className="fill" style={{ width: `${progress}%` }}></div>
+                    <div className="section-content" style={{ textAlign: "center", width: "100%" }}>
+                        <div className="scanner-ring" style={{ margin: "0 auto 2rem" }}>
+                            <div className="scan-pulse" style={{ animationDuration: "1s" }}></div>
+                            <ScanIcon size={60} color="#2563eb" />
                         </div>
-                        <p className="mono">{progress}%</p>
+                        <h2>{loadingText}</h2>
+                        <div style={{ width: "100%", maxWidth: "400px", height: "8px", background: "#e5e7eb", borderRadius: "4px", margin: "1.5rem auto", overflow: "hidden" }}>
+                            <div style={{ width: `${progress}%`, height: "100%", background: "#2563eb", transition: "width 0.3s ease" }}></div>
+                        </div>
+                        <p className="scan-time">{progress}% COMPLETE</p>
                     </div>
                 )}
 
                 {(view === "REPORT" || view === "RESULTS") && report && (
-                    <div className="report-view">
-                        <div className="score-header">
-                            <div className="score-ring" style={{ borderColor: view === "RESULTS" ? "#10b981" : "#f59e0b" }}>
-                                <span>{report.score}</span>
-                                <small>Health Score</small>
+                    <div className="diagnostic-report">
+                        <div className="report-header">
+                            <div style={{
+                                width: "48px", height: "48px", borderRadius: "50%",
+                                background: view === "RESULTS" ? "#dcfce7" : "#fee2e2",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                color: view === "RESULTS" ? "#166534" : "#991b1b"
+                            }}>
+                                {view === "RESULTS" ? <CheckCircleIcon size={28} /> : <ShieldIcon size={28} />}
                             </div>
                             <div>
-                                <h2>{view === "RESULTS" ? "System Optimized" : "Issues Detected"}</h2>
-                                <p>{view === "RESULTS" ? "Your browser is running at peak performance." : "Optimization recommended."}</p>
+                                <h3>{view === "RESULTS" ? "Optimization Successful" : "System Analysis Report"}</h3>
+                                <p className="scan-time">SESSION ID: {sessionId || "LOCAL-" + Date.now().toString().slice(-6)}</p>
+                            </div>
+                            <div style={{ marginLeft: "auto", fontSize: "2rem", fontWeight: "800", color: view === "RESULTS" ? "#10b981" : "#f59e0b" }}>
+                                {report.score} <span style={{ fontSize: "1rem", color: "#6b7280" }}>/ 100</span>
                             </div>
                         </div>
 
-                        <div className="metrics-grid">
-                            <div className="metric-card">
-                                <h3>Storage Junk</h3>
-                                <div className="value">{report.storage.issues.length} Items</div>
-                                <div className="status">{report.storage.status}</div>
+                        <div className="info-grid">
+                            <div className="info-item">
+                                <span className="info-label">Storage Junk</span>
+                                <span className="info-value">{report.storage.issues.length} Files</span>
                             </div>
-                            <div className="metric-card">
-                                <h3>Memory Usage</h3>
-                                <div className="value">{report.memory.usage}</div>
-                                <div className="status">{report.memory.potentialLeak ? "High" : "Normal"}</div>
+                            <div className="info-item">
+                                <span className="info-label">Memory Heap</span>
+                                <span className="info-value">{report.memory.usage}</span>
                             </div>
-                            <div className="metric-card">
-                                <h3>Network</h3>
-                                <div className="value">{report.network.latency}</div>
-                                <div className="status">{report.network.offline ? "Offline" : "Online"}</div>
+                            <div className="info-item">
+                                <span className="info-label">Network Latency</span>
+                                <span className="info-value">{report.network.latency}</span>
+                            </div>
+                            <div className="info-item">
+                                <span className="info-label">DOM Nodes</span>
+                                <span className="info-value">{report.dom.totalNodes}</span>
                             </div>
                         </div>
 
                         {view === "REPORT" && (
-                            <button className="primary-btn pulse-btn" onClick={startOptimization}>
-                                <ShieldIcon size={18} /> Fix All Issues
+                            <button className="scan-button" onClick={startOptimization}>
+                                <ShieldIcon size={20} /> Resolve All Issues
                             </button>
                         )}
 
                         {view === "RESULTS" && (
-                            <button className="secondary-btn" onClick={() => navigate('/')}>
-                                <CheckCircleIcon size={18} /> Finish
-                            </button>
+                            <div style={{ textAlign: "center" }}>
+                                <p>System is now running at peak efficiency.</p>
+                                <button className="feedback-btn" onClick={() => navigate('/')}>Return to Dashboard</button>
+                            </div>
                         )}
                     </div>
                 )}
+
             </div>
 
-            {/* RIGHT: COLLABORATION PANEL */}
-            {sessionId ? (
-                <div className="side-panel" style={{ flex: 1, background: "#f3f4f6", padding: "1rem" }}>
-                    <div style={{ marginBottom: "1rem", padding: "1rem", background: "#e0e7ff", borderRadius: "12px", color: "#3730a3" }}>
-                        <strong>Session Active</strong><br />
-                        Code: <span style={{ fontFamily: "monospace" }}>{sessionId}</span>
-                    </div>
-                    {/* CHAT WIDGET */}
-                    <ChatSystem sessionId={sessionId} role="HOST" />
-                </div>
-            ) : (
-                <div className="side-panel" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", borderLeft: "1px solid #e5e7eb", color: "#9ca3af" }}>
-                    <p>Start a session to chat.</p>
+            {/* FLOATING CHAT WIDGET (Bottom Right) */}
+            {sessionId && (
+                <div style={{
+                    position: "fixed", bottom: "20px", right: "20px", zIndex: 1000,
+                    width: showChat ? "350px" : "60px",
+                    height: showChat ? "500px" : "60px",
+                    transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
+                }}>
+                    {!showChat && (
+                        <button
+                            onClick={() => setShowChat(true)}
+                            style={{
+                                width: "100%", height: "100%", borderRadius: "50%",
+                                background: "#2563eb", color: "white", border: "none",
+                                boxShadow: "0 4px 12px rgba(37, 99, 235, 0.4)",
+                                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center"
+                            }}
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        </button>
+                    )}
+
+                    {showChat && (
+                        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
+                            {/* Custom Header to allow minimize */}
+                            <div style={{
+                                background: "#2563eb", padding: "8px 16px",
+                                borderRadius: "16px 16px 0 0", color: "white",
+                                display: "flex", justifyContent: "space-between", alignItems: "center",
+                                cursor: "pointer"
+                            }} onClick={() => setShowChat(false)}>
+                                <span style={{ fontSize: "0.9rem", fontWeight: "600" }}>Session Chat</span>
+                                <span>_</span>
+                            </div>
+                            <ChatSystem sessionId={sessionId} role="HOST" />
+                        </div>
+                    )}
                 </div>
             )}
-
         </div>
     );
 };
