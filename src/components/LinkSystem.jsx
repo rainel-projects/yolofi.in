@@ -136,12 +136,24 @@ const LinkSystem = () => {
                     }}>
                         {sessionId}
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", color: "#059669" }}>
-                        <div style={{ width: "8px", height: "8px", background: "#059669", borderRadius: "50%", animation: "pulse 2s infinite" }}></div>
-                        Waiting for connection...
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", color: "#6b7280", marginBottom: "2rem" }}>
+                        Share this code with the support technician.
                     </div>
-                    <p style={{ marginTop: "2rem", fontSize: "0.9rem", color: "#4f46e5" }}>
-                        Once connected, your diagnostic results will appear on the other device automatically.
+
+                    <button
+                        onClick={() => navigate('/diagnose')}
+                        style={{
+                            background: "#4f46e5", color: "white", padding: "14px 40px",
+                            border: "none", borderRadius: "8px", fontWeight: "600",
+                            cursor: "pointer", fontSize: "1.1rem", width: "100%",
+                            boxShadow: "0 4px 12px rgba(79, 70, 229, 0.3)"
+                        }}
+                    >
+                        Start Diagnostics Now
+                    </button>
+
+                    <p style={{ marginTop: "1rem", fontSize: "0.85rem", color: "#6b7280" }}>
+                        Keep this tab open until you start.
                     </p>
                     <button
                         onClick={() => window.location.reload()}

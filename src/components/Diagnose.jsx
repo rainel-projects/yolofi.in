@@ -21,12 +21,44 @@ const Diagnose = () => {
     const containerRef = useRef(null);
     const showFill = useAutoFillSpace(containerRef);
 
+    // --- HELPER: Sync to Remote Session ---
+    const syncToRemote = async (payload) => {
+        const activeSessionId = localStorage.getItem("yolofi_session_id");
+        if (activeSessionId) {
+            try {
+                const sessionRef = doc(db, "sessions", activeSessionId);
+                await updateDoc(sessionRef, {
+                    hostData: payload,
+                    lastUpdate: Date.now()
+                });
+            } catch (e) {
+                // Ignore silent errors
+            }
+        }
+    };
+
     const runDiagnostics = async () => {
         setViewState("SCANNING");
+
+        // Broadcast Start
+        syncToRemote({ status: "Scanning System...", progress: 0 });
+
+        // Simulated Progress Updates for Effect
+        setTimeout(() => syncToRemote({ status: "Analyzing CPU...", progress: 25 }), 600);
+        setTimeout(() => syncToRemote({ status: "Checking Memory...", progress: 50 }), 1200);
+        setTimeout(() => syncToRemote({ status: "Testing Network...", progress: 75 }), 1800);
+
         setTimeout(async () => {
             const report = await generateDiagnosticReport();
             setDiagnosticReport(report);
             setViewState("REPORT");
+
+            // Broadcast Report
+            syncToRemote({
+                status: "Analysis Complete",
+                progress: 100,
+                report: report
+            });
         }, 2500);
     };
 

@@ -53,7 +53,7 @@ const RemoteView = () => {
         );
     }
 
-    // Default empty state if connected but no data yet
+    // --- RENDER: CONNECTED BUT WAITING FOR SCAN ---
     if (!data) {
         return (
             <div style={{ textAlign: "center", padding: "4rem" }}>
@@ -64,15 +64,41 @@ const RemoteView = () => {
         );
     }
 
-    // --- RENDER REMOTE DATA ---
+    // --- RENDER: SCANNING IN PROGRESS ---
+    if (data.progress !== undefined && data.progress < 100) {
+        return (
+            <div style={{ maxWidth: "600px", margin: "4rem auto", padding: "2rem", textAlign: "center" }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", marginBottom: "1rem" }}>
+                    <div style={{ width: "10px", height: "10px", background: "#ef4444", borderRadius: "50%", animation: "pulse 1s infinite" }}></div>
+                    <span style={{ fontWeight: "700", color: "#111827" }}>LIVE DIAGNOSTIC</span>
+                </div>
+
+                <h2 style={{ fontSize: "1.5rem", marginBottom: "2rem", color: "#1f2937" }}>{data.status}</h2>
+
+                <div style={{ height: "12px", background: "#e5e7eb", borderRadius: "6px", overflow: "hidden", marginBottom: "1rem" }}>
+                    <div style={{ width: `${data.progress}%`, height: "100%", background: "#4f46e5", transition: "width 0.5s ease" }}></div>
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "space-between", color: "#6b7280", fontSize: "0.9rem" }}>
+                    <span>Initializing</span>
+                    <span>{data.progress}%</span>
+                </div>
+            </div>
+        );
+    }
+
+    // --- RENDER: COMPLETED OR RESULTS ---
+    // Handle both "Report Only" (pre-optimization) and "Optimization Result" (post-optimization)
+    const displayData = data.report || data;
+
     return (
         <div style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem" }}>
-            {/* HERADER */}
+            {/* HEADER */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", borderBottom: "1px solid #e5e7eb", paddingBottom: "1rem" }}>
                 <div>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <div style={{ width: "10px", height: "10px", background: "#ef4444", borderRadius: "50%", animation: "pulse 2s infinite" }}></div>
-                        <span style={{ fontSize: "0.85rem", color: "#ef4444", fontWeight: "600", letterSpacing: "1px" }}>LIVE VIEW</span>
+                        <div style={{ width: "10px", height: "10px", background: "#10b981", borderRadius: "50%" }}></div>
+                        <span style={{ fontSize: "0.85rem", color: "#10b981", fontWeight: "600", letterSpacing: "1px" }}>SESSION ACTIVE</span>
                     </div>
                     <h1 style={{ margin: "4px 0 0", fontSize: "1.5rem", color: "#111827" }}>Remote System Diagnostic</h1>
                     <div style={{ fontSize: "0.9rem", color: "#6b7280" }}>Session ID: {sessionId}</div>
@@ -85,10 +111,10 @@ const RemoteView = () => {
                 <div style={{ background: "white", padding: "1.5rem", borderRadius: "12px", border: "1px solid #e5e7eb" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "0.5rem", color: "#4f46e5" }}>
                         <CpuIcon size={20} />
-                        <span style={{ fontWeight: "600" }}>System Load</span>
+                        <span style={{ fontWeight: "600" }}>System Spec</span>
                     </div>
-                    <div style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#111827" }}>
-                        {data.memory?.status || "Analyzing..."}
+                    <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#111827" }}>
+                        {displayData.systemInfo?.memory || "Unknown"}
                     </div>
                 </div>
 
@@ -96,44 +122,45 @@ const RemoteView = () => {
                 <div style={{ background: "white", padding: "1.5rem", borderRadius: "12px", border: "1px solid #e5e7eb" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "0.5rem", color: "#10b981" }}>
                         <NetworkIcon size={20} />
-                        <span style={{ fontWeight: "600" }}>Latency</span>
+                        <span style={{ fontWeight: "600" }}>Network</span>
                     </div>
-                    <div style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#111827" }}>
-                        {data.network?.latency ? Math.round(data.network.latency) + " ms" : "--"}
+                    <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#111827" }}>
+                        {displayData.networkInfo?.speed || "--"}
                     </div>
                 </div>
 
-                {/* STORAGE */}
+                {/* STATUS */}
                 <div style={{ background: "white", padding: "1.5rem", borderRadius: "12px", border: "1px solid #e5e7eb" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "0.5rem", color: "#f59e0b" }}>
                         <ShieldIcon size={20} />
-                        <span style={{ fontWeight: "600" }}>Security</span>
+                        <span style={{ fontWeight: "600" }}>Health</span>
                     </div>
-                    <div style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#111827" }}>
-                        {data.score >= 80 ? "Protected" : "At Risk"}
+                    <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#111827" }}>
+                        {displayData.issues?.issues?.length > 0 ? `${displayData.issues.issues.length} Issues` : "Healthy"}
                     </div>
                 </div>
             </div>
 
             {/* DETAILED LOG */}
             <div style={{ background: "#1f2937", borderRadius: "12px", padding: "1.5rem", color: "#e5e7eb" }}>
-                <h3 style={{ margin: "0 0 1rem", borderBottom: "1px solid #374151", paddingBottom: "0.5rem" }}>Diagnostic Log</h3>
+                <h3 style={{ margin: "0 0 1rem", borderBottom: "1px solid #374151", paddingBottom: "0.5rem" }}>Live Event Log</h3>
                 <div style={{ fontFamily: "monospace", fontSize: "0.9rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                    {data.actions?.storage?.counts ? (
-                        <div style={{ color: "#10b981" }}>
-                            > Storage Analyzed: Found {data.actions.storage.counts.trash} junk items
-                        </div>
-                    ) : null}
-
-                    {data.actions?.workers?.removed ? (
-                        <div style={{ color: "#60a5fa" }}>
-                            > Background Tasks: Terminated {data.actions.workers.removed} processes
-                        </div>
-                    ) : null}
-
-                    <div style={{ color: "#9ca3af" }}>
-                        > System Status: {data.status || "Idle"}
+                    <div style={{ color: "#10b981" }}>
+                        > Connection Established: Stable
                     </div>
+                    <div style={{ color: "#9ca3af" }}>
+                        > System: {displayData.systemInfo?.os} {displayData.systemInfo?.browser}
+                    </div>
+                    {displayData.issues?.issues?.map((issue, idx) => (
+                        <div key={idx} style={{ color: "#ef4444" }}>
+                            > Warning: {issue.title}
+                        </div>
+                    ))}
+                    {data.scoreImprovement && (
+                        <div style={{ color: "#60a5fa", marginTop: "1rem" }}>
+                             > OPTIMIZATION COMPLETED. PERFORMANCE IMPROVED BY {data.scoreImprovement}%.
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
