@@ -290,13 +290,17 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
 
             {/* --- MONETIZATION 2: VOLUNTARY SUPPORT (Donation) --- */}
             <div style={{
-                marginBottom: "2rem", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: "12px",
+                marginBottom: "2rem", background: "linear-gradient(to right, #f8fafc, #f1f5f9)",
+                border: "1px solid #e2e8f0", borderRadius: "12px",
                 padding: "1.5rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem"
             }}>
-                <div style={{ textAlign: "center" }}>
-                    <h4 style={{ margin: "0 0 4px 0", color: "#92400e" }}>Support the Project</h4>
-                    <p style={{ margin: 0, fontSize: "0.9rem", color: "#b45309" }}>
-                        Yolofi is 100% free to use. If this tool saved you time or fixed your PC, consider supporting future development.
+                <div style={{ textAlign: "center", maxWidth: "400px" }}>
+                    <h4 style={{ margin: "0 0 6px 0", color: "#1e293b", fontSize: "1.1rem", fontWeight: "600" }}>
+                        Empower Future Innovation
+                    </h4>
+                    <p style={{ margin: 0, fontSize: "0.9rem", color: "#475569", lineHeight: "1.5" }}>
+                        We built Yolofi to provide professional-grade diagnostics completely free.
+                        Your contribution helps us maintain this standard and develop new features for everyone.
                     </p>
                 </div>
                 <a
@@ -304,12 +308,13 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                        background: "#ffdd00", color: "#000", padding: "10px 24px", borderRadius: "24px",
-                        textDecoration: "none", fontWeight: "700", fontSize: "0.9rem",
-                        boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", display: "inline-flex", alignItems: "center", gap: "8px"
+                        background: "#0f172a", color: "#ffffff", padding: "10px 24px", borderRadius: "8px",
+                        textDecoration: "none", fontWeight: "500", fontSize: "0.9rem",
+                        boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", display: "inline-flex", alignItems: "center", gap: "8px",
+                        transition: "transform 0.2s"
                     }}
                 >
-                    <span>☕</span> Buy us a Coffee
+                    Support the Mission
                 </a>
             </div>
 
