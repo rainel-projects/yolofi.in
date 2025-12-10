@@ -23,6 +23,10 @@ class PeerRelay {
         // Message Queueing for Offline Resilience
         this.messageQueue = [];
         this.reconnectTimeout = null;
+
+        // Keepalive
+        this.heartbeatInterval = null;
+        this.myId = null;
     }
 
     // EDGE FIRST: Find the fastest healthy shard
@@ -75,6 +79,10 @@ class PeerRelay {
                     this.connected = true;
                     this.reconnectAttempts = 0;
                     this.flushQueue();
+
+                    // Resumable session? If we have an ID, re-register?
+                    // For now, consumers should handle re-registration logic on re-connect if needed.
+
                     resolve();
                 };
 
@@ -100,6 +108,7 @@ class PeerRelay {
                 this.ws.onclose = () => {
                     console.log('❌ Connection lost');
                     this.connected = false;
+                    this.stopHeartbeat();
                     this.attemptReconnect();
                 };
 
@@ -181,17 +190,36 @@ class PeerRelay {
 
     registerHost(hostId) {
         console.log(`📡 Registering host: ${hostId}`);
+        this.myId = hostId;
         this.send({ type: 'HOST_REGISTER', id: hostId });
+        this.startHeartbeat();
     }
 
     registerGuest(guestId) {
         console.log(`📡 Registering guest: ${guestId}`);
+        this.myId = guestId;
         this.send({ type: 'GUEST_REGISTER', id: guestId });
+        this.startHeartbeat();
     }
 
     claimHost(hostId, guestId) {
         console.log(`📡 Claiming host: ${hostId} by guest: ${guestId}`);
         this.send({ type: 'CLAIM_HOST', hostId, guestId });
+    }
+
+    startHeartbeat() {
+        this.stopHeartbeat();
+        // Send heartbeat every 15s (server timeout is 30s)
+        this.heartbeatInterval = setInterval(() => {
+            if (this.myId) this.heartbeat(this.myId);
+        }, 15000);
+    }
+
+    stopHeartbeat() {
+        if (this.heartbeatInterval) {
+            clearInterval(this.heartbeatInterval);
+            this.heartbeatInterval = null;
+        }
     }
 
     heartbeat(id) {
@@ -206,6 +234,7 @@ class PeerRelay {
 
     disconnect() {
         if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
+        this.stopHeartbeat();
         if (this.ws) {
             this.ws.onclose = null;
             this.ws.close();
