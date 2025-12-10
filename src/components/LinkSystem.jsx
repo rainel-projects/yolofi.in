@@ -21,13 +21,12 @@ const LinkSystem = () => {
     const startHosting = async () => {
         setMode("HOST_WAITING");
 
-        // OPTIMISTIC UPDATE: Generate and show ID immediately so user isn't stuck waiting
+        // OPTIMISTIC UPDATE: Generate and show ID immediately
         let newId = generateRoomId();
         setMySessionId(newId);
 
         try {
             // COLLISION CHECK (Best Effort)
-            // If network is offline, we SKIP the check to allow the UI to function
             try {
                 let isUnique = false;
                 let retries = 0;
@@ -39,16 +38,15 @@ const LinkSystem = () => {
                     } else {
                         // Collision! Generate new one
                         newId = generateRoomId();
-                        setMySessionId(newId); // Update UI
+                        setMySessionId(newId);
                         retries++;
                     }
                 }
             } catch (networkError) {
                 console.warn("Offline/Network Error during check. Proceeding optimistically.", networkError);
-                // Proceed to 'setDoc' anyway - Firebase handles offline writes
             }
 
-            // 1. Create Private Sesion Doc
+            // 1. Create Private Session Doc
             const sessionRef = doc(db, "sessions", newId);
             await setDoc(sessionRef, {
                 created: Date.now(),
@@ -89,8 +87,6 @@ const LinkSystem = () => {
 
         } catch (e) {
             console.error("Host Error:", e);
-            // Even on error, we stay in "WAITING" mode if state was set
-            // Only alert if we critically failed before generating ID
             if (!newId) {
                 alert("Error: " + e.message);
                 setMode("MENU");
@@ -107,8 +103,6 @@ const LinkSystem = () => {
                 limit(20)
             );
 
-            // Using try/catch specifically for the listener setup isn't standard,
-            // but we can handle the error callback
             const unsub = onSnapshot(q, (snapshot) => {
                 const valid = [];
                 const now = Date.now();
@@ -121,7 +115,6 @@ const LinkSystem = () => {
                 setRecentHosts(valid);
             }, (error) => {
                 console.log("Guest list unavailable (Offline?):", error);
-                // Cannot fetch list, but manual search might still work if cache exists
             });
             return () => unsub();
         }
@@ -137,26 +130,17 @@ const LinkSystem = () => {
 
         setStatus("CONNECTING");
 
-        // BROADCAST CHECK (Offline Strategy)
-        // If the ID is already in our local list, we trust it and skip the network check
+        // 1. BROADCAST CACHE CHECK (Offline Strategy)
         const isCached = recentHosts.some(h => h.id === targetId);
 
         if (isCached) {
             console.log("Found in broadcast cache. Joining optimistically...");
             try {
-                // Determine if this is a valid room
                 const sessionRef = doc(db, "sessions", targetId);
-                // We attempt updateDoc - if offline, it queues.
-                // If we are truly offline, we can't 'verify' the session doc exists via getDoc first.
-                // But since we saw it in 'public_hosts', it likely exists.
                 await updateDoc(sessionRef, {
                     guestJoined: true,
                     status: "ACTIVE"
                 });
-
-                // If update throws (e.g. permission/offline), we catch below. 
-                // However, offline persistence writes don't throw immediately, they resolve.
-
                 sessionStorage.setItem("yolofi_session_id", targetId);
                 sessionStorage.setItem("yolofi_session_role", "GUEST");
                 navigate(`/remote/${targetId}`);
@@ -166,37 +150,46 @@ const LinkSystem = () => {
             }
         }
 
-        // FALLBACK: Standard Check (Requires Network or Cache Hit on Session Doc)
-        try {
-            const sessionRef = doc(db, "sessions", targetId);
-            const sessionSnap = await getDoc(sessionRef);
+        // 2. GLOBAL REALTIME SEARCH (Online Strategy)
+        // Uses onSnapshot to wait for ID to propagate globally (Australia -> India latency)
+        let found = false;
+        const sessionRef = doc(db, "sessions", targetId);
 
-            if (sessionSnap.exists()) {
-                await updateDoc(sessionRef, {
-                    guestJoined: true,
-                    status: "ACTIVE"
-                });
+        // Listen for up to 8 seconds
+        const unsub = onSnapshot(sessionRef, async (docSnap) => {
+            if (docSnap.exists() && !found) {
+                found = true;
+                unsub(); // Stop listening
 
-                sessionStorage.setItem("yolofi_session_id", targetId);
-                sessionStorage.setItem("yolofi_session_role", "GUEST");
-                navigate(`/remote/${targetId}`);
-            } else {
-                alert("Session ID not found. The host may be offline or the code is incorrect.");
+                try {
+                    await updateDoc(sessionRef, {
+                        guestJoined: true,
+                        status: "ACTIVE"
+                    });
+
+                    sessionStorage.setItem("yolofi_session_id", targetId);
+                    sessionStorage.setItem("yolofi_session_role", "GUEST");
+                    navigate(`/remote/${targetId}`);
+                } catch (writeErr) {
+                    console.error("Write failed:", writeErr);
+                    // Handle offline write queuing optimistically
+                    sessionStorage.setItem("yolofi_session_id", targetId);
+                    sessionStorage.setItem("yolofi_session_role", "GUEST");
+                    navigate(`/remote/${targetId}`);
+                }
+            }
+        }, (err) => {
+            console.error("Search listener error:", err);
+        });
+
+        // Timeout handler
+        setTimeout(() => {
+            if (!found) {
+                unsub();
                 setStatus("IDLE");
+                alert("Session ID not detected. \n\n1. Check the ID.\n2. Ensure Host is online.\n3. Verify internet connection.");
             }
-        } catch (e) {
-            console.error("Join Error:", e);
-
-            // Helpful error for user
-            let msg = "Connection Failed";
-            if (e.code === 'unavailable' || e.message.includes('offline')) {
-                msg = "Network Error: You are offline and this ID is not in your local cache.";
-            } else {
-                msg += ": " + e.message;
-            }
-            alert(msg);
-            setStatus("IDLE");
-        }
+        }, 8000);
     };
 
     // Helper to format ID nicely (123 456 789)
@@ -208,7 +201,6 @@ const LinkSystem = () => {
     return (
         <div className="link-system-container">
             <div className="glass-card">
-
                 {/* --- MENU --- */}
                 {mode === "MENU" && (
                     <>
@@ -283,7 +275,7 @@ const LinkSystem = () => {
                                 disabled={searchId.replace(/\D/g, '').length !== 9}
                                 onClick={() => joinSession(searchId)}
                             >
-                                Connect
+                                {status === "CONNECTING" ? "Searching..." : "Connect"}
                             </button>
                         </div>
 
@@ -291,9 +283,9 @@ const LinkSystem = () => {
 
                         {/* 2. Recent List */}
                         <div className="recent-list-container">
-                            <h4>Recent Broadcasts</h4>
+                            <h4>Global Public Sessions</h4>
                             {recentHosts.length === 0 ? (
-                                <div className="empty-list">No local hosts detected.</div>
+                                <div className="empty-list">No active sessions found.</div>
                             ) : (
                                 <div className="recent-list">
                                     {recentHosts.map(h => (
