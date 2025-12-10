@@ -52,27 +52,40 @@ const LinkSystem = () => {
         }
 
         setStatus("CONNECTING");
+        setErrorMsg(""); // Clear previous errors
+
+        // Timeout Promise (8 seconds)
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Connection timed out. Check internet.")), 8000)
+        );
+
         try {
             const sessionRef = doc(db, "sessions", inputCode);
-            const sessionSnap = await getDoc(sessionRef);
 
-            if (sessionSnap.exists()) {
-                await updateDoc(sessionRef, {
-                    guestJoined: Date.now()
-                });
+            // Race against timeout
+            await Promise.race([
+                (async () => {
+                    const sessionSnap = await getDoc(sessionRef);
+                    if (sessionSnap.exists()) {
+                        // Found! Join immediately
+                        localStorage.setItem("yolofi_session_id", inputCode);
+                        localStorage.setItem("yolofi_session_role", "GUEST");
 
-                localStorage.setItem("yolofi_session_id", inputCode);
-                localStorage.setItem("yolofi_session_role", "GUEST");
+                        // Notify host in background (don't block nav)
+                        updateDoc(sessionRef, { guestJoined: Date.now() }).catch(console.error);
 
-                navigate(`/remote/${inputCode}`);
-            } else {
-                setStatus("ERROR");
-                setErrorMsg("Session not found. Check code.");
-            }
+                        navigate(`/remote/${inputCode}`);
+                    } else {
+                        throw new Error("Session not found. Check code.");
+                    }
+                })(),
+                timeoutPromise
+            ]);
+
         } catch (e) {
             console.error("Join error:", e);
             setStatus("ERROR");
-            setErrorMsg("Could not connect.");
+            setErrorMsg(e.message || "Could not connect.");
         }
     };
 
