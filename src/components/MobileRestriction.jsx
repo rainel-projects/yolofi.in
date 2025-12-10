@@ -4,18 +4,33 @@ const MobileRestriction = ({ children }) => {
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
-        const checkScreenSize = () => {
-            // Using 1024px as standard tablet landscape/small laptop cutoff
-            // Anything smaller is restricted
-            setIsMobile(window.innerWidth < 1024);
+        const checkAccess = () => {
+            const path = window.location.pathname;
+            // Allow Guest/Host routes on mobile
+            if (path.startsWith('/link') || path.startsWith('/remote') || path.startsWith('/host-live') || path.startsWith('/join')) {
+                setIsMobile(false);
+                return;
+            }
+
+            const width = window.innerWidth;
+            const ua = navigator.userAgent.toLowerCase();
+            const isMobileDevice = /android|iphone|ipad|ipod/.test(ua);
+
+            // Strict check: Block if it's a phone (UA) OR small screen (< 1024)
+            // But if it's an iPad Pro (large screen), maybe allow? 
+            // Let's stick to the requested "Not for phones" -> UA check is best.
+            // But user said "url not for phones", implying desktop requirement.
+
+            if (isMobileDevice || width < 1024) {
+                setIsMobile(true);
+            } else {
+                setIsMobile(false);
+            }
         };
 
-        // Initial check
-        checkScreenSize();
-
-        // Listener
-        window.addEventListener('resize', checkScreenSize);
-        return () => window.removeEventListener('resize', checkScreenSize);
+        checkAccess();
+        window.addEventListener('resize', checkAccess);
+        return () => window.removeEventListener('resize', checkAccess);
     }, []);
 
     if (isMobile) {

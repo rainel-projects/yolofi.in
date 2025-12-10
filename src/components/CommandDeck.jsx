@@ -85,52 +85,13 @@ const CommandDeck = ({ role, sessionId }) => {
     }
 
     // GUEST VIEW
+    // GUEST VIEW (READ ONLY)
     return (
-        <div className="command-deck">
-            <div className="deck-header">
-                <TerminalIcon size={16} /> <span>COMMAND MODULE // {sessionId ? sessionId.slice(0, 6) : 'P2P'}</span>
-            </div>
-
-            <div className="deck-grid">
-                {/* SIGNALS */}
-                <div className="deck-section">
-                    <span className="deck-label">SIGNALS</span>
-                    <div className="signal-row">
-                        <button className="deck-btn signal-ping" onClick={() => sendSignal('PING')}>
-                            <ActivityIcon />
-                        </button>
-                        <button className="deck-btn signal-ack" onClick={() => sendSignal('ACK')}>
-                            <CheckCircleIcon />
-                        </button>
-                        <button className="deck-btn signal-warn" onClick={() => sendSignal('WARNING')}>
-                            <WifiIcon />
-                        </button>
-                    </div>
-                </div>
-
-                {/* ACTIONS */}
-                <div className="deck-section">
-                    <span className="deck-label">EXECUTABLES</span>
-                    <div className="action-grid">
-                        <button className="deck-btn action-item" onClick={() => sendCommand('SYSTEM_SCAN')}>
-                            <ScanIcon size={20} />
-                            <span>FULL SCAN</span>
-                        </button>
-                        <button className="deck-btn action-item" onClick={() => sendCommand('FLUSH_RAM')}>
-                            <TrashIcon size={20} />
-                            <span>FLUSH RAM</span>
-                        </button>
-                        <button className="deck-btn action-item" onClick={() => sendCommand('OPTIMIZE_DOM')}>
-                            <LayersIcon size={20} />
-                            <span>OPT DOM</span>
-                        </button>
-                        <button className="deck-btn action-item" onClick={() => sendCommand('STORAGE_PURGE')}>
-                            <BoltIcon size={20} />
-                            <span>PURGE CACHE</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <div className="deck-host-log">
+            <div className="deck-status-light" style={{ background: '#10b981', boxShadow: '0 0 10px #10b981' }}></div>
+            <span className="deck-log-text">
+                CONNECTED TO HOST // VIEW ONLY MODE // WAITING FOR UPDATES...
+            </span>
         </div>
     );
 };
