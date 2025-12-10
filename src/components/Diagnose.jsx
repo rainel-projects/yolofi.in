@@ -8,6 +8,8 @@ import useAutoFillSpace from "./useAutoFillSpace";
 import Optimizer from "./Optimizer";
 import GamifiedResults from "./GamifiedResults";
 import { classifyStorage, getMemoryStatus, warmNetwork } from "../utils/OptimizerBrain";
+import { db } from "../firebase/config";
+import { doc, updateDoc } from "firebase/firestore";
 
 const Diagnose = () => {
     // viewState: "IDLE" | "SCANNING" | "REPORT" | "OPTIMIZING" | "RESULTS"
@@ -33,9 +35,23 @@ const Diagnose = () => {
         setViewState("OPTIMIZING");
     };
 
-    const handleOptimizationComplete = (result) => {
+    const handleOptimizationComplete = async (result) => {
         setOptimizationResult(result);
         setViewState("RESULTS");
+
+        // --- YOLOFI LINK: Broadcast to Remote Viewer ---
+        const activeSessionId = localStorage.getItem("yolofi_session_id");
+        if (activeSessionId) {
+            try {
+                const sessionRef = doc(db, "sessions", activeSessionId);
+                await updateDoc(sessionRef, {
+                    status: "COMPLETED",
+                    hostData: { ...result, score: Math.min(85 + (result.scoreImprovement || 10), 100) }
+                });
+            } catch (e) {
+                console.error("Failed to sync remote data:", e);
+            }
+        }
     };
 
     const handleRescan = () => {
