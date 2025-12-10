@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { db } from "../firebase/config";
-import { doc, onSnapshot } from "firebase/firestore";
+import peerRelay from "../services/PeerRelay"; // Import PeerRelay
 import CommandDeck from "./CommandDeck";
 import SignalOverlay from "./SignalOverlay";
 import FundingPrompt from "./FundingPrompt";
@@ -11,27 +10,44 @@ import "./Diagnose.css"; // Shared styles
 const RemoteView = () => {
     const { sessionId } = useParams();
     const navigate = useNavigate();
-    const [data, setData] = useState(null);
+    const [data, setData] = useState(null); // { status, progress, report }
     const [status, setStatus] = useState("CONNECTING"); // CONNECTING, LIVE, DISCONNECTED
 
     useEffect(() => {
         if (!sessionId) return;
 
-        const sessionRef = doc(db, "sessions", sessionId);
-        const unsubscribe = onSnapshot(sessionRef, (docSnap) => {
-            if (docSnap.exists()) {
-                const sessionData = docSnap.data();
-                setData(sessionData.hostData);
-                setStatus("LIVE");
-            } else {
+        const setupConnection = async () => {
+            try {
+                await peerRelay.connect(); // Ensure connection
+
+                // Request Initial State (Sync Handshake)
+                console.log("📡 Requesting sync...");
+                peerRelay.multiplex('sync', { type: 'request-sync' }, sessionId);
+
+                // Listen for Updates
+                peerRelay.onStream('sync', (msg, fromId) => {
+                    // Check if message is essentially payload or wrapped
+                    // New peerRelay.handleStream sends (msg.payload, msg.from)
+                    // So msg here is the payload
+
+                    if (msg && msg.type === 'state-update') {
+                        console.log("📥 State Received:", msg.data);
+                        setData(msg.data);
+                        setStatus("LIVE");
+                    }
+                });
+
+                peerRelay.on('CONNECTION_LOST', () => setStatus("DISCONNECTED"));
+
+            } catch (e) {
+                console.error("Connection failed:", e);
                 setStatus("DISCONNECTED");
             }
-        }, (error) => {
-            console.error("Sync error:", error);
-            setStatus("DISCONNECTED");
-        });
+        };
 
-        return () => unsubscribe();
+        setupConnection();
+
+        // Heartbeat / Keepalive check? handled by PeerRelay
     }, [sessionId]);
 
     if (status === "CONNECTING") {
@@ -40,6 +56,7 @@ const RemoteView = () => {
                 <div style={{ textAlign: "center" }}>
                     <div className="spinner-ring" style={{ margin: "0 auto 1rem" }}></div>
                     <div style={{ fontSize: "1.5rem", color: "#6b7280" }}>Establishing Secure Link...</div>
+                    <div style={{ fontSize: "0.8rem", color: "#9ca3af", marginTop: '1rem' }}>Connecting to Host {sessionId}...</div>
                 </div>
             </div>
         );
@@ -51,14 +68,20 @@ const RemoteView = () => {
                 <div style={{ textAlign: "center", padding: "2rem", background: "white", borderRadius: "16px", border: "1px solid #fee2e2" }}>
                     <h2 style={{ color: "#ef4444", marginBottom: "1rem" }}>Signal Lost</h2>
                     <p style={{ color: "#6b7280", marginBottom: "2rem" }}>The remote session has ended or is invalid.</p>
-                    <button onClick={() => navigate('/')} className="scan-button" style={{ background: "#ef4444", border: "none" }}>Return Home</button>
+                    <button onClick={() => navigate('/link')} className="scan-button" style={{ background: "#ef4444", border: "none" }}>Return to Hub</button>
                 </div>
             </div>
         );
     }
 
     // WAITING STATE (Host hasn't started yet)
-    if (!data) {
+    // Adjust logic: If data exists but report is null, it's WAITING/SCANNING
+    // If data is null, we are connecting (handled above).
+
+    // We reuse Diagnose logic but based on `data`
+
+    // Initial Ready State
+    if (data && data.status === "Host Ready" && !data.report) {
         return (
             <div className="diagnose-path">
                 <SignalOverlay />
@@ -85,13 +108,12 @@ const RemoteView = () => {
     }
 
     // LIVE DATA VIEW
-    // Reuse layout from Diagnose.jsx
     return (
         <div style={{ position: "relative", minHeight: "100vh" }}>
             <SignalOverlay />
             <div className="diagnose-path">
 
-                {data.status.includes("Running") || data.status.includes("Optimizing") || data.status.includes("Check") || data.status.includes("Scanning") ? (
+                {data && (data.status.includes("Running") || data.status.includes("Optimizing") || data.status.includes("Check") || data.status.includes("Scanning") || data.status.includes("Init")) ? (
                     <div className="section-content" style={{ textAlign: "center", width: "100%" }}>
                         <div className="scanner-ring" style={{ margin: "0 auto 2rem" }}>
                             <div className="scan-pulse" style={{ animationDuration: "1s" }}></div>
@@ -105,7 +127,7 @@ const RemoteView = () => {
                     </div>
                 ) : (
                     // REPORT VIEW
-                    data.report && (
+                    data && data.report && (
                         <div className="diagnostic-report">
                             <div className="report-header">
                                 <div style={{
@@ -125,19 +147,15 @@ const RemoteView = () => {
                             <div className="info-grid">
                                 <div className="info-item">
                                     <span className="info-label">Storage Junk</span>
-                                    <span className="info-value">{data.report.storage?.issues?.length || 0} Files</span>
+                                    <span className="info-value">{data.report.storage?.issues?.length || data.report.storage?.keyCount || 0} Files</span>
                                 </div>
                                 <div className="info-item">
                                     <span className="info-label">Memory Heap</span>
-                                    <span className="info-value">{data.report.memory?.usage || "N/A"}</span>
-                                </div>
-                                <div className="info-item">
-                                    <span className="info-label">Network Latency</span>
-                                    <span className="info-value">{data.report.network?.latency || "N/A"}</span>
+                                    <span className="info-value">{data.report.memory?.usage || data.report.memory?.usedJSHeap || "N/A"}</span>
                                 </div>
                                 <div className="info-item">
                                     <span className="info-label">DOM Nodes</span>
-                                    <span className="info-value">{data.report.dom?.totalNodes || "N/A"}</span>
+                                    <span className="info-value">{data.report.dom?.totalNodes || data.report.memory?.domNodes || "N/A"}</span>
                                 </div>
                             </div>
 

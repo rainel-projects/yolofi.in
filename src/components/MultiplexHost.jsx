@@ -1,28 +1,26 @@
 import React, { useState, useEffect, useRef } from "react";
-import { doc, updateDoc, increment } from "firebase/firestore";
-import { db } from "../firebase/config";
 import { useNavigate } from "react-router-dom";
 import BrowserEngine from "../utils/BrowserEngine";
-import peerRelay from "../services/PeerRelay"; // Import PeerRelay
+import peerRelay from "../services/PeerRelay";
 import CommandDeck from "./CommandDeck";
 import SignalOverlay from "./SignalOverlay";
 import FundingPrompt from "./FundingPrompt";
+// Ensure CSS is reused or new
 import "./Diagnose.css";
-// Icons
 import {
     ShieldIcon, BrainIcon, ScanIcon, CheckCircleIcon
 } from "./Icons";
 
-const Diagnose = () => {
+const MultiplexHost = () => {
     const navigate = useNavigate();
     const [view, setView] = useState("IDLE");
     const [progress, setProgress] = useState(0);
     const [loadingText, setLoadingText] = useState("Initializing Brain...");
     const [report, setReport] = useState(null);
     const [sessionId, setSessionId] = useState(null);
-    const [sessionStatus, setSessionStatus] = useState("INIT"); // INIT, ACTIVE
-    
-    // Keep track of latest state to send to new guests
+    const [status, setStatus] = useState("CONNECTING");
+
+    // Persist state for sync
     const latestStateRef = useRef({
         status: "Host Ready",
         progress: 0,
@@ -33,45 +31,39 @@ const Diagnose = () => {
         const storedSession = sessionStorage.getItem("yolofi_session_id");
         if (storedSession) {
             setSessionId(storedSession);
-            setSessionStatus("ACTIVE");
-
-            // Ensure Connection & Setup Listeners
-            const setupConnection = async () => {
-                try {
-                    await peerRelay.connect(); // Idempotent
-                    
-                    // Listen for Sync Requests from new Guests (Fanout Support)
-                    peerRelay.onStream('sync', (payload, fromId) => {
-                        if (payload.type === 'request-sync') {
-                            console.log(`🔄 Sync requested by ${fromId}`);
-                            // Send current state specifically to that guest (or broadcast)
-                            // We broadcast to ensure everyone is consistent
-                            syncToRemote(latestStateRef.current.status, latestStateRef.current.progress, latestStateRef.current.report);
-                        }
-                    });
-
-                } catch (e) {
-                    console.error("Relay connection failed:", e);
-                }
-            };
-            setupConnection();
+            setStatus("ACTIVE");
+            connectRelay();
+        } else {
+            // If no session, go back
+            navigate('/link');
         }
     }, []);
 
-    const forceActivate = async () => {
-       // No-op or just ensure connection
-       peerRelay.connect();
-       setSessionStatus("ACTIVE");
+    const connectRelay = async () => {
+        try {
+            await peerRelay.connect();
+
+            // Listen for Sync Requests (Multiplex Channel 'sync')
+            peerRelay.onStream('sync', (payload, fromId) => {
+                if (payload.type === 'request-sync') {
+                    console.log(`🔄 Sync requested by Guest ${fromId}`);
+                    syncToRemote(); // Broadcast current state
+                }
+            });
+
+        } catch (e) {
+            console.error("Relay Connection Error:", e);
+            setStatus("ERROR");
+        }
     };
 
-    // Helper: Push updates via WebSocket Multiplexing (Edge First)
-    const syncToRemote = (status, progressVal, reportData = null) => {
-        if (!sessionId) return;
-        
-        // Update Ref
-        latestStateRef.current = { status, progress: progressVal, report: reportData };
+    // Broadcast state via WebSocket
+    const syncToRemote = (customStatus, customProg, customReport) => {
+        // Use args if provided, else current ref
+        if (customStatus !== undefined) latestStateRef.current.status = customStatus;
+        if (customProg !== undefined) latestStateRef.current.progress = customProg;
+        if (customReport !== undefined) latestStateRef.current.report = customReport;
 
-        // Broadcast to Session Channel 'sync'
         peerRelay.multiplex('sync', {
             type: 'state-update',
             data: latestStateRef.current
@@ -123,15 +115,6 @@ const Diagnose = () => {
             await new Promise(r => setTimeout(r, 800));
         }
 
-        try {
-            await updateDoc(doc(db, "marketing", "stats"), {
-                issuesResolved: increment(5),
-                totalOptimizations: increment(1)
-            });
-        } catch (err) {
-            console.error("Stats update failed (non-fatal):", err);
-        }
-
         const finalScore = Math.min(100, (report.score || 80) + 15);
         const finalReport = { ...report, score: finalScore, optimized: true };
 
@@ -140,45 +123,23 @@ const Diagnose = () => {
         syncToRemote("Optimization Complete", 100, finalReport);
     };
 
-    // --- RENDERING ---
     return (
         <div style={{ position: "relative", minHeight: "100vh" }}>
             <SignalOverlay />
             <div className="diagnose-path">
-
                 {view === "IDLE" && (
-                    <>
-                        <div className="section-content">
-                            <h2 style={{ fontSize: "3rem", marginBottom: "1.5rem" }}>System Intelligence</h2>
-                            <p style={{ fontSize: "1.25rem", color: "#4b5563", marginBottom: "2rem" }}>
-                                Advanced runtime diagnostics engine. Detects memory leaks, storage bloat, and network latency in real-time.
-                            </p>
-                            <button className="scan-button" onClick={runDiagnostics}>
-                                <ScanIcon size={24} /> Start Full Scan
-                            </button>
-                            {sessionId && (
-                                <div style={{ marginTop: "1rem" }}>
-                                    <div style={{ color: sessionStatus === "ACTIVE" ? "#10b981" : "#f59e0b", fontWeight: "600", marginBottom: "5px" }}>
-                                        ● Session: {sessionId} ({sessionStatus})
-                                    </div>
-                                    {sessionStatus !== "ACTIVE" && (
-                                        <button onClick={forceActivate} style={{
-                                            padding: "6px 12px", background: "#f59e0b", color: "white",
-                                            border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem"
-                                        }}>
-                                            ⚠️ Force Start Connection
-                                        </button>
-                                    )}
-                                </div>
-                            )}
+                    <div className="section-content">
+                        <h2 style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>Remote Diagnostics</h2>
+                        <div style={{ background: '#2563eb1a', padding: '10px', borderRadius: '8px', display: 'inline-block', marginBottom: '2rem' }}>
+                            <span style={{ color: '#2563eb', fontWeight: '600' }}>● Live Session: {sessionId}</span>
                         </div>
-                        <div className="section-visual">
-                            <div className="scanner-ring">
-                                <div className="scan-pulse"></div>
-                                <BrainIcon size={80} color="#2563eb" />
-                            </div>
-                        </div>
-                    </>
+                        <p style={{ color: "#4b5563", marginBottom: "2rem" }}>
+                            You are hosting a diagnostic session. Runs performed here will be synced to all connected guests.
+                        </p>
+                        <button className="scan-button" onClick={runDiagnostics}>
+                            <ScanIcon size={24} /> Run Session Scan
+                        </button>
+                    </div>
                 )}
 
                 {(view === "SCANNING" || view === "OPTIMIZING") && (
@@ -207,64 +168,45 @@ const Diagnose = () => {
                                 {view === "RESULTS" ? <CheckCircleIcon size={28} /> : <ShieldIcon size={28} />}
                             </div>
                             <div>
-                                <h3>{view === "RESULTS" ? "Optimization Successful" : "System Analysis Report"}</h3>
-                                <p className="scan-time">SESSION ID: {sessionId || "LOCAL-" + Date.now().toString().slice(-6)}</p>
+                                <h3>{view === "RESULTS" ? "System Optimized" : "Issue Report"}</h3>
+                                <p className="scan-time">SYNCED TO GUESTS</p>
                             </div>
                             <div style={{ marginLeft: "auto", fontSize: "2rem", fontWeight: "800", color: view === "RESULTS" ? "#10b981" : "#f59e0b" }}>
                                 {report.score} <span style={{ fontSize: "1rem", color: "#6b7280" }}>/ 100</span>
                             </div>
                         </div>
 
+                        {/* Reuse Grid */}
                         <div className="info-grid">
                             <div className="info-item">
                                 <span className="info-label">Storage Items</span>
-                                <span className="info-value">{report.storage?.keyCount || 0} Keys</span>
+                                <span className="info-value">{report.storage?.keyCount || 0}</span>
                             </div>
                             <div className="info-item">
-                                <span className="info-label">Memory Heap</span>
+                                <span className="info-label">Memory</span>
                                 <span className="info-value">{report.memory?.usedJSHeap || "N/A"}</span>
-                            </div>
-                            <div className="info-item">
-                                <span className="info-label">Device Tier</span>
-                                <span className="info-value">{report.deviceScore || "Standard"}</span>
-                            </div>
-                            <div className="info-item">
-                                <span className="info-label">DOM Nodes</span>
-                                <span className="info-value">{report.memory?.domNodes || 0}</span>
                             </div>
                         </div>
 
                         {view === "REPORT" && (
-                            <>
-                                <button className="scan-button" onClick={startOptimization}>
-                                    <ShieldIcon size={20} /> Resolve All Issues
-                                </button>
-                                <FundingPrompt />
-                            </>
+                            <button className="scan-button" onClick={startOptimization}>
+                                <ShieldIcon size={20} /> Fix All Issues
+                            </button>
                         )}
-
                         {view === "RESULTS" && (
                             <div style={{ textAlign: "center" }}>
-                                <p>System is now running at peak efficiency.</p>
-                                <FundingPrompt />
-                                <button className="feedback-btn" onClick={() => navigate('/')}>Return to Dashboard</button>
+                                <p>Session Complete. Guests have been notified.</p>
+                                <button className="feedback-btn" onClick={() => navigate('/link')}>Close Session</button>
                             </div>
                         )}
                     </div>
                 )}
-
             </div>
 
-
-
-            {/* LIVE COMMAND DECK (Host Receiver) */}
-            {
-                sessionId && (
-                    <CommandDeck role="HOST" sessionId={sessionId} />
-                )
-            }
-        </div >
+            {/* LIVE COMMAND DECK */}
+            <CommandDeck role="HOST" sessionId={sessionId} />
+        </div>
     );
 };
 
-export default Diagnose;
+export default MultiplexHost;

@@ -82,7 +82,7 @@ const LinkSystem = () => {
                 // For Fanout, we might want to stay here or go to Diagnose.
                 // Current flow: Go to Diagnose on first match.
                 // Subsequent matches will happen in background while in Diagnose.
-                setTimeout(() => navigate('/diagnose'), 500);
+                setTimeout(() => navigate('/host-live'), 500);
             });
 
             // Heartbeat

@@ -7,6 +7,7 @@ import Hero from "./components/Hero";
 import HowItWorks from "./components/HowItWorks";
 import Diagnose from "./components/Diagnose";
 import LiveActivity from "./components/LiveActivity";
+import MultiplexHost from "./components/MultiplexHost";
 import LinkSystem from "./components/LinkSystem";
 import RemoteView from "./components/RemoteView";
 import MobileRestriction from "./components/MobileRestriction";
@@ -52,6 +53,7 @@ export default function App() {
 
           {/* New "Yolofi Link" Features */}
           <Route path="/link" element={<LinkSystem />} />
+          <Route path="/host-live" element={<MultiplexHost />} />
           <Route path="/remote/:sessionId" element={<RemoteView />} />
 
           {/* Legacy/Dev Routes */}
