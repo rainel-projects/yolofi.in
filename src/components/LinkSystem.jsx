@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { db, auth } from "../firebase/config";
-import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
+import { db } from "../firebase/config";
 import { doc, setDoc, getDoc, updateDoc, collection, onSnapshot, query, where, orderBy, limit, deleteDoc, enableNetwork } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { BoltIcon, ShieldIcon, ScanIcon, SearchIcon, CheckCircleIcon } from "./Icons";
 import "./LinkSystem.css";
 
-// Generate 9-Digit ID
+// Generate 9-Digit ID (formatted as string)
 const generateRoomId = () => Math.floor(100000000 + Math.random() * 900000000).toString();
 
 const LinkSystem = () => {
@@ -17,41 +16,22 @@ const LinkSystem = () => {
     const [searchId, setSearchId] = useState("");
     const [status, setStatus] = useState("IDLE");
 
-    // AUTH STATE
-    const [isAuthReady, setIsAuthReady] = useState(false);
-    const [authError, setAuthError] = useState(null);
-
-    // 1. INITIALIZE CONNECTION & AUTH
+    // 1. INITIALIZE NETWORK (No Auth)
     useEffect(() => {
-        // Force network check
+        // Force network connection if possible
         try { enableNetwork(db); } catch (e) { }
-
-        const unsub = onAuthStateChanged(auth, (user) => {
-            if (user) {
-                console.log("✅ Authenticated as:", user.uid);
-                setIsAuthReady(true);
-            } else {
-                console.log("🔄 Signing in anonymously...");
-                signInAnonymously(auth).catch((error) => {
-                    console.error("Auth Fail:", error);
-                    setAuthError(error.message);
-                });
-            }
-        });
-        return () => unsub();
     }, []);
 
     // --- HOST LOGIC ---
     const startHosting = async () => {
-        if (!isAuthReady) { alert("Please wait for connection..."); return; }
         setMode("HOST_WAITING");
 
-        // Optimistic
+        // INSTANT ID GENERATION (Client Side)
         let newId = generateRoomId();
         setMySessionId(newId);
 
         try {
-            // Collision Check (Offline Safe)
+            // Collision Check (Best Effort - Skipped if offline)
             try {
                 const checkRef = doc(db, "sessions", newId);
                 const checkSnap = await getDoc(checkRef);
@@ -60,16 +40,16 @@ const LinkSystem = () => {
                     setMySessionId(newId);
                 }
             } catch (e) {
-                console.warn("Offline check skipped");
+                console.warn("Offline/Network check skipped. Using generated ID.");
             }
 
-            // 1. Create Private Sesion Doc
+            // 1. Create Private Doc (Unauthenticated)
             const sessionRef = doc(db, "sessions", newId);
             await setDoc(sessionRef, {
                 created: Date.now(),
                 status: "WAITING",
                 hostJoined: true,
-                hostUid: auth.currentUser.uid
+                hostUid: "anon_guest" // No real Auth UID
             });
 
             // 2. Publish to 'public_hosts'
@@ -78,7 +58,6 @@ const LinkSystem = () => {
                 lastActive: Date.now(),
                 status: "ONLINE"
             });
-            console.log("📡 Session Published:", newId);
 
             // 3. Listen for Guest Join
             const unsub = onSnapshot(sessionRef, (snap) => {
@@ -100,25 +79,26 @@ const LinkSystem = () => {
 
         } catch (e) {
             console.error("Host Error:", e);
-            alert("Error creating session: " + e.message);
-            setMode("MENU");
         }
     };
 
     // --- GUEST LOGIC ---
     useEffect(() => {
-        if (mode === "GUEST_FIND" && isAuthReady) {
+        if (mode === "GUEST_FIND") {
             const q = query(collection(db, "public_hosts"), orderBy("lastActive", "desc"), limit(20));
-            return onSnapshot(q, (snapshot) => {
+            // Realtime Listener
+            const unsub = onSnapshot(q, (snapshot) => {
                 const valid = [];
                 snapshot.forEach(d => valid.push(d.data()));
                 setRecentHosts(valid);
+            }, (err) => {
+                console.warn("Guest List Error (likely permission or offline):", err);
             });
+            return () => unsub();
         }
-    }, [mode, isAuthReady]);
+    }, [mode]);
 
     const joinSession = async (targetIdInput) => {
-        if (!isAuthReady) { alert("Connecting to network..."); return; }
         const targetId = targetIdInput.replace(/\D/g, "");
 
         if (!targetId || targetId.length !== 9) {
@@ -126,7 +106,6 @@ const LinkSystem = () => {
         }
 
         setStatus("CONNECTING");
-        console.log("🔍 Searching for:", targetId);
 
         // 1. CACHE CHECK
         if (recentHosts.some(h => h.id === targetId)) {
@@ -135,14 +114,13 @@ const LinkSystem = () => {
             return;
         }
 
-        // 2. REALTIME SEARCH (8s Limit)
+        // 2. REALTIME SEARCH
         let found = false;
         const sessionRef = doc(db, "sessions", targetId);
 
         const unsub = onSnapshot(sessionRef, (docSnap) => {
             if (docSnap.exists() && !found) {
                 found = true;
-                console.log("✅ Found Global Session!");
                 connectToId(targetId);
                 unsub();
             }
@@ -168,29 +146,17 @@ const LinkSystem = () => {
             navigate(`/remote/${id}`);
         } catch (e) {
             console.error("Join Failed:", e);
-            // Optimistic navigation for offline cases
             if (e.message.includes("offline")) {
                 navigate(`/remote/${id}`);
             } else {
-                alert("Connection Error: " + e.message);
+                // If it fails due to permissions, we alert but often navigating allows fallback
+                alert("Connection Error. Check console.");
                 setStatus("IDLE");
             }
         }
     };
 
     const formatIdDisplay = (id) => (id ? id.match(/.{1,3}/g) || [] : []);
-
-    if (!isAuthReady) {
-        return (
-            <div className="link-system-container">
-                <div className="glass-card center-view">
-                    <div className="pulse-circle"></div>
-                    <h3>Connecting to Secure Cloud...</h3>
-                    {authError && <p className="error-text">{authError}</p>}
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="link-system-container">
@@ -199,7 +165,7 @@ const LinkSystem = () => {
                     <>
                         <div className="intro-text">
                             <h2>Remote Diagnostics</h2>
-                            <p>Status: <span style={{ color: "#4ade80" }}>● Online</span></p>
+                            <p>Professional Peer-to-Peer Fix Tool</p>
                         </div>
                         <div className="role-grid">
                             <button className="role-card host" onClick={startHosting}>
