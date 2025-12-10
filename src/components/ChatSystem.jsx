@@ -14,7 +14,7 @@ const ChatSystem = ({ sessionId, role }) => {
         { label: "👋 Hello", text: "Hello! Ready to troubleshoot." },
         { label: "🚀 Start Scan", text: "/cmd START_SCAN", type: "COMMAND" },
         { label: "🧹 Clean RAM", text: "/cmd MEMORY_CLEANUP", type: "COMMAND" },
-        { label: "💾 Fix Storage", text: "/cmd STORAGE_FIX", type: "COMMAND" },
+        { label: "🔥 Stress Test", text: "/cmd STRESS_TEST", type: "COMMAND" },
         { label: "✅ All Good", text: "Everything looks good now." }
     ];
 
@@ -83,6 +83,14 @@ const ChatSystem = ({ sessionId, role }) => {
                 break;
             case "STORAGE_FIX":
                 await BrowserEngine.cleanupClientCaches();
+                break;
+            case "STRESS_TEST":
+                // Run stress test and report back
+                const result = await BrowserEngine.runStressTest();
+                await addDoc(collection(db, "sessions", sessionId, "messages"), {
+                    text: `🔥 STRESS TEST RESULTS:\nBlocked: ${result.blockingTime}\nOptimized: ${result.optimizedTime}\nVerdict: ${result.improvement}`,
+                    senderId: "SYSTEM", senderName: "System", role: "SYSTEM", timestamp: serverTimestamp()
+                });
                 break;
             default:
                 break;
