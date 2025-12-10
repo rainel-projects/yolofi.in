@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { doc, updateDoc, increment } from "firebase/firestore";
+import { doc, updateDoc, setDoc, increment } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { useNavigate } from "react-router-dom";
 import BrowserEngine from "../utils/BrowserEngine";
@@ -27,9 +27,25 @@ const Diagnose = () => {
         const storedSession = sessionStorage.getItem("yolofi_session_id");
         if (storedSession) {
             setSessionId(storedSession);
-            // Auto-open chat for BOTH Host and Guest
-            // This ensures they see the communication channel immediately
             setShowChat(true);
+
+            // INITIALIZE FIRESTORE SESSION (Vital for Guest to see anything)
+            const initSession = async () => {
+                try {
+                    await setDoc(doc(db, "sessions", storedSession), {
+                        hostData: {
+                            status: "Host Ready",
+                            progress: 0,
+                            report: null
+                        },
+                        timestamp: Date.now()
+                    }, { merge: true });
+                    console.log("✅ Session Document Initialized:", storedSession);
+                } catch (e) {
+                    console.error("Failed to init session:", e);
+                }
+            };
+            initSession();
         }
     }, []);
 
@@ -42,7 +58,9 @@ const Diagnose = () => {
                 "hostData.progress": progressVal
             };
             if (reportData) updatePayload["hostData.report"] = reportData;
-            await updateDoc(doc(db, "sessions", sessionId), updatePayload);
+
+            // Use setDoc with merge to ensure it works even if init failed slightly or connection was spotty
+            await setDoc(doc(db, "sessions", sessionId), updatePayload, { merge: true });
         } catch (e) {
             console.error("Sync error:", e);
         }
