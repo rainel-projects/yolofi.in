@@ -1,259 +1,227 @@
-import { db } from "../firebase/config"; // Not used here directly but good practice to keep imports clean if needed later, but actually PeerRelay is pure WS.
+import { db } from "../firebase/config";
 
 class PeerRelay {
     constructor() {
-        this.ws = null;
-        this.callbacks = {};
-        this.streamHandlers = {}; // channel -> callback
-        this.connected = false;
-
-        // Reliability
-        this.reconnectAttempts = 0;
-        this.maxReconnectAttempts = 10;
-        this.baseReconnectDelay = 1000;
-
-        // Edge Shards ( prioritized by latency )
-        // Edge Shards ( prioritized by latency )
         const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
         const hostname = window.location.hostname;
         const port = 8080;
 
         // Dynamic URL based on where the app is served from
-        const primaryShard = import.meta.env.VITE_RELAY_URL || `${protocol}://${hostname}:${port}`;
+        // If VITE_RELAY_URL is set, use it. Otherwise, construct likely URL.
+        // If testing on 'yolofi.in', using 'wss://yolofi.in:8080' is a good default assumption if not overridden.
+        // But for localhost, we stick to standard.
+        this.signalingUrl = import.meta.env.VITE_RELAY_URL || `${protocol}://${hostname}:${port}`;
 
-        this.shards = [
-            primaryShard,
-            // Fallbacks can be added here if needed, but for now we prioritize correct IP
-        ];
-        this.currentShard = null;
+        this.ws = null;
+        this.peers = new Map(); // guestId -> RTCPeerConnection
+        this.dataChannels = new Map(); // guestId -> RTCDataChannel
 
-        // Message Queueing for Offline Resilience
-        this.messageQueue = [];
-        this.reconnectTimeout = null;
+        this.myRole = null;
+        this.myKey = null;
+        this.connectedHostKey = null;
 
-        // Keepalive
-        this.heartbeatInterval = null;
-        this.myId = null;
+        this.callbacks = {};
+
+        this.iceServers = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:global.stun.twilio.com:3478' }
+            ]
+        };
     }
 
-    // EDGE FIRST: Find the fastest healthy shard
-    async findBestRelay() {
-        console.log('🌐 Pinging Edge Shards...');
-        const pings = this.shards.map(url => {
-            return new Promise((resolve) => {
-                const start = Date.now();
-                const ws = new WebSocket(url);
-                ws.onopen = () => {
-                    const latency = Date.now() - start;
-                    ws.close();
-                    resolve({ url, latency });
-                };
-                ws.onerror = () => resolve({ url, latency: Infinity });
-            });
+    // --- 1. CONNECT TO SIGNALING SERVER ---
+    connect() {
+        if (this.ws && (this.ws.readyState === WebSocket.OPEN)) return Promise.resolve();
+
+        return new Promise((resolve, reject) => {
+            console.log(`🔌 Connecting to Signaling: ${this.signalingUrl}`);
+            this.ws = new WebSocket(this.signalingUrl);
+
+            this.ws.onopen = () => {
+                console.log('✅ Connected to Signaling Server');
+                resolve();
+            };
+
+            this.ws.onmessage = (event) => this.handleSignalMessage(JSON.parse(event.data));
+
+            this.ws.onerror = (err) => {
+                console.error('Signaling Error:', err);
+                // Only reject if initial connect
+                if (!this.ws || this.ws.readyState !== WebSocket.OPEN) reject(err);
+            };
+
+            this.ws.onclose = () => {
+                console.warn('❌ Signaling Disconnected');
+                // Auto-reconnect logic could go here
+            };
         });
-
-        // Race with timeout? No, just wait for all settled or race them.
-        // Simple race:
-        const results = await Promise.all(pings);
-        const best = results.sort((a, b) => a.latency - b.latency)[0];
-
-        if (best.latency === Infinity) throw new Error("No available shards");
-        console.log(`⚡ Best Edge Found: ${best.url} (${best.latency}ms)`);
-        return best.url;
     }
 
-    async connect() {
-        if (this.ws && (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN)) {
-            return Promise.resolve();
-        }
+    // --- 2. REGISTRATION ---
+    registerHost(key) {
+        this.myRole = 'HOST';
+        this.myKey = key;
+        this.sendSignal({ type: 'REGISTER', key });
+    }
 
-        try {
-            // Select best shard if not already selected (or if reconnecting from scratch)
-            if (!this.currentShard) {
-                try {
-                    this.currentShard = await this.findBestRelay();
-                } catch (e) {
-                    console.warn("⚠️ Edge discovery failed, using default primary");
-                    this.currentShard = this.shards[0];
+    joinHost(key) {
+        this.myRole = 'GUEST';
+        this.connectedHostKey = key;
+        this.sendSignal({ type: 'JOIN', key });
+    }
+
+    // --- 3. SIGNALING HANDLER ---
+    async handleSignalMessage(msg) {
+        // console.log('📩 Signal:', msg.type);
+
+        switch (msg.type) {
+            case 'GUEST_JOINED':
+                // Host receives this. Initiate P2P to this Guest.
+                console.log(`👤 New Guest: ${msg.guestId}. Initiating P2P...`);
+                // Create Offer
+                this.createPeerConnection(msg.guestId, true);
+                break;
+
+            case 'SIGNAL':
+                // Routing P2P signals (SDP / ICE)
+                const { from, payload } = msg;
+                if (!this.peers.has(from)) {
+                    // Guest receives Offer -> Create PC (Passive)
+                    this.createPeerConnection(from, false);
                 }
-            }
 
-            return new Promise((resolve, reject) => {
-                this.ws = new WebSocket(this.currentShard);
+                const pc = this.peers.get(from);
 
-                this.ws.onopen = () => {
-                    console.log(`✅ Connected to Relay Node: ${this.currentShard}`);
-                    this.connected = true;
-                    this.reconnectAttempts = 0;
-                    this.flushQueue();
-
-                    // Resumable session? If we have an ID, re-register?
-                    // For now, consumers should handle re-registration logic on re-connect if needed.
-
-                    resolve();
-                };
-
-                this.ws.onmessage = (event) => {
-                    try {
-                        const msg = JSON.parse(event.data);
-
-                        // Handle Multiplexed Streams
-                        if (msg.type === 'MULTIPLEX') {
-                            this.handleStream(msg);
-                            return;
-                        }
-
-                        console.log('📩 Received:', msg.type);
-                        if (this.callbacks[msg.type]) {
-                            this.callbacks[msg.type](msg);
-                        }
-                    } catch (e) {
-                        console.error('Message parse error:', e);
+                if (payload.sdp) {
+                    await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+                    if (payload.sdp.type === 'offer') {
+                        const answer = await pc.createAnswer();
+                        await pc.setLocalDescription(answer);
+                        this.sendTargetSignal(from, { sdp: pc.localDescription });
                     }
-                };
+                } else if (payload.ice) {
+                    try {
+                        if (payload.ice) await pc.addIceCandidate(new RTCIceCandidate(payload.ice));
+                    } catch (e) { console.error('ICE Error', e); }
+                }
+                break;
 
-                this.ws.onclose = () => {
-                    console.log('❌ Connection lost');
-                    this.connected = false;
-                    this.stopHeartbeat();
-                    this.attemptReconnect();
-                };
+            case 'ERROR':
+                console.error('Signaling Error:', msg.message);
+                if (this.callbacks['ERROR']) this.callbacks['ERROR'](msg.message);
+                break;
+        }
+    }
 
-                this.ws.onerror = (error) => {
-                    console.error('WebSocket error:', error);
-                    this.lastError = { type: 'WS_ERROR', message: 'Connection Failed', details: error };
-                    // Only reject if it's the initial explicit connect call
-                    if (this.reconnectAttempts === 0 && !this.connected) reject(error);
-                };
+    // --- 4. WEBRTC CORE ---
+    createPeerConnection(peerId, isInitiator) {
+        console.log(`🛠️ Creating PC for ${peerId} (Initiator: ${isInitiator})`);
+
+        const pc = new RTCPeerConnection(this.iceServers);
+        this.peers.set(peerId, pc);
+
+        // ICE Candidates
+        pc.onicecandidate = (event) => {
+            if (event.candidate) {
+                this.sendTargetSignal(peerId, { ice: event.candidate });
+            }
+        };
+
+        pc.onconnectionstatechange = () => {
+            console.log(`📶 Connection State (${peerId}): ${pc.connectionState}`);
+            if (pc.connectionState === 'connected') {
+                if (this.callbacks['CONNECTED']) this.callbacks['CONNECTED'](peerId);
+            }
+        };
+
+        if (isInitiator) {
+            // Host creates Data Channel
+            const dc = pc.createDataChannel("yolofi_sync");
+            this.setupDataChannel(dc, peerId);
+
+            // Create Offer
+            pc.createOffer().then(offer => {
+                pc.setLocalDescription(offer);
+                this.sendTargetSignal(peerId, { sdp: offer });
             });
-        } catch (e) {
-            console.error("Connection Fatal Error", e);
-        }
-    }
-
-    attemptReconnect() {
-        if (this.reconnectAttempts < this.maxReconnectAttempts) {
-            // Rotate shards on failure
-            const nextShardIndex = (this.shards.indexOf(this.currentShard) + 1) % this.shards.length;
-            this.currentShard = this.shards[nextShardIndex];
-
-            const delay = Math.min(30000, (Math.pow(2, this.reconnectAttempts) * this.baseReconnectDelay) + (Math.random() * 1000));
-            this.reconnectAttempts++;
-
-            console.log(`🔄 Switching Shard -> ${this.currentShard}`);
-            console.log(`⏳ Reconnecting in ${Math.floor(delay)}ms... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-
-            if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
-            this.reconnectTimeout = setTimeout(() => {
-                this.connect().catch(() => console.warn('Retrying...'));
-            }, delay);
         } else {
-            console.error('Max reconnection attempts reached');
-            this.lastError = { type: 'TIMEOUT', message: 'Max reconnection attempts reached' };
-            if (this.callbacks['CONNECTION_LOST']) this.callbacks['CONNECTION_LOST']();
+            // Guest waits for Data Channel
+            pc.ondatachannel = (event) => {
+                this.setupDataChannel(event.channel, peerId);
+            };
         }
     }
 
-    getLastError() {
-        return this.lastError || null;
+    setupDataChannel(dc, peerId) {
+        console.log(`⚡ DataChannel Setup for ${peerId}`);
+        this.dataChannels.set(peerId, dc);
+
+        dc.onopen = () => {
+            console.log(`🚀 DataChannel OPEN with ${peerId}`);
+            if (this.callbacks['READY']) this.callbacks['READY'](peerId);
+        };
+
+        dc.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            // console.log('📨 P2P Message:', data);
+
+            // Route to Application Callbacks
+            if (data.type && this.callbacks[data.type]) {
+                this.callbacks[data.type](data.payload, peerId);
+            }
+        };
+
+        dc.onclose = () => {
+            console.log('🚫 DataChannel Closed');
+            this.dataChannels.delete(peerId);
+            this.peers.delete(peerId);
+        };
     }
 
-    // --- MULTIPLEXING ---
-    multiplex(channel, payload, targetId = null) {
-        this.send({
-            type: 'MULTIPLEX',
-            channel,
-            targetId, // If null, broadcasts to session (Fanout)
-            payload,
-            timestamp: Date.now()
+    // --- 5. PUBLIC API ---
+    // Broadcast to all connected peers
+    multiplex(type, payload) {
+        const msg = JSON.stringify({ type, payload });
+        this.dataChannels.forEach(dc => {
+            if (dc.readyState === 'open') dc.send(msg);
         });
     }
 
-    onStream(channel, callback) {
-        this.streamHandlers[channel] = callback;
-    }
-
-    handleStream(msg) {
-        const handler = this.streamHandlers[msg.channel];
-        if (handler) {
-            handler(msg.payload, msg.from);
-        } else {
-            console.warn(`No handler for channel: ${msg.channel}`);
+    // Send to specific peer
+    sendTo(peerId, type, payload) {
+        const dc = this.dataChannels.get(peerId);
+        if (dc && dc.readyState === 'open') {
+            dc.send(JSON.stringify({ type, payload }));
         }
     }
 
-    send(message) {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify(message));
-        } else {
-            console.warn('⚠️ Queuing offline message:', message.type);
-            this.messageQueue.push(message);
-        }
+    // Helper: Send to Signaling Server
+    sendSignal(msg) {
+        if (this.ws.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(msg));
     }
 
-    flushQueue() {
-        if (this.messageQueue.length > 0) {
-            console.log(`🚀 Flushing ${this.messageQueue.length} offline messages...`);
-            while (this.messageQueue.length > 0 && this.ws.readyState === WebSocket.OPEN) {
-                const msg = this.messageQueue.shift();
-                this.ws.send(JSON.stringify(msg));
-            }
-        }
+    // Helper: Send targeted Signal (via Server)
+    sendTargetSignal(targetId, payload) {
+        this.sendSignal({
+            type: 'SIGNAL',
+            targetId,
+            payload
+        });
     }
 
-    registerHost(hostId) {
-        console.log(`📡 Registering host: ${hostId}`);
-        this.myId = hostId;
-        this.send({ type: 'HOST_REGISTER', id: hostId });
-        this.startHeartbeat();
+    on(event, cb) {
+        this.callbacks[event] = cb;
     }
 
-    registerGuest(guestId) {
-        console.log(`📡 Registering guest: ${guestId}`);
-        this.myId = guestId;
-        this.send({ type: 'GUEST_REGISTER', id: guestId });
-        this.startHeartbeat();
+    // Alias for old code compatibility
+    onStream(type, cb) {
+        this.on(type, cb);
     }
 
-    claimHost(hostId, guestId) {
-        console.log(`📡 Claiming host: ${hostId} by guest: ${guestId}`);
-        this.send({ type: 'CLAIM_HOST', hostId, guestId });
-    }
-
-    startHeartbeat() {
-        this.stopHeartbeat();
-        // Send heartbeat every 15s (server timeout is 30s)
-        this.heartbeatInterval = setInterval(() => {
-            if (this.myId) this.heartbeat(this.myId);
-        }, 15000);
-    }
-
-    stopHeartbeat() {
-        if (this.heartbeatInterval) {
-            clearInterval(this.heartbeatInterval);
-            this.heartbeatInterval = null;
-        }
-    }
-
+    // Heartbeat Placeholder (WebRTC doesn't strictly need app-level heartbeat if ICE checks are active, but for keeping signaling alive)
     heartbeat(id) {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.send({ type: 'HEARTBEAT', id });
-        }
-    }
-
-    on(eventType, callback) {
-        this.callbacks[eventType] = callback;
-    }
-
-    disconnect() {
-        if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
-        this.stopHeartbeat();
-        if (this.ws) {
-            this.ws.onclose = null;
-            this.ws.close();
-            this.ws = null;
-            this.connected = false;
-        }
+        // Keep signaling socket alive if needed
     }
 }
 
