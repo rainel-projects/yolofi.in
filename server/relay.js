@@ -25,6 +25,11 @@ wss.on('connection', (ws) => {
                         timestamp: Date.now()
                     });
 
+                    // Attach metadata for O(1) cleanup
+                    ws.isAlive = true;
+                    ws.sessionId = msg.id;
+                    ws.role = 'HOST';
+
                     console.log(`✅ Host registered: ${msg.id} (Total hosts: ${hosts.size})`);
 
                     // Send confirmation
@@ -53,14 +58,21 @@ wss.on('connection', (ws) => {
                         timestamp: Date.now()
                     });
 
+                    // Attach metadata for O(1) cleanup
+                    ws.isAlive = true;
+                    ws.sessionId = msg.id;
+                    ws.role = 'GUEST';
+
                     console.log(`🔍 Guest registered: ${msg.id} (Total guests: ${guests.size})`);
 
                     // Send available hosts immediately
                     const availableHosts = Array.from(hosts.keys());
-                    ws.send(JSON.stringify({
-                        type: 'HOSTS_LIST',
-                        hosts: availableHosts
-                    }));
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'HOSTS_LIST',
+                            hosts: availableHosts
+                        }));
+                    }
 
                     // Broadcast to all hosts
                     hosts.forEach((host) => {
@@ -100,15 +112,18 @@ wss.on('connection', (ws) => {
                         hosts.delete(msg.hostId);
                         guests.delete(msg.guestId);
                     } else {
-                        ws.send(JSON.stringify({
-                            type: 'CLAIM_FAILED',
-                            reason: 'Host or Guest not found'
-                        }));
+                        if (ws.readyState === WebSocket.OPEN) {
+                            ws.send(JSON.stringify({
+                                type: 'CLAIM_FAILED',
+                                reason: 'Host or Guest not found'
+                            }));
+                        }
                     }
                     break;
 
                 case 'HEARTBEAT':
                     // Update timestamp (O(1))
+                    ws.isAlive = true; // Simple heartbeat flag
                     if (hosts.has(msg.id)) {
                         hosts.get(msg.id).timestamp = Date.now();
                     }
@@ -126,22 +141,19 @@ wss.on('connection', (ws) => {
     });
 
     ws.on('close', () => {
-        console.log('Connection closed, cleaning up...');
+        // O(1) Cleanup using attached metadata
+        if (ws.sessionId && ws.role) {
+            console.log(`Connection closed for ${ws.role}: ${ws.sessionId}`);
 
-        // Remove from hosts (O(n) but rare operation)
-        for (let [id, data] of hosts) {
-            if (data.ws === ws) {
-                hosts.delete(id);
-                console.log(`🗑️ Host removed: ${id}`);
+            if (ws.role === 'HOST') {
+                hosts.delete(ws.sessionId);
+                console.log(`🗑️ Host removed: ${ws.sessionId}`);
+            } else if (ws.role === 'GUEST') {
+                guests.delete(ws.sessionId);
+                console.log(`🗑️ Guest removed: ${ws.sessionId}`);
             }
-        }
-
-        // Remove from guests
-        for (let [id, data] of guests) {
-            if (data.ws === ws) {
-                guests.delete(id);
-                console.log(`🗑️ Guest removed: ${id}`);
-            }
+        } else {
+            console.log('Anonymous connection closed');
         }
     });
 

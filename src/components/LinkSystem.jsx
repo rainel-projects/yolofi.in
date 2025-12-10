@@ -110,8 +110,9 @@ const LinkSystem = () => {
                 setAvailableHosts(msg.hosts);
 
                 if (msg.hosts.length > 0) {
-                    // Auto-claim first available host
-                    attemptClaim(msg.hosts[0], guestId);
+                    // Auto-claim random available host (Distributes load)
+                    const randomHost = msg.hosts[Math.floor(Math.random() * msg.hosts.length)];
+                    attemptClaim(randomHost, guestId);
                 } else {
                     setStatus("WAITING_FOR_HOSTS");
                 }

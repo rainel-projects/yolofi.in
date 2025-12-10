@@ -3,11 +3,22 @@ class PeerRelay {
         this.ws = null;
         this.callbacks = {};
         this.connected = false;
+
+        // Reliability
         this.reconnectAttempts = 0;
-        this.maxReconnectAttempts = 5;
+        this.maxReconnectAttempts = 10;
+        this.baseReconnectDelay = 1000;
+
+        // Message Queueing for Offline Resilience
+        this.messageQueue = [];
+        this.reconnectTimeout = null;
     }
 
     connect(url = 'ws://localhost:8080') {
+        if (this.ws && (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN)) {
+            return Promise.resolve(); // Already connected/connecting
+        }
+
         return new Promise((resolve, reject) => {
             try {
                 this.ws = new WebSocket(url);
@@ -16,6 +27,7 @@ class PeerRelay {
                     console.log('✅ Connected to relay server');
                     this.connected = true;
                     this.reconnectAttempts = 0;
+                    this.flushQueue(); // Send any offline messages
                     resolve();
                 };
 
@@ -40,7 +52,11 @@ class PeerRelay {
 
                 this.ws.onerror = (error) => {
                     console.error('WebSocket error:', error);
-                    reject(error);
+                    // Don't reject here usually, let onclose handle reconnect, 
+                    // unless it's the initial connection attempt.
+                    if (this.reconnectAttempts === 0 && !this.connected) {
+                        reject(error);
+                    }
                 };
 
             } catch (error) {
@@ -51,14 +67,20 @@ class PeerRelay {
 
     attemptReconnect(url) {
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
-            this.reconnectAttempts++;
-            console.log(`🔄 Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+            // Exponential Backoff + Jitter
+            const delay = Math.min(30000, (Math.pow(2, this.reconnectAttempts) * this.baseReconnectDelay) + (Math.random() * 1000));
 
-            setTimeout(() => {
+            this.reconnectAttempts++;
+            console.log(`🔄 Reconnecting in ${Math.floor(delay)}ms... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+
+            if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
+
+            this.reconnectTimeout = setTimeout(() => {
                 this.connect(url).catch(() => {
-                    console.warn('Reconnection failed');
+                    console.warn('Reconnection failed, retrying...');
+                    // attemptReconnect will be called again by onclose logic if connect fails
                 });
-            }, 2000 * this.reconnectAttempts);
+            }, delay);
         } else {
             console.error('Max reconnection attempts reached');
             if (this.callbacks['CONNECTION_LOST']) {
@@ -71,7 +93,18 @@ class PeerRelay {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(JSON.stringify(message));
         } else {
-            console.error('WebSocket not ready');
+            console.warn('⚠️ WebSocket not ready. Queuing message:', message.type);
+            this.messageQueue.push(message);
+        }
+    }
+
+    flushQueue() {
+        if (this.messageQueue.length > 0) {
+            console.log(`🚀 Flushing ${this.messageQueue.length} offline messages...`);
+            while (this.messageQueue.length > 0 && this.ws.readyState === WebSocket.OPEN) {
+                const msg = this.messageQueue.shift();
+                this.ws.send(JSON.stringify(msg));
+            }
         }
     }
 
@@ -91,7 +124,10 @@ class PeerRelay {
     }
 
     heartbeat(id) {
-        this.send({ type: 'HEARTBEAT', id });
+        // Don't queue heartbeats, if we are offline we are offline
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.send({ type: 'HEARTBEAT', id });
+        }
     }
 
     on(eventType, callback) {
@@ -99,7 +135,9 @@ class PeerRelay {
     }
 
     disconnect() {
+        if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
         if (this.ws) {
+            this.ws.onclose = null; // Prevent reconnect loop on intentional disconnect
             this.ws.close();
             this.ws = null;
             this.connected = false;
