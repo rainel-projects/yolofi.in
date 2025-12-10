@@ -285,44 +285,6 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                             Close Report
                         </button>
                     </div>
-                </div>
-            )}
-
-            {/* --- MONETIZATION 2: VOLUNTARY SUPPORT (Donation) --- */}
-            <div style={{
-                marginBottom: "2rem", background: "linear-gradient(to right, #f8fafc, #f1f5f9)",
-                border: "1px solid #e2e8f0", borderRadius: "12px",
-                padding: "1.5rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem"
-            }}>
-                <div style={{ textAlign: "center", maxWidth: "400px" }}>
-                    <h4 style={{ margin: "0 0 6px 0", color: "#1e293b", fontSize: "1.1rem", fontWeight: "600" }}>
-                        Empower Future Innovation
-                    </h4>
-                    <p style={{ margin: 0, fontSize: "0.9rem", color: "#475569", lineHeight: "1.5" }}>
-                        We built Yolofi to provide professional-grade diagnostics completely free.
-                        Your contribution helps us maintain this standard and develop new features for everyone.
-                    </p>
-                </div>
-                <a
-                    href={MonetizationConfig.donationUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                        background: "#0f172a", color: "#ffffff", padding: "10px 24px", borderRadius: "8px",
-                        textDecoration: "none", fontWeight: "500", fontSize: "0.9rem",
-                        boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", display: "inline-flex", alignItems: "center", gap: "8px",
-                        transition: "transform 0.2s"
-                    }}
-                >
-                    Support the Mission
-                </a>
-            </div>
-
-            <div className="weekly-suggestion" style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}>
-                <div className="suggestion-icon">
-                    <CheckCircleIcon size={24} color="#10b981" />
-                </div>
-                <div className="suggestion-text">
                     <h4 style={{ color: "#1f2937", fontSize: "1rem" }}>System Status: Healthy</h4>
                     <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>Recommended next scan: 2 Days</p>
                 </div>
