@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../firebase/config";
 import { doc, onSnapshot } from "firebase/firestore";
-import { ShieldIcon, CpuIcon, NetworkIcon } from "./Icons";
+import ChatSystem from "./ChatSystem";
+import { ShieldIcon, CpuIcon, NetworkIcon, CheckCircleIcon } from "./Icons";
+import "./Diagnose.css"; // Reuse styles
 
 const RemoteView = () => {
     const { sessionId } = useParams();
@@ -43,126 +45,86 @@ const RemoteView = () => {
             <div style={{ textAlign: "center", padding: "4rem" }}>
                 <h2 style={{ color: "#ef4444" }}>Signal Lost</h2>
                 <p>The remote session has ended or is invalid.</p>
-                <button
-                    onClick={() => navigate('/')}
-                    style={{ background: "#1f2937", color: "white", padding: "10px 20px", borderRadius: "8px", border: "none", cursor: "pointer" }}
-                >
-                    Return Home
-                </button>
+                <button onClick={() => navigate('/')} className="secondary-btn">Return Home</button>
             </div>
         );
     }
 
-    // --- RENDER: CONNECTED BUT WAITING FOR SCAN ---
+    // WAITING STATE
     if (!data) {
         return (
-            <div style={{ textAlign: "center", padding: "4rem" }}>
-                <h2 style={{ color: "#10b981" }}>Connected to Remote PC</h2>
-                <div style={{ margin: "2rem auto", width: "64px", height: "64px", border: "4px solid #e5e7eb", borderTopColor: "#10b981", borderRadius: "50%", animation: "spin 1s linear infinite" }}></div>
-                <p style={{ color: "#6b7280" }}>Waiting for host to run diagnostics...</p>
-            </div>
-        );
-    }
-
-    // --- RENDER: SCANNING IN PROGRESS ---
-    if (data.progress !== undefined && data.progress < 100) {
-        return (
-            <div style={{ maxWidth: "600px", margin: "4rem auto", padding: "2rem", textAlign: "center" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", marginBottom: "1rem" }}>
-                    <div style={{ width: "10px", height: "10px", background: "#ef4444", borderRadius: "50%", animation: "pulse 1s infinite" }}></div>
-                    <span style={{ fontWeight: "700", color: "#111827" }}>LIVE DIAGNOSTIC</span>
+            <div className="layout-container" style={{ display: "flex", height: "100vh", background: "#f9fafb" }}>
+                <div className="main-panel" style={{ flex: 2, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                    <div className="pulse-circle"><ShieldIcon size={48} color="#10b981" /></div>
+                    <h2>Connected to Host</h2>
+                    <p>Waiting for host to start diagnostics...</p>
                 </div>
-
-                <h2 style={{ fontSize: "1.5rem", marginBottom: "2rem", color: "#1f2937" }}>{data.status}</h2>
-
-                <div style={{ height: "12px", background: "#e5e7eb", borderRadius: "6px", overflow: "hidden", marginBottom: "1rem" }}>
-                    <div style={{ width: `${data.progress}%`, height: "100%", background: "#4f46e5", transition: "width 0.5s ease" }}></div>
-                </div>
-
-                <div style={{ display: "flex", justifyContent: "space-between", color: "#6b7280", fontSize: "0.9rem" }}>
-                    <span>Initializing</span>
-                    <span>{data.progress}%</span>
+                <div className="side-panel" style={{ flex: 1, borderLeft: "1px solid #e5e7eb" }}>
+                    <ChatSystem sessionId={sessionId} role="GUEST" />
                 </div>
             </div>
         );
     }
 
-    // --- RENDER: COMPLETED OR RESULTS ---
-    // Handle both "Report Only" (pre-optimization) and "Optimization Result" (post-optimization)
-    const displayData = data.report || data;
+
 
     return (
-        <div style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem" }}>
-            {/* HEADER */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", borderBottom: "1px solid #e5e7eb", paddingBottom: "1rem" }}>
-                <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <div style={{ width: "10px", height: "10px", background: "#10b981", borderRadius: "50%" }}></div>
-                        <span style={{ fontSize: "0.85rem", color: "#10b981", fontWeight: "600", letterSpacing: "1px" }}>SESSION ACTIVE</span>
-                    </div>
-                    <h1 style={{ margin: "4px 0 0", fontSize: "1.5rem", color: "#111827" }}>Remote System Diagnostic</h1>
-                    <div style={{ fontSize: "0.9rem", color: "#6b7280" }}>Session ID: {sessionId}</div>
-                </div>
-            </div>
+        <div className="layout-container" style={{ display: "flex", height: "100vh", overflow: "hidden", background: "#f9fafb" }}>
 
-            {/* KEY METRICS GRID */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
-                {/* CPU / MEMORY */}
-                <div style={{ background: "white", padding: "1.5rem", borderRadius: "12px", border: "1px solid #e5e7eb" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "0.5rem", color: "#4f46e5" }}>
-                        <CpuIcon size={20} />
-                        <span style={{ fontWeight: "600" }}>System Spec</span>
+            {/* LEFT: OBSERVATION PANEL */}
+            <div className="main-panel" style={{ flex: 2, padding: "2rem", overflowY: "auto" }}>
+                <div className="center-card">
+                    <div className="header-status" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "2rem" }}>
+                        <h1 style={{ margin: 0 }}>Remote Diagnostic</h1>
+                        <div className="badge">{data.status}</div>
                     </div>
-                    <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#111827" }}>
-                        {displayData.systemInfo?.memory || "Unknown"}
-                    </div>
-                </div>
 
-                {/* NETWORK */}
-                <div style={{ background: "white", padding: "1.5rem", borderRadius: "12px", border: "1px solid #e5e7eb" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "0.5rem", color: "#10b981" }}>
-                        <NetworkIcon size={20} />
-                        <span style={{ fontWeight: "600" }}>Network</span>
-                    </div>
-                    <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#111827" }}>
-                        {displayData.networkInfo?.speed || "--"}
-                    </div>
-                </div>
-
-                {/* STATUS */}
-                <div style={{ background: "white", padding: "1.5rem", borderRadius: "12px", border: "1px solid #e5e7eb" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "0.5rem", color: "#f59e0b" }}>
-                        <ShieldIcon size={20} />
-                        <span style={{ fontWeight: "600" }}>Health</span>
-                    </div>
-                    <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#111827" }}>
-                        {displayData.issues?.issues?.length > 0 ? `${displayData.issues.issues.length} Issues` : "Healthy"}
-                    </div>
-                </div>
-            </div>
-
-            {/* DETAILED LOG */}
-            <div style={{ background: "#1f2937", borderRadius: "12px", padding: "1.5rem", color: "#e5e7eb" }}>
-                <h3 style={{ margin: "0 0 1rem", borderBottom: "1px solid #374151", paddingBottom: "0.5rem" }}>Live Event Log</h3>
-                <div style={{ fontFamily: "monospace", fontSize: "0.9rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                    <div style={{ color: "#10b981" }}>
-                        &gt; Connection Established: Stable
-                    </div>
-                    <div style={{ color: "#9ca3af" }}>
-                        &gt; System: {displayData.systemInfo?.os || "Unknown OS"} {displayData.systemInfo?.browser || ""}
-                    </div>
-                    {displayData.issues?.issues?.map((issue, idx) => (
-                        <div key={idx} style={{ color: "#ef4444" }}>
-                            &gt; Warning: {issue.title}
+                    {/* Progress Bar */}
+                    {data.progress < 100 && (
+                        <div style={{ marginBottom: "2rem" }}>
+                            <div className="progress-bar">
+                                <div className="fill" style={{ width: `${data.progress}%` }}></div>
+                            </div>
+                            <p className="mono">{data.progress}% Complete</p>
                         </div>
-                    ))}
-                    {data.scoreImprovement && (
-                        <div style={{ color: "#60a5fa", marginTop: "1rem" }}>
-                            &gt; OPTIMIZATION COMPLETED. PERFORMANCE IMPROVED BY {data.scoreImprovement}%.
+                    )}
+
+                    {/* Results / Report */}
+                    {data.report && (
+                        <div className="metrics-grid">
+                            <div className="metric-card">
+                                <h3>Storage Health</h3>
+                                <div className="value">{data.report.storage?.issues?.length || 0} Issues</div>
+                            </div>
+                            <div className="metric-card">
+                                <h3>Memory</h3>
+                                <div className="value">{data.report.memory?.usage || "N/A"}</div>
+                            </div>
+                            <div className="metric-card">
+                                <h3>Network</h3>
+                                <div className="value">{data.report.network?.latency || "N/A"}</div>
+                            </div>
+                        </div>
+                    )}
+
+                    {data.status.includes("Optimization Complete") && (
+                        <div style={{ marginTop: "2rem", textAlign: "center", color: "#10b981" }}>
+                            <CheckCircleIcon size={48} />
+                            <h2>System Optimized</h2>
+                            <p>Host browser performance improved via BrowserEngine.</p>
                         </div>
                     )}
                 </div>
             </div>
+
+            {/* RIGHT: CHAT PANEL */}
+            <div className="side-panel" style={{ flex: 1, borderLeft: "1px solid #e5e7eb", background: "#f3f4f6", padding: "1rem" }}>
+                <div style={{ marginBottom: "1rem", color: "#6b7280", fontSize: "0.9rem" }}>
+                    Using ID: <strong>{sessionStorage.getItem("yolofi_chat_id")}</strong>
+                </div>
+                <ChatSystem sessionId={sessionId} role="GUEST" />
+            </div>
+
         </div>
     );
 };

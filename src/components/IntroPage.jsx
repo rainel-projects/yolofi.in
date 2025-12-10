@@ -53,7 +53,8 @@ export default function IntroPage({ onContinue }) {
             );
         } catch (e) {
             console.error("Setup failed", e);
-            if (isMounted) setLoading(false);
+            // Ensure async update or check mount
+            setTimeout(() => { if (isMounted) setLoading(false); }, 0);
         }
 
         // 3. BATCH FLUSHER (The "Worker")
