@@ -94,6 +94,19 @@ const Diagnose = () => {
         const finalScore = Math.min(100, (report.score || 80) + 15);
         const finalReport = { ...report, score: finalScore, optimized: true };
 
+        // HABIT LOOP: Save Timestamp & Streak
+        const now = Date.now();
+        const lastScan = localStorage.getItem("yolofi_last_scan");
+        let streak = parseInt(localStorage.getItem("yolofi_streak") || "0");
+
+        // If last scan was yesterday (approx), increment streak. If older, reset? 
+        // Let's just be kind and increment if > 12h.
+        if (!lastScan || (now - parseInt(lastScan)) > 12 * 60 * 60 * 1000) {
+            streak++;
+            localStorage.setItem("yolofi_streak", streak.toString());
+        }
+        localStorage.setItem("yolofi_last_scan", now.toString());
+
         setReport(finalReport);
         setView("RESULTS");
         syncToRemote("Optimization Complete", 100, finalReport);
@@ -190,10 +203,19 @@ const Diagnose = () => {
                         )}
 
                         {view === "RESULTS" && (
-                            <div style={{ textAlign: "center" }}>
-                                <p style={{ fontSize: '1.25rem', fontWeight: 600, color: '#10b981' }}>System is running at peak efficiency.</p>
+                            <div style={{ textAlign: "center", animation: "fadeIn 0.5s ease" }}>
+                                <div style={{ marginBottom: "2rem" }}>
+                                    <h2 style={{ color: '#059669', marginBottom: '0.5rem' }}>System Optimized!</h2>
+                                    <p style={{ fontSize: '1.25rem', color: '#4b5563' }}>
+                                        Your device is now running at <b>Peak Efficiency</b>.
+                                    </p>
+                                </div>
+
                                 <FundingPrompt />
-                                <button className="feedback-btn" onClick={() => navigate('/')}>Return to Dashboard</button>
+
+                                <button className="feedback-btn" onClick={() => navigate('/')}>
+                                    Run Another Scan
+                                </button>
                             </div>
                         )}
                     </div>

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
 // Real-time stats sync enabled
 // Real-time stats sync enabled
-import { doc, setDoc, updateDoc, increment, onSnapshot } from 'firebase/firestore';
+import BrowserEngine from "../utils/BrowserEngine";
+import { doc, setDoc, updateDoc, increment, onSnapshot } from 'firebase/firestore'; // Re-adding if needed, or at least the CSS/Icons
 import "./GetStarted.css";
 import { CpuIcon, NetworkIcon, ShieldIcon, BoltIcon } from './Icons';
 
@@ -16,8 +17,25 @@ export default function IntroPage({ onContinue }) {
         };
     });
     const [loading, setLoading] = useState(true);
+    const [quickIssue, setQuickIssue] = useState(null);
 
     useEffect(() => {
+        // QUICK HEALTH CHECK (Real-time)
+        const checkHealth = async () => {
+            const mem = await BrowserEngine.detectMemoryLeaks();
+            const store = BrowserEngine.analyzeStorage();
+
+            if (mem.leakDetected) {
+                setQuickIssue(`RAM Critical: ${mem.usedJSHeap}`);
+            } else if (store.keyCount > 50 || store.usedBytes > 1024 * 1024) {
+                setQuickIssue(`Storage Bloat: ${store.keyCount} artifacts`);
+            } else if (performance.memory && performance.memory.usedJSHeapSize > 50 * 1024 * 1024) {
+                // Even if not a "leak", high usage is worth checking
+                setQuickIssue(`High Memory Load: ${(performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(0)}MB`);
+            }
+        };
+        checkHealth();
+
         let isMounted = true;
         let unsubscribe = () => { };
 
@@ -97,16 +115,29 @@ export default function IntroPage({ onContinue }) {
     return (
         <div className="intro-page">
             <div className="intro-content">
-                <div className="intro-tag">Intelligent Browser Optimization</div>
+                <div className="intro-tag">Autonomous Runtime Intelligence</div>
 
                 <h1 className="intro-title">
-                    Accelerate Your Browser<br />
-                    In Under 60 Seconds
+                    Diagnose & Accelerate<br />
+                    Your Browser Core
                 </h1>
 
+                {/* REAL-TIME TRIGGER: Actual Issue detected on mount */}
+                {quickIssue && (
+                    <div style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '8px',
+                        background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)',
+                        padding: '8px 16px', borderRadius: '50px', marginBottom: '1.5rem',
+                        fontSize: '0.9rem', color: '#ef4444', fontWeight: 'bold',
+                        animation: 'pulse 2s infinite'
+                    }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }}></span>
+                        {quickIssue} Detected
+                    </div>
+                )}
+
                 <p className="intro-description">
-                    Smart diagnostics that optimize storage, memory, and network speed automatically.
-                    No technical knowledge required.
+                    Advanced zero-install telemetry. Visualize memory leaks, prune DOM bloat, and optimize storage vectors in real-time.
                 </p>
 
                 <div className="intro-stats">
