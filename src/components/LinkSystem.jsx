@@ -5,8 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { BoltIcon, ShieldIcon, ScanIcon, SearchIcon, CheckCircleIcon } from "./Icons";
 import "./LinkSystem.css";
 
-// Generate 9-Digit ID (formatted as string)
-const generateRoomId = () => Math.floor(100000000 + Math.random() * 900000000).toString();
+// Generate 12-Digit ID (1 Trillion Combinations)
+// Format: 1234 5678 9012
+const generateRoomId = () => {
+    const min = 100000000000;
+    const max = 999999999999;
+    return Math.floor(min + Math.random() * (max - min)).toString();
+};
 
 const LinkSystem = () => {
     const navigate = useNavigate();
@@ -16,9 +21,8 @@ const LinkSystem = () => {
     const [searchId, setSearchId] = useState("");
     const [status, setStatus] = useState("IDLE");
 
-    // 1. INITIALIZE NETWORK (No Auth)
+    // 1. INITIALIZE NETWORK
     useEffect(() => {
-        // Force network connection if possible
         try { enableNetwork(db); } catch (e) { }
     }, []);
 
@@ -26,12 +30,12 @@ const LinkSystem = () => {
     const startHosting = async () => {
         setMode("HOST_WAITING");
 
-        // INSTANT ID GENERATION (Client Side)
+        // 12-Digit ID Generation
         let newId = generateRoomId();
         setMySessionId(newId);
 
         try {
-            // Collision Check (Best Effort - Skipped if offline)
+            // Collision Check
             try {
                 const checkRef = doc(db, "sessions", newId);
                 const checkSnap = await getDoc(checkRef);
@@ -40,16 +44,16 @@ const LinkSystem = () => {
                     setMySessionId(newId);
                 }
             } catch (e) {
-                console.warn("Offline/Network check skipped. Using generated ID.");
+                console.warn("Offline check skipped.");
             }
 
-            // 1. Create Private Doc (Unauthenticated)
+            // 1. Create Private Doc
             const sessionRef = doc(db, "sessions", newId);
             await setDoc(sessionRef, {
                 created: Date.now(),
                 status: "WAITING",
                 hostJoined: true,
-                hostUid: "anon_guest" // No real Auth UID
+                hostUid: "anon_host"
             });
 
             // 2. Publish to 'public_hosts'
@@ -59,18 +63,18 @@ const LinkSystem = () => {
                 status: "ONLINE"
             });
 
-            // 3. Listen for Guest Join
+            // 3. Listen for Guest
             const unsub = onSnapshot(sessionRef, (snap) => {
                 const data = snap.data();
                 if (data && data.guestJoined) {
                     sessionStorage.setItem("yolofi_session_id", newId);
                     sessionStorage.setItem("yolofi_session_role", "HOST");
+                    // Cleanup public listing so it doesn't clutter the "Trillion" user list
                     deleteDoc(doc(db, "public_hosts", newId)).catch(console.error);
                     navigate('/diagnose');
                 }
             });
 
-            // 4. Heartbeat
             const interval = setInterval(() => {
                 updateDoc(doc(db, "public_hosts", newId), { lastActive: Date.now() }).catch(() => { });
             }, 4000);
@@ -86,14 +90,11 @@ const LinkSystem = () => {
     useEffect(() => {
         if (mode === "GUEST_FIND") {
             const q = query(collection(db, "public_hosts"), orderBy("lastActive", "desc"), limit(20));
-            // Realtime Listener
             const unsub = onSnapshot(q, (snapshot) => {
                 const valid = [];
                 snapshot.forEach(d => valid.push(d.data()));
                 setRecentHosts(valid);
-            }, (err) => {
-                console.warn("Guest List Error (likely permission or offline):", err);
-            });
+            }, (err) => console.warn(err));
             return () => unsub();
         }
     }, [mode]);
@@ -101,20 +102,20 @@ const LinkSystem = () => {
     const joinSession = async (targetIdInput) => {
         const targetId = targetIdInput.replace(/\D/g, "");
 
-        if (!targetId || targetId.length !== 9) {
-            alert("Enter valid 9-digit ID"); return;
+        if (!targetId || targetId.length !== 12) {
+            alert("Enter valid 12-digit ID"); return;
         }
 
         setStatus("CONNECTING");
 
-        // 1. CACHE CHECK
+        // 1. CACHE (Local Efficiency)
         if (recentHosts.some(h => h.id === targetId)) {
-            console.log("🚀 Found in Cache!");
             await connectToId(targetId);
             return;
         }
 
-        // 2. REALTIME SEARCH
+        // 2. GLOBAL SCALABLE SEARCH (Direct Index Look-up)
+        // This is O(1) in Firestore, supporting trillions of records.
         let found = false;
         const sessionRef = doc(db, "sessions", targetId);
 
@@ -149,14 +150,14 @@ const LinkSystem = () => {
             if (e.message.includes("offline")) {
                 navigate(`/remote/${id}`);
             } else {
-                // If it fails due to permissions, we alert but often navigating allows fallback
                 alert("Connection Error. Check console.");
                 setStatus("IDLE");
             }
         }
     };
 
-    const formatIdDisplay = (id) => (id ? id.match(/.{1,3}/g) || [] : []);
+    // Helper: 1234 5678 9012 (Chunks of 4)
+    const formatIdDisplay = (id) => (id ? id.match(/.{1,4}/g) || [] : []);
 
     return (
         <div className="link-system-container">
@@ -165,14 +166,14 @@ const LinkSystem = () => {
                     <>
                         <div className="intro-text">
                             <h2>Remote Diagnostics</h2>
-                            <p>Professional Peer-to-Peer Fix Tool</p>
+                            <p>Global P2P Scale Network</p>
                         </div>
                         <div className="role-grid">
                             <button className="role-card host" onClick={startHosting}>
                                 <div className="role-icon-bg"><ShieldIcon size={32} /></div>
                                 <div className="role-content">
                                     <div className="role-title">I Need Help (Host)</div>
-                                    <div className="role-desc">Generate ID</div>
+                                    <div className="role-desc">Generate Secure ID</div>
                                 </div>
                             </button>
 
@@ -180,7 +181,7 @@ const LinkSystem = () => {
                                 <div className="role-icon-bg"><BoltIcon size={32} /></div>
                                 <div className="role-content">
                                     <div className="role-title">I Want to Help (Guest)</div>
-                                    <div className="role-desc">Join via ID</div>
+                                    <div className="role-desc">Connect via ID</div>
                                 </div>
                             </button>
                         </div>
@@ -191,14 +192,17 @@ const LinkSystem = () => {
                 {mode === "HOST_WAITING" && (
                     <div className="center-view">
                         <div className="pulse-ring"><ShieldIcon size={64} color="#2563eb" /></div>
-                        <h3>Broadcasting Signal...</h3>
-                        <div className="code-display">
+                        <h3>Global Broadcast</h3>
+                        <p>Share this 12-digit ID with your helper.</p>
+
+                        <div className="code-display" style={{ gap: '12px' }}>
                             {mySessionId ? formatIdDisplay(mySessionId).map((chunk, i) => (
-                                <span key={i} className="code-chunk">{chunk}</span>
+                                <span key={i} className="code-chunk large">{chunk}</span>
                             )) : "Generating..."}
                         </div>
-                        <p className="status-text">Waiting for guest...</p>
-                        <button className="text-btn" onClick={() => window.location.reload()}>Cancel</button>
+
+                        <p className="status-text">Signal Active. Waiting for connection...</p>
+                        <button className="text-btn" onClick={() => window.location.reload()}>Cancel Session</button>
                     </div>
                 )}
 
@@ -206,46 +210,54 @@ const LinkSystem = () => {
                 {mode === "GUEST_FIND" && (
                     <div className="guest-view">
                         <h3>Connect to Device</h3>
+
                         <div className="search-box">
                             <SearchIcon size={20} color="#9ca3af" />
                             <input
                                 type="text"
-                                placeholder="ID: 123 456 789"
-                                maxLength={11}
+                                placeholder="ID: 1234 5678 9012"
+                                maxLength={14}
                                 value={searchId}
                                 onChange={(e) => {
                                     const val = e.target.value.replace(/\D/g, '');
                                     let formatted = val;
-                                    if (val.length > 3) formatted = val.slice(0, 3) + " " + val.slice(3);
-                                    if (val.length > 6) formatted = formatted.slice(0, 7) + " " + val.slice(6);
+                                    // Format: 1234 5678 9012
+                                    if (val.length > 4) formatted = val.slice(0, 4) + " " + val.slice(4);
+                                    if (val.length > 8) formatted = formatted.slice(0, 9) + " " + val.slice(8);
                                     setSearchId(formatted);
                                 }}
                             />
                             <button
                                 className="join-btn"
-                                disabled={searchId.replace(/\D/g, '').length !== 9}
+                                disabled={searchId.replace(/\D/g, '').length !== 12}
                                 onClick={() => joinSession(searchId)}
                             >
                                 {status === "CONNECTING" ? "Searching..." : "Connect"}
                             </button>
                         </div>
+
                         <div className="recent-list-container">
-                            <h4>Active Sessions</h4>
-                            {recentHosts.length === 0 ? <div className="empty-list">Scanning...</div> :
-                                recentHosts.map(h => (
-                                    <div key={h.id} className="recent-item" onClick={() => joinSession(h.id)}>
-                                        <div className="signal-dot"></div>
-                                        <span>Device #{h.id}</span>
-                                        <span className="connect-link">Join &rarr;</span>
-                                    </div>
-                                ))
-                            }
+                            <h4>Public Sessions (Global)</h4>
+                            {recentHosts.length === 0 ? (
+                                <div className="empty-list">Searching global feed...</div>
+                            ) : (
+                                <div className="recent-list">
+                                    {recentHosts.map(h => (
+                                        <div key={h.id} className="recent-item" onClick={() => joinSession(h.id)}>
+                                            <div className="signal-dot"></div>
+                                            <span className="device-id">#{h.id}</span>
+                                            <span className="connect-link">Connect &rarr;</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
+
                         <button className="text-btn" onClick={() => setMode("MENU")}>Back</button>
                     </div>
                 )}
 
-                <div className="footer-credit">Secure P2P Protocol • v2.1.0</div>
+                <div className="footer-credit">Trillion-Scale Network Architecture • v3.0</div>
             </div>
         </div>
     );
