@@ -1,55 +1,71 @@
 import React, { useState, useEffect, useRef } from "react";
 import { db } from "../firebase/config";
-import { doc, setDoc, updateDoc, collection, onSnapshot, query, where, limit, deleteDoc, enableNetwork, getDocs } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, collection, onSnapshot, query, where, limit, deleteDoc, enableNetwork } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { BoltIcon, ShieldIcon, ScanIcon, CheckCircleIcon } from "./Icons";
+import { BoltIcon, ShieldIcon, ScanIcon } from "./Icons";
 import "./LinkSystem.css";
 
-// Trillion-Scale ID (12 Digits)
+// 12-Digit ID
 const generateId = () => Math.floor(100000000000 + Math.random() * 900000000000).toString();
 
 const LinkSystem = () => {
     const navigate = useNavigate();
-    const [mode, setMode] = useState("MENU"); // MENU, HOST_WAITING, GUEST_AUTO
+    const [mode, setMode] = useState("MENU");
     const [status, setStatus] = useState("IDLE");
     const [mySessionId, setMySessionId] = useState(null);
-    const retryRef = useRef(null);
-    const stopSearchRef = useRef(false);
+    const [errorMsg, setErrorMsg] = useState(null);
+    const guestListenerRef = useRef(null);
 
+    // Initial Network Check
     useEffect(() => {
-        try { enableNetwork(db); } catch (e) { }
+        const init = async () => {
+            try { await enableNetwork(db); } catch (e) { console.warn(e); }
+        };
+        init();
         return () => {
-            stopSearchRef.current = true;
-            if (retryRef.current) clearTimeout(retryRef.current);
+            if (guestListenerRef.current) guestListenerRef.current();
         };
     }, []);
 
-    // --- HOST: GENERATE & MARK AVAILABLE ---
+    // --- HOST: REGISTER & VERIFY ---
     const startHosting = async () => {
         setMode("HOST_WAITING");
-        setStatus("REGISTERING");
+        setStatus("CONNECTING_DB");
+        setErrorMsg(null);
 
         const newId = generateId();
         setMySessionId(newId);
 
         try {
-            // 1. Create Internal Session
+            // 1. Create Data Structure
+            setStatus("REGISTERING_POOL");
+
+            // Write Session (Private)
             await setDoc(doc(db, "sessions", newId), {
                 created: Date.now(),
                 status: "WAITING",
                 hostJoined: true
             });
 
-            // 2. Add to Public Structure as AVAILABLE
-            // This is the "Data Structure" guests will search
-            await setDoc(doc(db, "public_hosts", newId), {
+            // Write Public Listing (The "Data Structure")
+            const hostRef = doc(db, "public_hosts", newId);
+            await setDoc(hostRef, {
                 id: newId,
-                status: "AVAILABLE", // Explicit Flag
+                status: "AVAILABLE",
                 timestamp: Date.now()
             });
-            setStatus("WAITING_CONNECT");
 
-            // 3. Listen for Status Change (BUSY/MATCHED)
+            // 2. VERIFY REGISTRATION (Read-your-writes)
+            setStatus("VERIFYING");
+            const verifySnap = await getDoc(hostRef);
+            if (!verifySnap.exists()) {
+                throw new Error("Verification Failed: Validated write but document missing.");
+            }
+
+            // 3. CONFIRMED
+            setStatus("ONLINE_WAITING");
+
+            // 4. Listen for Connection
             const unsub = onSnapshot(doc(db, "sessions", newId), (snap) => {
                 const data = snap.data();
                 if (data && data.guestJoined) {
@@ -57,107 +73,85 @@ const LinkSystem = () => {
                     sessionStorage.setItem("yolofi_session_id", newId);
                     sessionStorage.setItem("yolofi_session_role", "HOST");
 
-                    // Cleanup public listing (optional, or mark archived)
-                    deleteDoc(doc(db, "public_hosts", newId)).catch(() => { });
-
-                    setTimeout(() => navigate('/diagnose'), 500);
+                    // Cleanup public
+                    deleteDoc(hostRef).catch(() => { });
+                    navigate('/diagnose');
                 }
             });
 
             // Heartbeat
             const hb = setInterval(() => {
-                updateDoc(doc(db, "public_hosts", newId), { timestamp: Date.now() }).catch(() => { });
-            }, 5000);
+                updateDoc(hostRef, { timestamp: Date.now() }).catch(() => { });
+            }, 4000);
 
             return () => { clearInterval(hb); unsub(); };
 
         } catch (e) {
             console.error(e);
-            alert("Host Error: " + e.message);
-            setMode("MENU");
+            setErrorMsg("Registration Failed: " + e.message);
+            setStatus("ERROR");
         }
     };
 
-    // --- GUEST: AUTO SEARCH (AVAILABLE ONLY) ---
-    const startAutoSearch = () => {
+    // --- GUEST: REALTIME SCAN & CLAIM ---
+    const startGuestSearch = () => {
         setMode("GUEST_AUTO");
-        setStatus("SEARCHING");
-        stopSearchRef.current = false;
-        performSearch();
-    };
+        setStatus("CONNECTING_DB");
+        setErrorMsg(null);
 
-    const performSearch = async () => {
-        if (stopSearchRef.current) return;
+        // Realtime Listener for ANY available host
+        const q = query(
+            collection(db, "public_hosts"),
+            where("status", "==", "AVAILABLE"),
+            limit(1) // Just need one
+        );
 
-        try {
-            // 1. FETCH ONLY AVAILABLE HOSTS
-            // Scalable: limit(50) ensures we don't read trillions
-            const q = query(
-                collection(db, "public_hosts"),
-                where("status", "==", "AVAILABLE"),
-                limit(50)
-            );
+        guestListenerRef.current = onSnapshot(q, (snapshot) => {
+            setStatus("SCANNING");
 
-            const snapshot = await getDocs(q);
-            const availableHosts = [];
-            snapshot.forEach(d => availableHosts.push(d.data()));
-
-            if (availableHosts.length === 0) {
-                setStatus("NO_HOSTS_RETRY");
-                // Retry after delay
-                retryRef.current = setTimeout(performSearch, 2000);
+            if (snapshot.empty) {
+                setStatus("WAITING_FOR_HOSTS"); // "Pool Empty"
                 return;
             }
 
-            // 2. PICK RANDOM (Load Balancing)
-            const target = availableHosts[Math.floor(Math.random() * availableHosts.length)];
-
-            // 3. ATOMIC CLAIM (Mark BUSY)
+            // Found one!
+            const target = snapshot.docs[0].data();
             attemptClaim(target.id);
 
-        } catch (e) {
-            console.warn("Search Error", e);
-            if (e.code === 'permission-denied') {
-                alert("Database Permission Error. Check Rules.");
-                setMode("MENU");
-            } else {
-                retryRef.current = setTimeout(performSearch, 3000);
-            }
-        }
+        }, (err) => {
+            console.error(err);
+            setErrorMsg("Scan Error: " + err.message);
+            setStatus("ERROR");
+        });
     };
 
     const attemptClaim = async (targetId) => {
-        if (stopSearchRef.current) return;
+        // Stop listening to prevent loops while claiming
+        if (guestListenerRef.current) guestListenerRef.current();
+
         setStatus("CLAIMING");
 
         try {
-            // Try to set status to BUSY. 
-            // If another guest did this milliseconds ago, this write might fail or we double-check.
-
-            // Note: In a real transaction we'd check value first, but here 
-            // we will overwrite 'public_hosts' status and update 'sessions' 
-            // If we are the first to hit 'sessions', we win.
-
+            // 1. Mark BUSY (Atomic Lock)
             await updateDoc(doc(db, "public_hosts", targetId), {
                 status: "BUSY"
             });
 
+            // 2. Join Session
             await updateDoc(doc(db, "sessions", targetId), {
                 guestJoined: true,
                 status: "ACTIVE"
             });
 
-            // SUCCESS
-            stopSearchRef.current = true;
+            // Success
             sessionStorage.setItem("yolofi_session_id", targetId);
             sessionStorage.setItem("yolofi_session_role", "GUEST");
             navigate(`/remote/${targetId}`);
 
         } catch (e) {
-            console.warn("Claim Failed (Race Condition):", e);
-            // Someone else grabbed it. Go back to pool.
-            setStatus("SEARCHING");
-            retryRef.current = setTimeout(performSearch, 1000);
+            console.warn("Claim Failed (Race?):", e);
+            // If failed, restart scan
+            startGuestSearch();
         }
     };
 
@@ -171,22 +165,22 @@ const LinkSystem = () => {
                     <>
                         <div className="intro-text">
                             <h2>Remote Diagnostics</h2>
-                            <p>Global Auto-Match System</p>
+                            <p>Global Network • Realtime</p>
                         </div>
                         <div className="role-grid">
                             <button className="role-card host" onClick={startHosting}>
                                 <div className="role-icon-bg"><ShieldIcon size={32} /></div>
                                 <div className="role-content">
                                     <div className="role-title">I Need Help (Host)</div>
-                                    <div className="role-desc">Generate & Wait</div>
+                                    <div className="role-desc">Register & Wait</div>
                                 </div>
                             </button>
 
-                            <button className="role-card guest" onClick={startAutoSearch}>
+                            <button className="role-card guest" onClick={startGuestSearch}>
                                 <div className="role-icon-bg"><BoltIcon size={32} /></div>
                                 <div className="role-content">
                                     <div className="role-title">I Want to Help (Guest)</div>
-                                    <div className="role-desc">Auto-Search Available</div>
+                                    <div className="role-desc">Auto-Connect</div>
                                 </div>
                             </button>
                         </div>
@@ -196,21 +190,33 @@ const LinkSystem = () => {
                 {/* --- HOST VIEW --- */}
                 {mode === "HOST_WAITING" && (
                     <div className="center-view">
-                        <div className="pulse-ring"><ShieldIcon size={64} color="#2563eb" /></div>
-                        <h3>Broadcasting Signal</h3>
-                        <p>Your System ID is listed as <strong>AVAILABLE</strong>.</p>
+                        <div className="pulse-ring"><ShieldIcon size={64} color={status === "ERROR" ? "#ef4444" : "#2563eb"} /></div>
 
-                        <div className="code-display" style={{ gap: '12px' }}>
-                            {mySessionId ? formatId(mySessionId).map((chunk, i) => (
-                                <span key={i} className="code-chunk large">{chunk}</span>
-                            )) : "..."}
-                        </div>
+                        {status === "ERROR" ? (
+                            <>
+                                <h3>Connection Error</h3>
+                                <p className="error-text">{errorMsg}</p>
+                            </>
+                        ) : (
+                            <>
+                                <h3>{status === "ONLINE_WAITING" ? "You Are Live" : "Registering..."}</h3>
+                                {status === "ONLINE_WAITING" && <p>Registered in Global Pool. Waiting for Guest...</p>}
 
-                        <div className="status-badge">
-                            {status === "REGISTERING" && "Registering in Network..."}
-                            {status === "WAITING_CONNECT" && "Waiting for Auto-Match..."}
-                            {status === "MATCHED" && "Matched! Connecting..."}
-                        </div>
+                                <div className="code-display" style={{ gap: '12px' }}>
+                                    {mySessionId ? formatId(mySessionId).map((chunk, i) => (
+                                        <span key={i} className="code-chunk large">{chunk}</span>
+                                    )) : "..."}
+                                </div>
+
+                                <div className="status-badge">
+                                    {status === "CONNECTING_DB" && "Checking Network..."}
+                                    {status === "REGISTERING_POOL" && "Writing to Data Structure..."}
+                                    {status === "VERIFYING" && "Verifying Registration..."}
+                                    {status === "ONLINE_WAITING" && "Waiting for Peer..."}
+                                    {status === "MATCHED" && "Success! Connecting..."}
+                                </div>
+                            </>
+                        )}
                         <button className="text-btn" onClick={() => window.location.reload()}>Cancel</button>
                     </div>
                 )}
@@ -218,20 +224,31 @@ const LinkSystem = () => {
                 {/* --- GUEST VIEW --- */}
                 {mode === "GUEST_AUTO" && (
                     <div className="center-view">
-                        <div className="pulse-ring"><ScanIcon size={64} color="#4ade80" /></div>
-                        <h3>Scanning Network...</h3>
-                        <p>Searching for <strong>AVAILABLE</strong> Hosts.</p>
+                        <div className="pulse-ring"><ScanIcon size={64} color={status === "ERROR" ? "#ef4444" : "#4ade80"} /></div>
 
-                        <div className="status-badge">
-                            {status === "SEARCHING" && "Querying Data Structure..."}
-                            {status === "NO_HOSTS_RETRY" && "No Available Hosts. Retrying..."}
-                            {status === "CLAIMING" && "Found Host! Allocating..."}
-                        </div>
+                        {status === "ERROR" ? (
+                            <>
+                                <h3>Scan Error</h3>
+                                <p className="error-text">{errorMsg}</p>
+                            </>
+                        ) : (
+                            <>
+                                <h3>Scanning...</h3>
+                                <p>Watching Data Structure for Hosts.</p>
+
+                                <div className="status-badge">
+                                    {status === "CONNECTING_DB" && "Check Network..."}
+                                    {status === "SCANNING" && "Querying Pool..."}
+                                    {status === "WAITING_FOR_HOSTS" && "Pool Empty. Waiting for Host..."}
+                                    {status === "CLAIMING" && "Host Found! Connecting..."}
+                                </div>
+                            </>
+                        )}
                         <button className="text-btn" onClick={() => window.location.reload()}>Cancel Search</button>
                     </div>
                 )}
 
-                <div className="footer-credit">Trillion-Scale Auto-Discovery • v7.0</div>
+                <div className="footer-credit">Realtime Verified Link • v8.0</div>
             </div>
         </div>
     );
