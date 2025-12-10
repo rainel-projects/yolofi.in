@@ -90,10 +90,14 @@ const Diagnose = () => {
             await new Promise(r => setTimeout(r, 800));
         }
 
-        await updateDoc(doc(db, "marketing", "stats"), {
-            issuesResolved: increment(5),
-            totalOptimizations: increment(1)
-        });
+        try {
+            await updateDoc(doc(db, "marketing", "stats"), {
+                issuesResolved: increment(5),
+                totalOptimizations: increment(1)
+            });
+        } catch (err) {
+            console.error("Stats update failed (non-fatal):", err);
+        }
 
         const finalScore = Math.min(100, (report.score || 80) + 15);
         const finalReport = { ...report, score: finalScore, optimized: true };
