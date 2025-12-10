@@ -54,8 +54,8 @@ const LinkSystem = () => {
                 const data = snap.data();
                 if (data && data.sessionId && data.status === "INVITED") {
                     // Host picked us!
-                    localStorage.setItem("yolofi_session_id", data.sessionId);
-                    localStorage.setItem("yolofi_session_role", "GUEST");
+                    sessionStorage.setItem("yolofi_session_id", data.sessionId);
+                    sessionStorage.setItem("yolofi_session_role", "GUEST");
                     navigate(`/remote/${data.sessionId}`);
                 }
             });
@@ -110,8 +110,8 @@ const LinkSystem = () => {
         });
 
         // Redirect Self
-        localStorage.setItem("yolofi_session_id", newSessionId);
-        localStorage.setItem("yolofi_session_role", "HOST");
+        sessionStorage.setItem("yolofi_session_id", newSessionId);
+        sessionStorage.setItem("yolofi_session_role", "HOST");
         navigate('/diagnose');
     };
 

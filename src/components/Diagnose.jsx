@@ -21,10 +21,10 @@ const Diagnose = () => {
     const [showChat, setShowChat] = useState(false); // Floating chat toggle
 
     // Sync state for remote view
-    const isHost = localStorage.getItem("yolofi_session_role") === "HOST";
+    const isHost = sessionStorage.getItem("yolofi_session_role") === "HOST";
 
     useEffect(() => {
-        const storedSession = localStorage.getItem("yolofi_session_id");
+        const storedSession = sessionStorage.getItem("yolofi_session_id");
         if (storedSession) {
             setSessionId(storedSession);
             // Auto-open chat for BOTH Host and Guest
