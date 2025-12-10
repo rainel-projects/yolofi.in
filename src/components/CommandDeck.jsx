@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import manualPeer from "../services/ManualPeerService";
+import swarmPeer from "../services/SwarmPeerService";
 import BrowserEngine from "../utils/BrowserEngine";
 import {
     ActivityIcon, CheckCircleIcon, WifiIcon,
@@ -27,7 +27,7 @@ const CommandDeck = ({ role, sessionId }) => {
                         await executeHostCommand(payload.action);
 
                         // Send ACK back
-                        manualPeer.send({ channel: 'cmd', type: 'SIGNAL', kind: 'ACK' });
+                        swarmPeer.send({ channel: 'cmd', type: 'SIGNAL', kind: 'ACK' });
                         setLastCmd(`COMPLETED: ${payload.action}`);
                     } catch (e) {
                         console.error(e);
@@ -40,8 +40,8 @@ const CommandDeck = ({ role, sessionId }) => {
                 }
             };
 
-            manualPeer.on('data', handleData);
-            return () => manualPeer.off('data', handleData);
+            swarmPeer.on('data', handleData);
+            return () => swarmPeer.off('data', handleData);
         }
     }, [role]);
 
@@ -66,11 +66,11 @@ const CommandDeck = ({ role, sessionId }) => {
 
     // --- GUEST CONTROLS ---
     const sendSignal = (kind) => {
-        manualPeer.send({ channel: 'cmd', type: 'SIGNAL', kind, from: 'GUEST' });
+        swarmPeer.send({ channel: 'cmd', type: 'SIGNAL', kind, from: 'GUEST' });
     };
 
     const sendCommand = (action) => {
-        manualPeer.send({ channel: 'cmd', type: 'CMD_EXECUTE', action, from: 'GUEST' });
+        swarmPeer.send({ channel: 'cmd', type: 'CMD_EXECUTE', action, from: 'GUEST' });
     };
 
     if (role === "HOST") {

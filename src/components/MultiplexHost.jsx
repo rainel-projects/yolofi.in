@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import BrowserEngine from "../utils/BrowserEngine";
-import manualPeer from "../services/ManualPeerService";
+import swarmPeer from "../services/SwarmPeerService";
 import CommandDeck from "./CommandDeck";
 import SignalOverlay from "./SignalOverlay";
 import "./Diagnose.css";
@@ -26,15 +26,10 @@ const MultiplexHost = () => {
 
     useEffect(() => {
         // Verify Connection
-        if (!manualPeer.peerConnection || manualPeer.peerConnection.connectionState !== 'connected') {
-            // Allow a grace period or just check readiness
-            if (manualPeer.peerConnection && manualPeer.peerConnection.connectionState === 'connecting') {
-                // ok
-            } else {
-                // For now, if we are testing, we might want to bypass, but for production flow:
-                console.warn("No active P2P connection found. Redirecting...");
-                // navigate('/link'); // Commented out for easier dev testing if needed, but should be active
-            }
+        // With Swarm, we might be connected but waiting
+        if (!swarmPeer.connectedPeerId) {
+            console.warn("No active P2P connection found. Redirecting...");
+            // navigate('/link');
         }
 
         // Listen for Sync Requests
@@ -45,8 +40,8 @@ const MultiplexHost = () => {
             }
         };
 
-        manualPeer.on('data', handleData);
-        return () => manualPeer.off('data', handleData);
+        swarmPeer.on('data', handleData);
+        return () => swarmPeer.off('data', handleData);
     }, [navigate]);
 
     // Broadcast state via DataChannel
@@ -56,7 +51,7 @@ const MultiplexHost = () => {
         if (customProg !== undefined) latestStateRef.current.progress = customProg;
         if (customReport !== undefined) latestStateRef.current.report = customReport;
 
-        manualPeer.send({
+        swarmPeer.send({
             channel: 'sync',
             type: 'state-update',
             data: latestStateRef.current

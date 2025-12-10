@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import manualPeer from "../services/ManualPeerService";
+import swarmPeer from "../services/SwarmPeerService";
 import CommandDeck from "./CommandDeck";
 import SignalOverlay from "./SignalOverlay";
 import FundingPrompt from "./FundingPrompt";
@@ -16,14 +16,16 @@ const RemoteView = () => {
 
     useEffect(() => {
         // Verify Connection
-        if (!manualPeer.peerConnection || (manualPeer.peerConnection.connectionState !== 'connected' && manualPeer.peerConnection.connectionState !== 'connecting')) {
+        if (!swarmPeer.connectedPeerId) {
             console.warn("No active P2P connection found.");
             setStatus("DISCONNECTED");
-            setDebugInfo("Manual Connection not found. Please re-connect via Link.");
+            setDebugInfo("Swarm Connection not found. Please re-connect via Link.");
         } else {
             setStatus("MATCHED");
             // Request Initial State immediately
-            manualPeer.send({ channel: 'sync', type: 'request-sync' });
+            swarmPeer.send({ channel: 'sync', type: 'request-sync' });
+            // Temporary: Ensure live status
+            setTimeout(() => setStatus("LIVE"), 500);
         }
 
         // Listen for Updates
@@ -36,17 +38,13 @@ const RemoteView = () => {
         };
 
         const handleConnectionState = (state) => {
-            if (state === 'disconnected' || state === 'failed' || state === 'closed') {
-                setStatus("DISCONNECTED");
-            }
+            // Trystero manages handle
         };
 
-        manualPeer.on('data', handleData);
-        manualPeer.on('connectionStateChange', handleConnectionState);
+        swarmPeer.on('data', handleData);
 
         return () => {
-            manualPeer.off('data', handleData);
-            manualPeer.off('connectionStateChange', handleConnectionState);
+            swarmPeer.off('data', handleData);
         };
     }, [sessionId]);
 
