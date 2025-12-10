@@ -1,0 +1,16 @@
+{
+    "name": "yolofi-relay-server",
+    "version": "1.0.0",
+    "description": "O(1) WebSocket relay server for peer discovery",
+    "main": "relay.js",
+    "scripts": {
+        "start": "node relay.js",
+        "dev": "nodemon relay.js"
+    },
+    "dependencies": {
+        "ws": "^8.14.2"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.2"
+    }
+}
