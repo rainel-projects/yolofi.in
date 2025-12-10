@@ -20,8 +20,7 @@ const Diagnose = () => {
     const [report, setReport] = useState(null);
     const [sessionId, setSessionId] = useState(null);
 
-    // Sync state for remote view
-    const isHost = sessionStorage.getItem("yolofi_session_role") === "HOST";
+
 
     useEffect(() => {
         const storedSession = sessionStorage.getItem("yolofi_session_id");

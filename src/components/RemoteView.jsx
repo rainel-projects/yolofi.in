@@ -5,7 +5,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import CommandDeck from "./CommandDeck";
 import SignalOverlay from "./SignalOverlay";
 import FundingPrompt from "./FundingPrompt";
-import { ShieldIcon, BrainIcon, CheckCircleIcon, ScanIcon, NetworkIcon } from "./Icons";
+import { ShieldIcon, CheckCircleIcon, ScanIcon } from "./Icons";
 import "./Diagnose.css"; // Shared styles
 
 const RemoteView = () => {

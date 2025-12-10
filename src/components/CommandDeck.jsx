@@ -3,7 +3,7 @@ import peerRelay from "../services/PeerRelay";
 import BrowserEngine from "../utils/BrowserEngine";
 import {
     ActivityIcon, CheckCircleIcon, WifiIcon,
-    ShieldIcon, TerminalIcon, TrashIcon, LayersIcon, ScanIcon,
+    TerminalIcon, TrashIcon, LayersIcon, ScanIcon,
     BoltIcon
 } from "./Icons";
 import "./CommandDeck.css";
