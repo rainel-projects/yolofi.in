@@ -1,5 +1,5 @@
 /**
- * Browser Optimization Engine v2.1 (Real-Time Logic)
+ * Browser Optimization Engine v2.2 (Stability Patched)
  * 
  * ADVANCED RUNTIME OPTIMIZATION SUITE
  * Implements 14 High-Performance Techniques for Trillion-Scale Reliability.
@@ -195,27 +195,47 @@ class BrowserEngine {
     static async runFullDiagnostics() {
         console.log("🚀 Running Advanced Runtime Diagnostics...");
 
-        const device = this.getDeviceCapabilities();
-        const memory = await this.detectMemoryLeaks();
-        const storageStats = this.analyzeStorage();
+        try {
+            const device = this.getDeviceCapabilities();
+            const memory = await this.detectMemoryLeaks();
+            const storageStats = this.analyzeStorage();
 
-        return {
-            timestamp: Date.now(),
-            deviceScore: device.tier,
-            memory: memory,
-            storage: storageStats,
-            score: this.calculateScore(device, memory, storageStats)
-        };
+            return {
+                timestamp: Date.now(),
+                deviceScore: device.tier,
+                memory: memory,
+                storage: storageStats,
+                score: this.calculateScore(device, memory, storageStats)
+            };
+        } catch (e) {
+            console.error("Diagnostics Engine Error:", e);
+            // Return safe fallback so UI does not crash
+            return {
+                timestamp: Date.now(),
+                error: true,
+                score: 0,
+                memory: { usedJSHeap: "Error", details: e.message },
+                storage: { usedBytes: 0, keyCount: 0 }
+            };
+        }
     }
 
     static analyzeStorage() {
         let size = 0;
         let count = 0;
-        for (let key in localStorage) {
-            if (localStorage.hasOwnProperty(key)) {
-                size += localStorage.getItem(key).length;
-                count++;
+        try {
+            for (let key in localStorage) {
+                if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
+                    // Defensive: getItem might return null/undefined in rare edge cases (e.g. concurrent deletion)
+                    const item = localStorage.getItem(key);
+                    if (item) {
+                        size += item.length;
+                        count++;
+                    }
+                }
             }
+        } catch (e) {
+            console.warn("Storage Analysis partial failure:", e);
         }
         return { usedBytes: size, keyCount: count };
     }
@@ -236,6 +256,7 @@ class BrowserEngine {
         // 1. Validate JSON in LS
         let fixed = 0;
         for (let key in localStorage) {
+            // Defensive check
             const val = localStorage.getItem(key);
             if (val && (val.startsWith("{") || val.startsWith("["))) {
                 try {
@@ -255,6 +276,9 @@ class BrowserEngine {
         let cleared = 0;
         const junkPrefixes = ["temp_", "debug_", "log_"];
         for (let key in localStorage) {
+            // Defensive check (though key comes from enumerator)
+            if (!key) continue;
+
             if (junkPrefixes.some(p => key.startsWith(p))) {
                 localStorage.removeItem(key);
                 cleared++;
