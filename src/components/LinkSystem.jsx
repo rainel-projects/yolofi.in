@@ -5,8 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { BoltIcon, ShieldIcon, ScanIcon, SearchIcon, CheckCircleIcon } from "./Icons";
 import "./LinkSystem.css";
 
-// Generate 6-Digit ID (Host-Driven)
-const generateRoomId = () => Math.floor(100000 + Math.random() * 900000).toString();
+// Generate 9-Digit ID (formatted as string)
+// Range: 100,000,000 to 999,999,999 (900 Million combinations)
+const generateRoomId = () => Math.floor(100000000 + Math.random() * 900000000).toString();
 
 const LinkSystem = () => {
     const navigate = useNavigate();
@@ -19,10 +20,29 @@ const LinkSystem = () => {
     // --- HOST LOGIC ---
     const startHosting = async () => {
         setMode("HOST_WAITING");
-        const newId = generateRoomId();
-        setMySessionId(newId);
 
         try {
+            // COLLISION CHECK LOOP (Scale to Trillions)
+            // Ensure ID is truly unique before creating it
+            let newId = "";
+            let isUnique = false;
+            let retries = 0;
+
+            while (!isUnique && retries < 5) {
+                newId = generateRoomId();
+                const checkRef = doc(db, "sessions", newId);
+                const checkSnap = await getDoc(checkRef);
+                if (!checkSnap.exists()) {
+                    isUnique = true;
+                } else {
+                    retries++;
+                }
+            }
+
+            if (!isUnique) throw new Error("Server busy (ID Collision). Please try again.");
+
+            setMySessionId(newId);
+
             // 1. Create Private Session Doc (for handshake)
             const sessionRef = doc(db, "sessions", newId);
             await setDoc(sessionRef, {
@@ -65,6 +85,8 @@ const LinkSystem = () => {
 
         } catch (e) {
             console.error("Host Error:", e);
+            alert("Error Creating Session: " + e.message);
+            setMode("MENU");
             setStatus("ERROR");
         }
     };
@@ -95,8 +117,15 @@ const LinkSystem = () => {
         }
     }, [mode]);
 
-    const joinSession = async (targetId) => {
-        if (!targetId || targetId.length !== 6) return;
+    const joinSession = async (targetIdInput) => {
+        // Sanitize Input (Remove spaces, dashes)
+        const targetId = targetIdInput.replace(/\D/g, "");
+
+        if (!targetId || targetId.length !== 9) {
+            alert("Please enter a valid 9-digit ID.");
+            return;
+        }
+
         setStatus("CONNECTING");
 
         try {
@@ -115,14 +144,21 @@ const LinkSystem = () => {
                 sessionStorage.setItem("yolofi_session_role", "GUEST");
                 navigate(`/remote/${targetId}`);
             } else {
-                alert("Session ID not found or expired.");
+                alert("Session ID not found or expired. Check the code and try again.");
                 setStatus("IDLE");
             }
         } catch (e) {
             console.error("Join Error:", e);
-            alert("Connection Failed");
+            alert("Connection Failed: " + e.message);
             setStatus("IDLE");
         }
+    };
+
+    // Helper to format ID nicely (123 456 789)
+    const formatIdDisplay = (id) => {
+        if (!id) return [];
+        // Insert spaces every 3 chars for readability
+        return id.match(/.{1,3}/g) || [];
     };
 
     return (
@@ -149,7 +185,7 @@ const LinkSystem = () => {
                                 <div className="role-icon-bg"><BoltIcon size={32} /></div>
                                 <div className="role-content">
                                     <div className="role-title">I Want to Help (Guest)</div>
-                                    <div className="role-desc">Connect to a device via ID or list.</div>
+                                    <div className="role-desc">Connect to a PC using a 9-digit ID.</div>
                                 </div>
                             </button>
                         </div>
@@ -164,11 +200,11 @@ const LinkSystem = () => {
                             <ShieldIcon size={64} color="#2563eb" />
                         </div>
                         <h3>Broadcasting Signal...</h3>
-                        <p>Share this Connection ID with your helper.</p>
+                        <p>Share this Secure ID with your helper.</p>
 
                         <div className="code-display">
-                            {mySessionId ? mySessionId.split('').map((char, i) => (
-                                <span key={i} className="code-char">{char}</span>
+                            {mySessionId ? formatIdDisplay(mySessionId).map((chunk, i) => (
+                                <span key={i} className="code-chunk">{chunk}</span>
                             )) : "Wait..."}
                         </div>
 
@@ -187,14 +223,21 @@ const LinkSystem = () => {
                             <SearchIcon size={20} color="#9ca3af" />
                             <input
                                 type="text"
-                                placeholder="Enter 6-Digit ID"
-                                maxLength={6}
+                                placeholder="ID: 123 456 789"
+                                maxLength={11} // Allow spaces
                                 value={searchId}
-                                onChange={(e) => setSearchId(e.target.value.replace(/\D/g, ''))}
+                                onChange={(e) => {
+                                    // Auto-format with spaces
+                                    const val = e.target.value.replace(/\D/g, '');
+                                    let formatted = val;
+                                    if (val.length > 3) formatted = val.slice(0, 3) + " " + val.slice(3);
+                                    if (val.length > 6) formatted = formatted.slice(0, 7) + " " + val.slice(6);
+                                    setSearchId(formatted);
+                                }}
                             />
                             <button
                                 className="join-btn"
-                                disabled={searchId.length !== 6}
+                                disabled={searchId.replace(/\D/g, '').length !== 9}
                                 onClick={() => joinSession(searchId)}
                             >
                                 Connect

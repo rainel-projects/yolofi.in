@@ -155,23 +155,20 @@
 
 .code-display {
     display: flex;
-    gap: 12px;
+    gap: 16px;
     margin: 2rem 0;
 }
 
-.code-char {
-    width: 50px;
-    height: 64px;
+.code-chunk {
     background: #f1f5f9;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 8px 16px;
+    border-radius: 12px;
     font-family: 'Space Mono', monospace;
     font-size: 2rem;
     font-weight: 700;
     color: #0f172a;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    letter-spacing: 2px;
 }
 
 /* Guest View: Search & List */
