@@ -1,85 +1,53 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import peerRelay from "../services/PeerRelay"; // Import PeerRelay
+import manualPeer from "../services/ManualPeerService";
 import CommandDeck from "./CommandDeck";
 import SignalOverlay from "./SignalOverlay";
 import FundingPrompt from "./FundingPrompt";
 import { ShieldIcon, CheckCircleIcon, ScanIcon } from "./Icons";
-import "./Diagnose.css"; // Shared styles
-
-// Helper
-const generateId = () => Math.floor(100000000000 + Math.random() * 900000000000).toString();
+import "./Diagnose.css";
 
 const RemoteView = () => {
     const { sessionId } = useParams();
     const navigate = useNavigate();
     const [data, setData] = useState(null); // { status, progress, report }
     const [status, setStatus] = useState("CONNECTING"); // CONNECTING, MATCHED, LIVE, DISCONNECTED
-    const guestIdRef = useRef(generateId());
+    const [debugInfo, setDebugInfo] = useState("");
 
     useEffect(() => {
-        if (!sessionId) return;
+        // Verify Connection
+        if (!manualPeer.peerConnection || (manualPeer.peerConnection.connectionState !== 'connected' && manualPeer.peerConnection.connectionState !== 'connecting')) {
+            console.warn("No active P2P connection found.");
+            setStatus("DISCONNECTED");
+            setDebugInfo("Manual Connection not found. Please re-connect via Link.");
+        } else {
+            setStatus("MATCHED");
+            // Request Initial State immediately
+            manualPeer.send({ channel: 'sync', type: 'request-sync' });
+        }
 
-        const setupConnection = async () => {
-            try {
-                await peerRelay.connect();
+        // Listen for Updates
+        const handleData = (payload) => {
+            if (payload.channel === 'sync' && payload.type === 'state-update') {
+                console.log("📥 State Received:", payload.data);
+                setData(payload.data);
+                setStatus("LIVE");
+            }
+        };
 
-                console.log(`🔑 Joining Host: ${sessionId}`);
-
-                // P2P JOIN
-                peerRelay.joinHost(sessionId);
-
-                // Wait for DataChannel READY
-                peerRelay.on('READY', () => {
-                    console.log("⚡ P2P Link Active!");
-                    setStatus("MATCHED");
-                    // Request Initial State
-                    peerRelay.multiplex('sync', { type: 'request-sync' });
-                });
-
-                peerRelay.on('ERROR', (msg) => {
-                    console.error("Link Error:", msg);
-                    setStatus("DISCONNECTED");
-                });
-
-                peerRelay.onStream('sync', (msg, fromId) => {
-                    // ... Sync logic ...
-                    if (msg && msg.type === 'state-update') {
-                        setData(msg.data);
-                        setStatus("LIVE");
-                    }
-                });
-
-                peerRelay.on('CONNECTION_LOST', () => setStatus("DISCONNECTED"));
-                peerRelay.on('HOST_DISCONNECTED', () => {
-                    console.log("Host disconnected/timed out");
-                    setStatus("DISCONNECTED");
-                });
-
-                // 5. Listen for Updates
-                peerRelay.onStream('sync', (msg, fromId) => {
-                    // Need to inspect msg structure carefully
-                    if (msg && msg.type === 'state-update') {
-                        console.log("📥 State Received:", msg.data);
-                        setData(msg.data);
-                        setStatus("LIVE");
-                    }
-                });
-
-                // 6. Attempt to Join (Claim)
-                // Give a tiny delay to ensure server processed registration
-                setTimeout(() => {
-                    peerRelay.claimHost(sessionId, guestId);
-                }, 500);
-
-            } catch (e) {
-                console.error("Connection failed:", e);
+        const handleConnectionState = (state) => {
+            if (state === 'disconnected' || state === 'failed' || state === 'closed') {
                 setStatus("DISCONNECTED");
             }
         };
 
-        setupConnection();
+        manualPeer.on('data', handleData);
+        manualPeer.on('connectionStateChange', handleConnectionState);
 
+        return () => {
+            manualPeer.off('data', handleData);
+            manualPeer.off('connectionStateChange', handleConnectionState);
+        };
     }, [sessionId]);
 
     if (status === "CONNECTING" || status === "MATCHED") {
@@ -90,7 +58,6 @@ const RemoteView = () => {
                     <div style={{ fontSize: "1.5rem", color: "#6b7280" }}>
                         {status === "MATCHED" ? "Synchronizing State..." : "Establishing Secure Link..."}
                     </div>
-                    <div style={{ fontSize: "0.8rem", color: "#9ca3af", marginTop: '1rem' }}>ID: {guestIdRef.current} • Target: {sessionId}</div>
                 </div>
             </div>
         );
@@ -102,15 +69,7 @@ const RemoteView = () => {
                 <div style={{ textAlign: "center", padding: "2rem", background: "white", borderRadius: "16px", border: "1px solid #fee2e2", maxWidth: "400px" }}>
                     <h2 style={{ color: "#ef4444", marginBottom: "1rem" }}>Signal Lost</h2>
                     <p style={{ color: "#6b7280", marginBottom: "1rem" }}>The remote session has ended or is invalid.</p>
-
-                    {/* Debug Info for Production */}
-                    <div style={{ background: "#f3f4f6", padding: "10px", borderRadius: "8px", marginBottom: "1.5rem", fontSize: "0.75rem", color: "#374151", textAlign: "left" }}>
-                        <strong>Debug Info:</strong><br />
-                        Target: {sessionId}<br />
-                        Relay: {import.meta.env.VITE_RELAY_URL || window.location.hostname}<br />
-                        Error: {peerRelay.getLastError()?.message || "Unknown Connection Error"}
-                    </div>
-
+                    {debugInfo && <p style={{ fontSize: '0.8rem', color: '#999' }}>{debugInfo}</p>}
                     <button onClick={() => navigate('/link')} className="scan-button" style={{ background: "#ef4444", border: "none" }}>Return to Hub</button>
                 </div>
             </div>
@@ -139,7 +98,7 @@ const RemoteView = () => {
                 </div>
 
                 {/* COMMAND DECK */}
-                <CommandDeck role="GUEST" sessionId={sessionId} />
+                <CommandDeck role="GUEST" sessionId={sessionId || "P2P"} />
             </div>
         );
     }
@@ -177,7 +136,7 @@ const RemoteView = () => {
                                 </div>
                                 <div>
                                     <h3>{data.status.includes("Optimization Complete") ? "System Optimized" : "Issue Detection Report"}</h3>
-                                    <p className="scan-time">OBSERVER MODE • {sessionId}</p>
+                                    <p className="scan-time">OBSERVER MODE • {sessionId || "P2P"}</p>
                                 </div>
                             </div>
 
@@ -209,7 +168,7 @@ const RemoteView = () => {
             </div>
 
             {/* COMMAND DECK */}
-            <CommandDeck role="GUEST" sessionId={sessionId} />
+            <CommandDeck role="GUEST" sessionId={sessionId || "P2P"} />
         </div>
     );
 };

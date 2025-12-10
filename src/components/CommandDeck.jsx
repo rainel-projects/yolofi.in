@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import peerRelay from "../services/PeerRelay";
+import manualPeer from "../services/ManualPeerService";
 import BrowserEngine from "../utils/BrowserEngine";
 import {
     ActivityIcon, CheckCircleIcon, WifiIcon,
@@ -14,8 +14,10 @@ const CommandDeck = ({ role, sessionId }) => {
 
     useEffect(() => {
         if (role === "HOST") {
-            // HOST acts as the Receiver/Executor via Multiplex Stream
-            peerRelay.onStream('cmd', async (payload, fromId) => {
+            const handleData = async (payload) => {
+                // Filter for 'cmd' channel
+                if (payload.channel !== 'cmd') return;
+
                 if (payload.type === 'CMD_EXECUTE') {
                     setLastCmd(`EXECUTING: ${payload.action} ...`);
                     setIsExecuting(true);
@@ -25,7 +27,7 @@ const CommandDeck = ({ role, sessionId }) => {
                         await executeHostCommand(payload.action);
 
                         // Send ACK back
-                        peerRelay.multiplex('cmd', { type: 'SIGNAL', kind: 'ACK', to: fromId }, fromId);
+                        manualPeer.send({ channel: 'cmd', type: 'SIGNAL', kind: 'ACK' });
                         setLastCmd(`COMPLETED: ${payload.action}`);
                     } catch (e) {
                         console.error(e);
@@ -36,7 +38,10 @@ const CommandDeck = ({ role, sessionId }) => {
                 } else if (payload.type === 'SIGNAL') {
                     setLastCmd(`SIGNAL RECEIVED: ${payload.kind}`);
                 }
-            });
+            };
+
+            manualPeer.on('data', handleData);
+            return () => manualPeer.off('data', handleData);
         }
     }, [role]);
 
@@ -61,16 +66,11 @@ const CommandDeck = ({ role, sessionId }) => {
 
     // --- GUEST CONTROLS ---
     const sendSignal = (kind) => {
-        // Use Multiplex channel 'cmd'
-        peerRelay.multiplex('cmd', { type: 'SIGNAL', kind, from: 'GUEST' });
+        manualPeer.send({ channel: 'cmd', type: 'SIGNAL', kind, from: 'GUEST' });
     };
 
     const sendCommand = (action) => {
-        // Use Multiplex channel 'cmd'
-        peerRelay.multiplex('cmd', { type: 'CMD_EXECUTE', action, from: 'GUEST' });
-        // Also fire local visual for immediate feedback
-        // This 'ACTION' type seems local-only or unused? Leaving it but it was peerRelay.send before...
-        // Actually, let's just rely on the multiplexed command.
+        manualPeer.send({ channel: 'cmd', type: 'CMD_EXECUTE', action, from: 'GUEST' });
     };
 
     if (role === "HOST") {
@@ -88,7 +88,7 @@ const CommandDeck = ({ role, sessionId }) => {
     return (
         <div className="command-deck">
             <div className="deck-header">
-                <TerminalIcon size={16} /> <span>COMMAND MODULE // {sessionId?.slice(0, 6)}</span>
+                <TerminalIcon size={16} /> <span>COMMAND MODULE // {sessionId ? sessionId.slice(0, 6) : 'P2P'}</span>
             </div>
 
             <div className="deck-grid">

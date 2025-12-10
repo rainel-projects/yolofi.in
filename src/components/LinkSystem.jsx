@@ -1,117 +1,87 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import peerRelay from "../services/PeerRelay";
-import { BoltIcon, ShieldIcon, ScanIcon } from "./Icons";
+import manualPeer from "../services/ManualPeerService";
+import { BoltIcon, ShieldIcon, ScanIcon, CheckCircleIcon } from "./Icons";
 import "./LinkSystem.css";
-
-// 12-Digit ID
-// Secure High-Entropy ID
-const generateId = () => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    const segment = () => Array(4).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join("");
-    return `${segment()}-${segment()}-${segment()}-${segment()}`;
-};
 
 const LinkSystem = () => {
     const navigate = useNavigate();
-    const [mode, setMode] = useState("MENU");
+    const [mode, setMode] = useState("MENU"); // MENU, HOST_GENERATE, HOST_WAIT_ANSWER, GUEST_INPUT, GUEST_GENERATE
     const [status, setStatus] = useState("IDLE");
-    const [mySessionId, setMySessionId] = useState(null);
-    const [errorMsg, setErrorMsg] = useState(null);
-    const [availableGuests, setAvailableGuests] = useState([]);
-    const [availableHosts, setAvailableHosts] = useState([]);
+    const [localCode, setLocalCode] = useState(""); // Offer for Host, Answer for Guest
+    const [remoteCode, setRemoteCode] = useState("");
+    const [copyStatus, setCopyStatus] = useState("Copy");
 
-    // Connect to relay server on mount
     useEffect(() => {
-        const connectRelay = async () => {
-            try {
-                // PeerRelay now handles shard selection
-                await peerRelay.connect();
-                console.log('✅ Connected to relay server');
-            } catch (e) {
-                console.error('❌ Failed to connect to relay server:', e);
-                setStatus("ERROR");
-                setErrorMsg("Server Offline. Start 'relay.js' locally.");
-            }
+        // Global listener for connection
+        manualPeer.on('open', () => {
+            console.log("CHANNEL OPEN");
+            setStatus("CONNECTED");
+            setTimeout(() => {
+                if (manualPeer.role === 'HOST') {
+                    navigate('/host-live');
+                } else {
+                    navigate('/remote/p2p');
+                }
+            }, 1000);
+        });
+
+        return () => {
+            // Cleanup listeners if needed
         };
+    }, [navigate]);
 
-        connectRelay();
-
-        // PERSISTENCE: Do not disconnect on unmount so we can navigate to /diagnose
-        // Connection will remain active for the singleton instance.
-    }, []);
-
-    // --- HOST: O(1) REGISTER ---
+    // --- HOST FLOW ---
     const startHosting = async () => {
-        setMode("HOST_WAITING");
-        setStatus("BROADCASTING");
-        setErrorMsg(null);
-
-        const newId = generateId();
-        setMySessionId(newId);
-
+        setMode("HOST_GENERATE");
+        setStatus("GENERATING_OFFER");
         try {
-            // O(1) Write - INSTANT
-            peerRelay.registerHost(newId);
-
-            // Listen for registration confirmation (Implicitly ready when socket opens, but we can assume done)
-            // Wait for GUEST to join to go LIVE
-            peerRelay.on('CONNECTED', (guestId) => {
-                console.log(`✅ P2P Established with ${guestId}`);
-                setStatus("MATCHED");
-                // Save for consistency
-                sessionStorage.setItem("yolofi_session_id", newId);
-                sessionStorage.setItem("yolofi_session_role", "HOST");
-                setTimeout(() => navigate('/host-live'), 800);
-            });
-
-            setStatus("ONLINE_WAITING");
-
-            return () => { };
-
+            const offer = await manualPeer.generateOffer();
+            setLocalCode(offer);
+            setStatus("WAITING_SHARE");
         } catch (e) {
             console.error(e);
-            setErrorMsg("Error: " + e.message);
             setStatus("ERROR");
         }
     };
 
-    // --- GUEST: O(1) LOOKUP & P2P ---
-    const startGuestSearch = async () => {
-        const key = prompt("Enter Host Key (e.g. A7K9...):");
-        if (!key) return;
-
-        setMode("GUEST_AUTO");
+    const handleHostConnect = async () => {
+        if (!remoteCode) return;
         setStatus("CONNECTING");
-        setErrorMsg(null);
-
-        // We don't generate ID here, server assigns socket ID. we handle connection.
-
         try {
-            // Register as GUEST
-            peerRelay.joinHost(key);
-
-            peerRelay.on('READY', () => {
-                setStatus("MATCHED");
-                sessionStorage.setItem("yolofi_session_id", key);
-                sessionStorage.setItem("yolofi_session_role", "GUEST");
-                setTimeout(() => navigate(`/remote/${key}`), 500);
-            });
-
-            peerRelay.on('ERROR', (err) => {
-                setErrorMsg(err);
-                setStatus("ERROR");
-            });
-
+            await manualPeer.processAnswer(remoteCode);
+            // Wait for 'open' event
         } catch (e) {
             console.error(e);
-            setErrorMsg("Connection Error: " + e.message);
             setStatus("ERROR");
         }
     };
 
-    // Helper
-    const formatId = (id) => (id ? id.match(/.{1,4}/g) || [] : []);
+    // --- GUEST FLOW ---
+    const startGuest = () => {
+        setMode("GUEST_INPUT");
+    };
+
+    const handleGuestJoin = async () => {
+        if (!remoteCode) return;
+        setStatus("GENERATING_ANSWER");
+        setMode("GUEST_GENERATE");
+        try {
+            const answer = await manualPeer.generateAnswer(remoteCode);
+            setLocalCode(answer);
+            setStatus("WAITING_RETURN");
+        } catch (e) {
+            console.error(e);
+            setStatus("ERROR");
+        }
+    };
+
+    // --- HELPER ---
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(localCode);
+        setCopyStatus("Copied!");
+        setTimeout(() => setCopyStatus("Copy"), 2000);
+    };
 
     return (
         <div className="link-system-container">
@@ -119,116 +89,101 @@ const LinkSystem = () => {
                 {mode === "MENU" && (
                     <>
                         <div className="intro-text">
-                            <h2>Remote Diagnostics</h2>
-                            <p>WebSocket Network • O(1) Discovery</p>
-                            {status === "ERROR" && (
-                                <div style={{ background: '#fecaca', color: '#dc2626', padding: '8px', borderRadius: '8px', fontSize: '12px', marginTop: '10px' }}>
-                                    ⚠️ {errorMsg || "Relay Endpoint Unreachable"}
-                                </div>
-                            )}
+                            <h2>Peer Link</h2>
+                            <p>Serverless • Encrypted • P2P</p>
                         </div>
                         <div className="role-grid">
                             <button className="role-card host" onClick={startHosting}>
                                 <div className="role-icon-bg"><ShieldIcon size={32} /></div>
                                 <div className="role-content">
-                                    <div className="role-title">I Need Help (Host)</div>
-                                    <div className="role-desc">Instant Registration</div>
+                                    <div className="role-title">Initialize Host</div>
+                                    <div className="role-desc">Generate Connection Token</div>
                                 </div>
                             </button>
 
-                            <button className="role-card guest" onClick={startGuestSearch}>
+                            <button className="role-card guest" onClick={startGuest}>
                                 <div className="role-icon-bg"><BoltIcon size={32} /></div>
                                 <div className="role-content">
-                                    <div className="role-title">I Want to Help (Guest)</div>
-                                    <div className="role-desc">Instant Discovery</div>
+                                    <div className="role-title">Join Session</div>
+                                    <div className="role-desc">Input Host Token</div>
                                 </div>
                             </button>
                         </div>
                     </>
                 )}
 
-                {/* --- HOST VIEW --- */}
-                {mode === "HOST_WAITING" && (
+                {/* --- HOST: SHOW OFFER --- */}
+                {mode === "HOST_GENERATE" && (
                     <div className="center-view">
-                        <div className="pulse-ring"><ShieldIcon size={64} color={status === "ERROR" ? "#ef4444" : "#2563eb"} /></div>
+                        <h3>Session Token Generated</h3>
+                        <p style={{ marginBottom: '10px' }}>1. Copy this token and send it to your Guest.</p>
 
-                        {status === "ERROR" ? (
-                            <>
-                                <h3>Connection Error</h3>
-                                <p className="error-text">{errorMsg}</p>
-                            </>
-                        ) : (
-                            <>
-                                <h3>{status === "ONLINE_WAITING" ? "You Are Live" : "Connecting..."}</h3>
-                                {status === "ONLINE_WAITING" && <p>Registered in Relay. Waiting for Guest...</p>}
+                        <div className="token-box">
+                            <textarea readOnly value={localCode} className="code-area" />
+                            <button className="copy-btn" onClick={copyToClipboard}>{copyStatus}</button>
+                        </div>
 
-                                <div className="code-display" style={{ gap: '12px' }}>
-                                    {mySessionId ? formatId(mySessionId).map((chunk, i) => (
-                                        <span key={i} className="code-chunk large">{chunk}</span>
-                                    )) : "..."}
-                                </div>
+                        <p style={{ marginTop: '20px', marginBottom: '10px' }}>2. Paste the Guest's response token below:</p>
+                        <textarea
+                            className="input-area"
+                            placeholder="Paste Response Token here..."
+                            value={remoteCode}
+                            onChange={(e) => setRemoteCode(e.target.value)}
+                        />
 
-                                {status === "ONLINE_WAITING" && availableGuests.length > 0 && (
-                                    <div className="guest-list" style={{ marginTop: '20px', padding: '15px', background: 'rgba(37,99,235,0.1)', borderRadius: '12px' }}>
-                                        <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#60a5fa' }}>
-                                            {availableGuests.length} Guest{availableGuests.length > 1 ? 's' : ''} Searching
-                                        </h4>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                            {availableGuests.slice(0, 5).map((guest, idx) => (
-                                                <div key={guest.id} style={{ fontSize: '12px', color: '#94a3b8', fontFamily: 'monospace' }}>
-                                                    Guest #{formatId(guest.id).join('')}
-                                                </div>
-                                            ))}
-                                            {availableGuests.length > 5 && (
-                                                <div style={{ fontSize: '12px', color: '#64748b' }}>+{availableGuests.length - 5} more...</div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
+                        <button className="action-btn" onClick={handleHostConnect} disabled={!remoteCode}>
+                            {status === "CONNECTING" ? "Verifying..." : "Establish Connection"}
+                        </button>
+                        <button className="text-btn" onClick={() => window.location.reload()}>Cancel</button>
+                    </div>
+                )}
 
-                                <div className="status-badge">
-                                    {status === "BROADCASTING" && "Registering..."}
-                                    {status === "ONLINE_WAITING" && "Waiting for Peer..."}
-                                    {status === "MATCHED" && "Peer Found! Connecting..."}
-                                </div>
-                            </>
-                        )}
+                {/* --- GUEST: INPUT OFFER --- */}
+                {mode === "GUEST_INPUT" && (
+                    <div className="center-view">
+                        <h3>Input Host Token</h3>
+                        <p>Paste the huge block of text the Host sent you.</p>
+
+                        <textarea
+                            className="input-area"
+                            placeholder="Paste Host Token here..."
+                            value={remoteCode}
+                            onChange={(e) => setRemoteCode(e.target.value)}
+                        />
+
+                        <button className="action-btn" onClick={handleGuestJoin} disabled={!remoteCode}>
+                            Generate Response
+                        </button>
                         <button className="text-btn" onClick={() => window.location.reload()}>Cancel</button>
 
                     </div>
-
                 )}
 
-                {/* --- GUEST VIEW --- */}
-                {mode === "GUEST_AUTO" && (
+                {/* --- GUEST: SHOW ANSWER --- */}
+                {mode === "GUEST_GENERATE" && (
                     <div className="center-view">
-                        <div className="pulse-ring"><ScanIcon size={64} color={status === "ERROR" ? "#ef4444" : "#4ade80"} /></div>
+                        <h3>Response Token Ready</h3>
+                        <p>Copy this and send it back to the Host immediately.</p>
+                        <div className="token-box">
+                            <textarea readOnly value={localCode} className="code-area" />
+                            <button className="copy-btn" onClick={copyToClipboard}>{copyStatus}</button>
+                        </div>
 
-                        {status === "ERROR" ? (
-                            <>
-                                <h3>Scan Error</h3>
-                                <p className="error-text">{errorMsg}</p>
-                            </>
-                        ) : (
-                            <>
-                                <h3>Scanning...</h3>
-                                <p>Locating Available Hosts.</p>
-
-                                <div className="status-badge">
-                                    {status === "CONNECTING" && "Handshaking with Host..."}
-                                    {status === "REGISTERING" && "Connecting to Relay..."}
-                                    {status === "SCANNING" && "Searching Pool..."}
-                                    {status === "WAITING_FOR_HOSTS" && "Pool Empty. Waiting..."}
-                                    {status === "CLAIMING" && "Host Found! Connecting..."}
-                                    {status === "MATCHED" && "Success! Redirecting..."}
-                                </div>
-                            </>
-                        )}
-                        <button className="text-btn" onClick={() => window.location.reload()}>Cancel Search</button>
+                        <div className="status-badge" style={{ marginTop: '20px' }}>
+                            {status === "CONNECTED" ? "Connection Secured!" : "Waiting for Host confirmation..."}
+                        </div>
                     </div>
                 )}
 
-                <div className="footer-credit">WebSocket Relay • O(1) Discovery • v10.0</div>
+                {status === "CONNECTED" && (
+                    <div className="overlay-success">
+                        <CheckCircleIcon size={64} color="#4ade80" />
+                        <h2>System Linked</h2>
+                        <p>Redirecting to Interface...</p>
+                    </div>
+                )}
+
+                <div className="footer-credit">Zero-Server Protocol • v2.0</div>
             </div>
         </div>
     );

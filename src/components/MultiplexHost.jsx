@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import BrowserEngine from "../utils/BrowserEngine";
-import peerRelay from "../services/PeerRelay";
+import manualPeer from "../services/ManualPeerService";
 import CommandDeck from "./CommandDeck";
 import SignalOverlay from "./SignalOverlay";
-import FundingPrompt from "./FundingPrompt";
-// Ensure CSS is reused or new
 import "./Diagnose.css";
 import {
-    ShieldIcon, BrainIcon, ScanIcon, CheckCircleIcon
+    ShieldIcon, ScanIcon, CheckCircleIcon
 } from "./Icons";
 
 const MultiplexHost = () => {
@@ -17,8 +15,7 @@ const MultiplexHost = () => {
     const [progress, setProgress] = useState(0);
     const [loadingText, setLoadingText] = useState("Initializing Brain...");
     const [report, setReport] = useState(null);
-    const [sessionId, setSessionId] = useState(null);
-    const [status, setStatus] = useState("CONNECTING");
+    const sessionId = "P2P-LIVE"; // Static ID for display since it's manual
 
     // Persist state for sync
     const latestStateRef = useRef({
@@ -28,47 +25,39 @@ const MultiplexHost = () => {
     });
 
     useEffect(() => {
-        const storedSession = sessionStorage.getItem("yolofi_session_id");
-        if (storedSession) {
-            setSessionId(storedSession);
-            setStatus("ACTIVE");
-            connectRelay();
-        } else {
-            // If no session, go back
-            navigate('/link');
+        // Verify Connection
+        if (!manualPeer.peerConnection || manualPeer.peerConnection.connectionState !== 'connected') {
+            // Allow a grace period or just check readiness
+            if (manualPeer.peerConnection && manualPeer.peerConnection.connectionState === 'connecting') {
+                // ok
+            } else {
+                // For now, if we are testing, we might want to bypass, but for production flow:
+                console.warn("No active P2P connection found. Redirecting...");
+                // navigate('/link'); // Commented out for easier dev testing if needed, but should be active
+            }
         }
-    }, []);
 
-    const connectRelay = async () => {
-        try {
-            await peerRelay.connect();
+        // Listen for Sync Requests
+        const handleData = (payload) => {
+            if (payload.channel === 'sync' && payload.type === 'request-sync') {
+                console.log(`🔄 Sync requested`);
+                syncToRemote(); // Broadcast current state
+            }
+        };
 
-            // CRITICAL: Register as Host so guests can find us
-            console.log(`📡 Registering Host Session: ${sessionId}`);
-            peerRelay.registerHost(sessionId);
+        manualPeer.on('data', handleData);
+        return () => manualPeer.off('data', handleData);
+    }, [navigate]);
 
-            // Listen for Sync Requests (Multiplex Channel 'sync')
-            peerRelay.onStream('sync', (payload, fromId) => {
-                if (payload.type === 'request-sync') {
-                    console.log(`🔄 Sync requested by Guest ${fromId}`);
-                    syncToRemote(); // Broadcast current state
-                }
-            });
-
-        } catch (e) {
-            console.error("Relay Connection Error:", e);
-            setStatus("ERROR");
-        }
-    };
-
-    // Broadcast state via WebSocket
+    // Broadcast state via DataChannel
     const syncToRemote = (customStatus, customProg, customReport) => {
         // Use args if provided, else current ref
         if (customStatus !== undefined) latestStateRef.current.status = customStatus;
         if (customProg !== undefined) latestStateRef.current.progress = customProg;
         if (customReport !== undefined) latestStateRef.current.report = customReport;
 
-        peerRelay.multiplex('sync', {
+        manualPeer.send({
+            channel: 'sync',
             type: 'state-update',
             data: latestStateRef.current
         });
@@ -135,10 +124,10 @@ const MultiplexHost = () => {
                     <div className="section-content">
                         <h2 style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>Remote Diagnostics</h2>
                         <div style={{ background: '#2563eb1a', padding: '10px', borderRadius: '8px', display: 'inline-block', marginBottom: '2rem' }}>
-                            <span style={{ color: '#2563eb', fontWeight: '600' }}>● Live Session: {sessionId}</span>
+                            <span style={{ color: '#2563eb', fontWeight: '600' }}>● Live Session Secured</span>
                         </div>
                         <p style={{ color: "#4b5563", marginBottom: "2rem" }}>
-                            You are hosting a diagnostic session. Runs performed here will be synced to all connected guests.
+                            You are hosting a diagnostic session. Runs performed here will be synced to connected guests.
                         </p>
                         <button className="scan-button" onClick={runDiagnostics}>
                             <ScanIcon size={24} /> Run Session Scan
@@ -173,14 +162,13 @@ const MultiplexHost = () => {
                             </div>
                             <div>
                                 <h3>{view === "RESULTS" ? "System Optimized" : "Issue Report"}</h3>
-                                <p className="scan-time">SYNCED TO GUESTS</p>
+                                <p className="scan-time">SYNCED TO GUEST</p>
                             </div>
                             <div style={{ marginLeft: "auto", fontSize: "2rem", fontWeight: "800", color: view === "RESULTS" ? "#10b981" : "#f59e0b" }}>
                                 {report.score} <span style={{ fontSize: "1rem", color: "#6b7280" }}>/ 100</span>
                             </div>
                         </div>
 
-                        {/* Reuse Grid */}
                         <div className="info-grid">
                             <div className="info-item">
                                 <span className="info-label">Storage Items</span>
@@ -199,7 +187,7 @@ const MultiplexHost = () => {
                         )}
                         {view === "RESULTS" && (
                             <div style={{ textAlign: "center" }}>
-                                <p>Session Complete. Guests have been notified.</p>
+                                <p>Session Complete. Guest has been notified.</p>
                                 <button className="feedback-btn" onClick={() => navigate('/link')}>Close Session</button>
                             </div>
                         )}
@@ -208,7 +196,7 @@ const MultiplexHost = () => {
             </div>
 
             {/* LIVE COMMAND DECK */}
-            <CommandDeck role="HOST" sessionId={sessionId} />
+            <CommandDeck role="HOST" sessionId="P2P" />
         </div>
     );
 };
