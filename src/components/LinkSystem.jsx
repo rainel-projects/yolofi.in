@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../firebase/config";
-import { doc, setDoc, updateDoc, collection, onSnapshot, query, where } from "firebase/firestore";
+import { doc, setDoc, updateDoc, collection, onSnapshot, query, where, deleteDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { BoltIcon, ShieldIcon } from "./Icons";
 import "./LinkSystem.css";
 
-const generateHostName = () => "Guest-" + Math.floor(1000 + Math.random() * 9000);
+// Generate simpler IDs for better UX
+const generateHostName = () => "Helper-" + Math.floor(100 + Math.random() * 900);
 const generateSessionId = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const LinkSystem = () => {
@@ -15,10 +16,27 @@ const LinkSystem = () => {
     const [guestId, setGuestId] = useState(null);
     const [helpers, setHelpers] = useState([]);
 
-    // --- GUEST LOGIC (Queue) ---
+    // --- GUEST LOGIC (Heartbeat) ---
+    useEffect(() => {
+        let heartbeatInterval;
+        if (mode === "GUEST_QUEUE" && guestId && status === "WAITING") {
+            // Heartbeat: Ping Firestore every 5s to say "I'm Alive"
+            heartbeatInterval = setInterval(async () => {
+                try {
+                    await updateDoc(doc(db, "waiting_room", guestId), {
+                        lastActive: Date.now()
+                    });
+                } catch (e) {
+                    // Ignore transient network errors
+                }
+            }, 5000);
+        }
+        return () => clearInterval(heartbeatInterval);
+    }, [mode, guestId, status]);
+
     const goOnline = async () => {
         setStatus("WAITING");
-        const myId = generateHostName(); // Using name as ID for simplicity
+        const myId = generateHostName();
         setGuestId(myId);
 
         try {
@@ -27,7 +45,8 @@ const LinkSystem = () => {
             await setDoc(waitingRef, {
                 name: myId,
                 status: "WAITING",
-                joinedAt: Date.now()
+                joinedAt: Date.now(),
+                lastActive: Date.now() // Initial Heartbeat
             });
 
             // 2. Listen for Invite
@@ -41,21 +60,35 @@ const LinkSystem = () => {
                 }
             });
 
-            // Cleanup on unmount (not handled perfectly here but good for prototype)
+            // Cleanup on unmount handled by useEffect usually, 
+            // but for simple prototype we rely on navigating away.
         } catch (e) {
             console.error("Queue error:", e);
             setStatus("ERROR");
         }
     };
 
-    // --- HOST LOGIC (Discovery) ---
+    // --- HOST LOGIC (Discovery with Stale Filter) ---
     const startDiscovery = () => {
         setMode("HOST_DISCOVERY");
         // Listen to Waiting Room
         const q = query(collection(db, "waiting_room"), where("status", "==", "WAITING"));
+
         const unsub = onSnapshot(q, (snapshot) => {
-            const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-            setHelpers(list);
+            const now = Date.now();
+            const validHelpers = [];
+
+            snapshot.docs.forEach(d => {
+                const data = d.data();
+                // 15 Second Stale Threshold -> Removes Ghost Users
+                if (now - data.lastActive < 15000) {
+                    validHelpers.push({ id: d.id, ...data });
+                } else {
+                    // (Optional) Cleanup dead docs lazily if needed, 
+                    // but visual filtering is safer for now.
+                }
+            });
+            setHelpers(validHelpers);
         });
     };
 
@@ -111,12 +144,12 @@ const LinkSystem = () => {
                 {mode === "HOST_DISCOVERY" && (
                     <div className="discovery-view">
                         <h3>Available Helpers</h3>
-                        <p style={{ marginBottom: "2rem", color: "#666" }}>Click a user to invite them to control your session.</p>
+                        <p style={{ marginBottom: "2rem", color: "#666" }}>Click a user to invite them.</p>
 
                         {helpers.length === 0 ? (
                             <div className="empty-state">
                                 <div className="spinner-ring" style={{ margin: "2rem auto" }}></div>
-                                <p>Searching for available helpers...</p>
+                                <p>Searching for active devices...</p>
                             </div>
                         ) : (
                             <div className="helpers-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -131,7 +164,7 @@ const LinkSystem = () => {
                                         }}
                                     >
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#10b981' }}></div>
+                                            <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }}></div>
                                             {h.name}
                                         </div>
                                         <span style={{ color: "#2563eb", fontWeight: "bold" }}>Invite &rarr;</span>
@@ -149,7 +182,7 @@ const LinkSystem = () => {
                         {status === "IDLE" && (
                             <>
                                 <h3>Ready to Help?</h3>
-                                <p>You will be listed as available.</p>
+                                <p>You will be broadcasted to local hosts.</p>
                                 <button className="connect-btn" onClick={goOnline}>Go Online</button>
                             </>
                         )}
@@ -158,13 +191,18 @@ const LinkSystem = () => {
                                 <div className="spinner-ring" style={{ width: 60, height: 60, margin: "0 auto 2rem" }}></div>
                                 <h3>You are Online</h3>
                                 <p style={{ color: "#10b981", fontWeight: "bold" }}>● {guestId}</p>
-                                <p style={{ marginTop: "1rem", color: "#6b7280" }}>Waiting for a host to invite you...</p>
-                                <p style={{ fontSize: "0.8rem", color: "#9ca3af", marginTop: "2rem" }}>Do not close this tab.</p>
+                                <p style={{ marginTop: "1rem", color: "#6b7280" }}>Broadcasting signal to nearby hosts...</p>
+                                <p style={{ fontSize: "0.8rem", color: "#9ca3af", marginTop: "2rem" }}>Keep this tab open.</p>
                             </div>
                         )}
                         <button onClick={() => setMode("MENU")} style={{ marginTop: "2rem", background: "none", border: "none", textDecoration: "underline", cursor: "pointer" }}>Cancel</button>
                     </div>
                 )}
+
+                {/* CREDIT FOOTER */}
+                <div style={{ marginTop: "2rem", textAlign: "center", fontSize: "0.75rem", color: "#9ca3af", fontStyle: "italic" }}>
+                    Inspired by WhatsApp Networking Technology
+                </div>
             </div>
         </div>
     );

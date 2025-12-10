@@ -25,11 +25,13 @@ const Diagnose = () => {
 
     useEffect(() => {
         const storedSession = localStorage.getItem("yolofi_session_id");
-        if (storedSession && isHost) {
+        if (storedSession) {
             setSessionId(storedSession);
-            setShowChat(true); // Auto-open chat if session active
+            // Auto-open chat for BOTH Host and Guest
+            // This ensures they see the communication channel immediately
+            setShowChat(true);
         }
-    }, [isHost]);
+    }, []);
 
     // Helper: Push updates to Firebase
     const syncToRemote = async (status, progressVal, reportData = null) => {
