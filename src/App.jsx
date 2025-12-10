@@ -37,6 +37,7 @@ const HomePage = () => (
 );
 
 import CoffeePopup from "./components/CoffeePopup";
+import Showcase from "./components/Showcase";
 
 export default function App() {
   return (
@@ -47,6 +48,9 @@ export default function App() {
           {/* Flow: Splash -> Start(Intro) -> Diagnose */}
           <Route path="/" element={<SplashWrapper />} />
           <Route path="/start" element={<IntroWrapper />} />
+
+          {/* Marketing / Portfolio */}
+          <Route path="/showcase" element={<Showcase />} />
 
           <Route path="/diagnose" element={
             <div className="diagnose-page">

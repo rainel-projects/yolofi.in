@@ -6,8 +6,8 @@ const MobileRestriction = ({ children }) => {
     useEffect(() => {
         const checkAccess = () => {
             const path = window.location.pathname;
-            // Allow Guest/Host routes on mobile
-            if (path.startsWith('/link') || path.startsWith('/remote') || path.startsWith('/host-live') || path.startsWith('/join')) {
+            // Allow Guest/Host/Marketing routes on mobile
+            if (path.startsWith('/link') || path.startsWith('/remote') || path.startsWith('/host-live') || path.startsWith('/join') || path.startsWith('/showcase')) {
                 setIsMobile(false);
                 return;
             }
