@@ -94,16 +94,29 @@ const LinkSystem = () => {
                             <p>Choose your role to start troubleshooting or helping others.</p>
                         </div>
 
+                        {errorMsg && (
+                            <div style={{ padding: "1rem", background: "#fee2e2", color: "#b91c1c", borderRadius: "8px", marginBottom: "1.5rem" }}>
+                                ⚠️ {errorMsg}
+                            </div>
+                        )}
+
                         <div className="role-grid">
-                            <div className="role-card host" onClick={startHosting}>
+                            <button
+                                className="role-card host"
+                                onClick={startHosting}
+                                disabled={status === "CREATING"}
+                                style={{ opacity: status === "CREATING" ? 0.7 : 1 }}
+                            >
                                 <div className="role-icon">
-                                    <ShieldIcon size={32} />
+                                    {status === "CREATING" ? <div className="spinner-ring" style={{ width: 32, height: 32 }}></div> : <ShieldIcon size={32} />}
                                 </div>
-                                <div className="role-title">I Need Help</div>
+                                <div className="role-title">
+                                    {status === "CREATING" ? "Creating..." : "I Need Help"}
+                                </div>
                                 <div className="role-desc">
                                     My browser is slow or acting up. I want to host a session and get fixed.
                                 </div>
-                            </div>
+                            </button>
 
                             <div className="role-card guest" onClick={() => setMode("JOIN")}>
                                 <div className="role-icon">
