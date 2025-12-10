@@ -6,40 +6,66 @@
   <link rel="icon" type="image/jpeg" href="/src/assets/logo.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=DM+Sans:wght@500;700&display=swap"
+    rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Yolofi - PC troubleshooting, simplified." />
-  <meta name="google-adsense-account" content="ca-pub-5518844041121398">
-  <title>Yolofi</title>
 
-  <!-- Social Media Meta Tags -->
-  <meta property="og:title" content="Yolofi – Fix Your PC Automatically" />
+  <!-- SEO: Intent & Keywords -->
+  <title>Yolofi – Instant Browser Optimization & Repair</title>
+  <meta name="description"
+    content="Fix slow browsers instantly with Yolofi. Serverless, privacy-first diagnostics to clean RAM, storage bloat, and speed up your web experience." />
+  <meta name="keywords"
+    content="browser clean up, speed up chrome, memory leak fix, clear cache, pc optimization, serverless diagnostics, yolofi" />
+  <meta name="author" content="Yolofi Team" />
+  <meta name="theme-color" content="#2563eb" />
+  <link rel="canonical" href="https://yolofi.in" />
+
+  <!-- Social Media: Viral Loops -->
+  <meta property="og:title" content="My Browser is 40% Faster thanks to Yolofi 🚀" />
   <meta property="og:description"
-    content="Troubleshoot Computer problems automatically — fast, simple, and smart. (Optimized for PC)" />
-  <meta property="og:image" content="https://yolofi.in/social-final.png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
+    content="Click to run a free deep-scan of your browser's core. Zero install, running on global swarm." />
+  <meta property="og:image" content="https://yolofi.in/social-viral-v2.png" />
   <meta property="og:url" content="https://yolofi.in" />
   <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Yolofi" />
 
+  <!-- Twitter Growth -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://yolofi.in/social-final.png" />
-  <meta name="twitter:title" content="Yolofi – Fix Your PC Automatically" />
-  <meta name="twitter:description" content="Smart PC troubleshooting without tech knowledge." />
-  <!-- GOOGLE ADSENSE (AUTO ADS) -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
+  <meta name="twitter:site" content="@yolofi_app" />
+  <meta name="twitter:creator" content="@yolofi_app" />
+  <meta name="twitter:title" content="Make Your Browser Faster Instantly" />
+  <meta name="twitter:description"
+    content="I just optimized my browser core with Yolofi. No install needed. Try it here." />
+  <meta name="twitter:image" content="https://yolofi.in/social-viral-v2.png" />
+
+  <!-- Schema.org JSON-LD (Google Rich Result) -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Yolofi",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "Serverless browser diagnostics and optimization tool.",
+      "softwareVersion": "3.0"
+    }
+  </script>
+
+  <meta name="google-adsense-account" content="ca-pub-5518844041121398">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5518844041121398"
     crossorigin="anonymous"></script>
 
-  <!-- FORCE CLEANUP: Unregister Service Workers to prevent caching old versions -->
+  <!-- Clean Service Workers -->
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.getRegistrations().then((regs) => {
-        for (let reg of regs) {
-          reg.unregister();
-        }
+        for (let reg of regs) { reg.unregister(); }
       });
     }
   </script>

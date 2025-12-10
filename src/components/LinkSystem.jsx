@@ -69,25 +69,34 @@ const LinkSystem = () => {
                 {mode === "MENU" && (
                     <>
                         <div className="intro-text">
-                            <h2>Global Link</h2>
-                            <p>Abstract Swarm • No Server • Instant</p>
+                            <h2>Remote Diagnostics</h2>
+                            <p>Connect two devices instantly via Global Swarm.</p>
                         </div>
                         <div className="role-grid">
                             <button className="role-card host" onClick={startHosting}>
                                 <div className="role-icon-bg"><ShieldIcon size={32} /></div>
                                 <div className="role-content">
-                                    <div className="role-title">Go Online (Host)</div>
-                                    <div className="role-desc">Broadcast to Global Swarm</div>
+                                    <div className="role-title">Get Support</div>
+                                    <div className="role-desc">Share this device's specialized metrics with an expert or friend.</div>
                                 </div>
                             </button>
 
                             <button className="role-card guest" onClick={startGuest}>
                                 <div className="role-icon-bg"><BoltIcon size={32} /></div>
                                 <div className="role-content">
-                                    <div className="role-title">Find Session</div>
-                                    <div className="role-desc">Scan Global Swarm</div>
+                                    <div className="role-title">Provide Support</div>
+                                    <div className="role-desc">Connect to and diagnose a remote device from here.</div>
                                 </div>
                             </button>
+                        </div>
+
+                        <div className="use-cases" style={{ marginTop: '2rem', padding: '1rem', background: '#f8fafc', borderRadius: '12px', fontSize: '0.85rem', color: '#64748b' }}>
+                            <strong>Start here if you want to:</strong>
+                            <ul style={{ textAlign: 'left', marginTop: '0.5rem', paddingLeft: '1.5rem', lineHeight: '1.6' }}>
+                                <li>Fix a friend's browser remotely</li>
+                                <li>Debug mobile performance from a desktop</li>
+                                <li>Monitor a headless display</li>
+                            </ul>
                         </div>
                     </>
                 )}

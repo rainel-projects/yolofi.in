@@ -199,6 +199,14 @@ const Diagnose = () => {
                                     <ShieldIcon size={20} /> Resolve All Issues
                                 </button>
                                 <FundingPrompt />
+                                {/* STREAK BADGE */}
+                                <div style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: '8px',
+                                    marginTop: '1rem', padding: '6px 12px', background: '#ecfdf5',
+                                    borderRadius: '20px', border: '1px solid #10b981', color: '#047857', fontWeight: 'bold'
+                                }}>
+                                    🔥 {localStorage.getItem("yolofi_streak") || 1} Day Streak
+                                </div>
                             </div>
                         )}
 
@@ -213,9 +221,22 @@ const Diagnose = () => {
 
                                 <FundingPrompt />
 
-                                <button className="feedback-btn" onClick={() => navigate('/')}>
-                                    Run Another Scan
-                                </button>
+                                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '1rem' }}>
+                                    <button className="feedback-btn" onClick={() => navigate('/')}>
+                                        Run Scan Again
+                                    </button>
+
+                                    <button className="feedback-btn" style={{ background: '#1da1f2', border: 'none', color: 'white' }}
+                                        onClick={() => {
+                                            const ram = report.memory?.usedJSHeap || 'system';
+                                            const items = report.storage?.keyCount || 'multiple';
+                                            const text = `I just optimized ${ram} of RAM and cleared ${items} storage artifacts with Yolofi! 🚀\n\nRuns directly in the browser. No install.\n\nTry it free: https://yolofi.in`;
+                                            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+                                        }}
+                                    >
+                                        Share on X
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>

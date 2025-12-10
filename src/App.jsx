@@ -36,10 +36,13 @@ const HomePage = () => (
   </div>
 );
 
+import CoffeePopup from "./components/CoffeePopup";
+
 export default function App() {
   return (
     <BrowserRouter>
       <MobileRestriction>
+        <CoffeePopup />
         <Routes>
           {/* Flow: Splash -> Start(Intro) -> Diagnose */}
           <Route path="/" element={<SplashWrapper />} />
