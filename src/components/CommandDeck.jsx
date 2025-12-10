@@ -14,23 +14,27 @@ const CommandDeck = ({ role, sessionId }) => {
 
     useEffect(() => {
         if (role === "HOST") {
-            // HOST acts as the Receiver/Executor
-            peerRelay.on('CMD_EXECUTE', async (msg) => {
-                setLastCmd(`EXECUTING: ${msg.action} ...`);
-                setIsExecuting(true);
+            // HOST acts as the Receiver/Executor via Multiplex Stream
+            peerRelay.onStream('cmd', async (payload, fromId) => {
+                if (payload.type === 'CMD_EXECUTE') {
+                    setLastCmd(`EXECUTING: ${payload.action} ...`);
+                    setIsExecuting(true);
 
-                // Execute the actual logic
-                try {
-                    await executeHostCommand(msg.action);
+                    // Execute the actual logic
+                    try {
+                        await executeHostCommand(payload.action);
 
-                    // Send ACK back
-                    peerRelay.send({ type: 'SIGNAL', kind: 'ACK', to: msg.from });
-                    setLastCmd(`COMPLETED: ${msg.action}`);
-                } catch (e) {
-                    console.error(e);
-                    setLastCmd(`FAILED: ${msg.action}`);
-                } finally {
-                    setTimeout(() => setIsExecuting(false), 2000);
+                        // Send ACK back
+                        peerRelay.multiplex('cmd', { type: 'SIGNAL', kind: 'ACK', to: fromId }, fromId);
+                        setLastCmd(`COMPLETED: ${payload.action}`);
+                    } catch (e) {
+                        console.error(e);
+                        setLastCmd(`FAILED: ${payload.action}`);
+                    } finally {
+                        setTimeout(() => setIsExecuting(false), 2000);
+                    }
+                } else if (payload.type === 'SIGNAL') {
+                    setLastCmd(`SIGNAL RECEIVED: ${payload.kind}`);
                 }
             });
         }
@@ -57,13 +61,16 @@ const CommandDeck = ({ role, sessionId }) => {
 
     // --- GUEST CONTROLS ---
     const sendSignal = (kind) => {
-        peerRelay.send({ type: 'SIGNAL', kind, from: 'GUEST' });
+        // Use Multiplex channel 'cmd'
+        peerRelay.multiplex('cmd', { type: 'SIGNAL', kind, from: 'GUEST' });
     };
 
     const sendCommand = (action) => {
-        peerRelay.send({ type: 'CMD_EXECUTE', action, from: 'GUEST' });
+        // Use Multiplex channel 'cmd'
+        peerRelay.multiplex('cmd', { type: 'CMD_EXECUTE', action, from: 'GUEST' });
         // Also fire local visual for immediate feedback
-        peerRelay.send({ type: 'ACTION', actionName: action, from: 'GUEST' });
+        // This 'ACTION' type seems local-only or unused? Leaving it but it was peerRelay.send before...
+        // Actually, let's just rely on the multiplexed command.
     };
 
     if (role === "HOST") {

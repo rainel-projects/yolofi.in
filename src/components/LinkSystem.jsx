@@ -20,6 +20,7 @@ const LinkSystem = () => {
     useEffect(() => {
         const connectRelay = async () => {
             try {
+                // PeerRelay now handles shard selection
                 await peerRelay.connect();
                 console.log('✅ Connected to relay server');
             } catch (e) {
@@ -30,10 +31,8 @@ const LinkSystem = () => {
 
         connectRelay();
 
-        // Cleanup on unmount
-        return () => {
-            peerRelay.disconnect();
-        };
+        // PERSISTENCE: Do not disconnect on unmount so we can navigate to /diagnose
+        // Connection will remain active for the singleton instance.
     }, []);
 
     // --- HOST: O(1) REGISTER ---
@@ -57,7 +56,7 @@ const LinkSystem = () => {
                 }
             });
 
-            // Listen for available guests
+            // Listen for available guests (Searching)
             peerRelay.on('GUEST_AVAILABLE', (msg) => {
                 setAvailableGuests(prev => {
                     if (!prev.find(g => g.id === msg.guestId)) {
@@ -67,11 +66,22 @@ const LinkSystem = () => {
                 });
             });
 
+            // Listen for Connected Guests (Fanout)
+            peerRelay.on('GUESTS_UPDATE', (msg) => {
+                console.log('👥 Connected Guests Updated:', msg.guests);
+                // We could store this in a global state or pass it via navigation
+                // For now, we rely on MATCHED to trigger the flow
+            });
+
             // Listen for match
             peerRelay.on('MATCHED', (msg) => {
                 setStatus("MATCHED");
                 sessionStorage.setItem("yolofi_session_id", newId);
                 sessionStorage.setItem("yolofi_session_role", "HOST");
+
+                // For Fanout, we might want to stay here or go to Diagnose.
+                // Current flow: Go to Diagnose on first match.
+                // Subsequent matches will happen in background while in Diagnose.
                 setTimeout(() => navigate('/diagnose'), 500);
             });
 
