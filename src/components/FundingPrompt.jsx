@@ -23,7 +23,7 @@ const FundingPrompt = () => {
                 Help us keep improving the diagnosis engine. <br />
                 Fund for future development.
             </p>
-            <a href="https://www.buymeacoffee.com" target="_blank" rel="noopener noreferrer"
+            <a href="https://buymeacoffee.com/yolofi" target="_blank" rel="noopener noreferrer"
                 style={{
                     display: "inline-flex", alignItems: "center", gap: "10px",
                     background: "#ffdd00", color: "#000", padding: "12px 24px",
