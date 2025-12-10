@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const MobileRestriction = ({ children }) => {
     const [isMobile, setIsMobile] = useState(false);
+    const location = useLocation();
 
     useEffect(() => {
         const checkAccess = () => {
-            const path = window.location.pathname;
+            const path = location.pathname;
             // Allow Guest/Host/Marketing routes on mobile
             if (path.startsWith('/link') || path.startsWith('/remote') || path.startsWith('/host-live') || path.startsWith('/join') || path.startsWith('/showcase')) {
                 setIsMobile(false);
@@ -31,7 +33,7 @@ const MobileRestriction = ({ children }) => {
         checkAccess();
         window.addEventListener('resize', checkAccess);
         return () => window.removeEventListener('resize', checkAccess);
-    }, []);
+    }, [location.pathname]);
 
     if (isMobile) {
         return (
