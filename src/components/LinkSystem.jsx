@@ -209,6 +209,7 @@ const LinkSystem = () => {
                                 <p>Locating Available Hosts.</p>
 
                                 <div className="status-badge">
+                                    {status === "CONNECTING" && "Handshaking with Host..."}
                                     {status === "REGISTERING" && "Connecting to Relay..."}
                                     {status === "SCANNING" && "Searching Pool..."}
                                     {status === "WAITING_FOR_HOSTS" && "Pool Empty. Waiting..."}

@@ -5,6 +5,8 @@ const wss = new WebSocket.Server({ port: PORT });
 
 // O(1) Lookup: hostKey -> hostSocket
 const hosts = new Map();
+// Global Client Map for O(1) Routing
+const clients = new Map();
 
 console.log(`🚀 SIGNALING Server running on port ${PORT}`);
 console.log(`📡 Mode: WebRTC Signaling (SDP/ICE Routes Only)`);
@@ -115,9 +117,6 @@ wss.on('connection', (ws) => {
     // Track all clients for O(1) routing
     clients.set(ws.id, ws);
 });
-
-// Global Client Map for O(1) Routing
-const clients = new Map();
 
 // Heartbeat
 setInterval(() => {
