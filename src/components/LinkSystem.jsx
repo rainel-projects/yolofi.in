@@ -1,98 +1,85 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { db } from "../firebase/config";
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, setDoc, updateDoc, collection, onSnapshot, query, where } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { BoltIcon, NetworkIcon, ShieldIcon } from "./Icons";
+import { BoltIcon, ShieldIcon } from "./Icons";
 import "./LinkSystem.css";
 
-// Helper: Generate Random 6-Digit Code
-const generateSessionId = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-};
+const generateHostName = () => "Guest-" + Math.floor(1000 + Math.random() * 9000);
+const generateSessionId = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const LinkSystem = () => {
     const navigate = useNavigate();
-    const [mode, setMode] = useState("MENU"); // MENU, HOST, JOIN
-    const [sessionId, setSessionId] = useState("");
-    const [inputCode, setInputCode] = useState("");
-    const [status, setStatus] = useState("IDLE"); // IDLE, CREATING, CONNECTING, ERROR
-    const [errorMsg, setErrorMsg] = useState("");
-    const [copied, setCopied] = useState(false);
+    const [mode, setMode] = useState("MENU");
+    const [status, setStatus] = useState("IDLE"); // IDLE, WAITING, CONNECTING
+    const [guestId, setGuestId] = useState(null);
+    const [helpers, setHelpers] = useState([]);
 
-    // --- HOST LOGIC (Target) ---
-    const startHosting = async () => {
-        // OPTIMISTIC UPDATE: Show UI immediately
-        const newId = generateSessionId();
-        setSessionId(newId);
-        setMode("HOST");
-        setStatus("IDLE");
+    // --- GUEST LOGIC (Queue) ---
+    const goOnline = async () => {
+        setStatus("WAITING");
+        const myId = generateHostName(); // Using name as ID for simplicity
+        setGuestId(myId);
 
-        // Save to LocalStorage immediately so they can "Open Dashboard" validation works
-        localStorage.setItem("yolofi_session_id", newId);
-        localStorage.setItem("yolofi_session_role", "HOST");
+        try {
+            // 1. Create Waiting Room Entry
+            const waitingRef = doc(db, "waiting_room", myId);
+            await setDoc(waitingRef, {
+                name: myId,
+                status: "WAITING",
+                joinedAt: Date.now()
+            });
 
-        // Background: Sync to Firebase
-        // We don't await this for the UI transition, but we catch errors
-        setDoc(doc(db, "sessions", newId), {
+            // 2. Listen for Invite
+            const unsub = onSnapshot(waitingRef, (snap) => {
+                const data = snap.data();
+                if (data && data.sessionId && data.status === "INVITED") {
+                    // Host picked us!
+                    localStorage.setItem("yolofi_session_id", data.sessionId);
+                    localStorage.setItem("yolofi_session_role", "GUEST");
+                    navigate(`/remote/${data.sessionId}`);
+                }
+            });
+
+            // Cleanup on unmount (not handled perfectly here but good for prototype)
+        } catch (e) {
+            console.error("Queue error:", e);
+            setStatus("ERROR");
+        }
+    };
+
+    // --- HOST LOGIC (Discovery) ---
+    const startDiscovery = () => {
+        setMode("HOST_DISCOVERY");
+        // Listen to Waiting Room
+        const q = query(collection(db, "waiting_room"), where("status", "==", "WAITING"));
+        const unsub = onSnapshot(q, (snapshot) => {
+            const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            setHelpers(list);
+        });
+    };
+
+    const inviteHelper = async (helperId) => {
+        // Create Session
+        const newSessionId = generateSessionId();
+
+        await setDoc(doc(db, "sessions", newSessionId), {
             created: Date.now(),
             status: "WAITING",
             hostData: null,
             activeUsers: 0
-        }).catch(e => {
-            console.error("Background session creation failed:", e);
-            setErrorMsg("Network warning: Session might not be visible to guests yet.");
         });
-    };
 
-    // --- JOIN LOGIC (Observer) ---
-    const joinSession = async () => {
-        if (inputCode.length !== 6) {
-            setErrorMsg("Enter a valid 6-digit code.");
-            return;
-        }
+        // Notify Helper
+        await updateDoc(doc(db, "waiting_room", helperId), {
+            status: "INVITED",
+            sessionId: newSessionId
+        });
 
-        setStatus("CONNECTING");
-        setErrorMsg(""); // Clear previous errors
-
-        // Timeout Promise (8 seconds)
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Connection timed out. Check internet.")), 8000)
-        );
-
-        try {
-            const sessionRef = doc(db, "sessions", inputCode);
-
-            // Race against timeout
-            await Promise.race([
-                (async () => {
-                    const sessionSnap = await getDoc(sessionRef);
-                    if (sessionSnap.exists()) {
-                        // Found! Join immediately
-                        localStorage.setItem("yolofi_session_id", inputCode);
-                        localStorage.setItem("yolofi_session_role", "GUEST");
-
-                        // Notify host in background (don't block nav)
-                        updateDoc(sessionRef, { guestJoined: Date.now() }).catch(console.error);
-
-                        navigate(`/remote/${inputCode}`);
-                    } else {
-                        throw new Error("Session not found. Check code.");
-                    }
-                })(),
-                timeoutPromise
-            ]);
-
-        } catch (e) {
-            console.error("Join error:", e);
-            setStatus("ERROR");
-            setErrorMsg(e.message || "Could not connect.");
-        }
-    };
-
-    const copyToClipboard = () => {
-        navigator.clipboard.writeText(sessionId);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        // Redirect Self
+        localStorage.setItem("yolofi_session_id", newSessionId);
+        localStorage.setItem("yolofi_session_role", "HOST");
+        navigate('/diagnose');
     };
 
     return (
@@ -101,122 +88,81 @@ const LinkSystem = () => {
                 {mode === "MENU" && (
                     <>
                         <div className="intro-text">
-                            <h2>Collaborative Diagnostics</h2>
-                            <p>Choose your role to start troubleshooting or helping others.</p>
+                            <h2>Connect & Fix</h2>
+                            <p>Get instant help or provide expertise.</p>
                         </div>
-
-                        {errorMsg && (
-                            <div style={{ padding: "1rem", background: "#fee2e2", color: "#b91c1c", borderRadius: "8px", marginBottom: "1.5rem" }}>
-                                ⚠️ {errorMsg}
-                            </div>
-                        )}
-
                         <div className="role-grid">
-                            <button
-                                className="role-card host"
-                                onClick={startHosting}
-                                disabled={status === "CREATING"}
-                                style={{ opacity: status === "CREATING" ? 0.7 : 1 }}
-                            >
-                                <div className="role-icon">
-                                    {status === "CREATING" ? <div className="spinner-ring" style={{ width: 32, height: 32 }}></div> : <ShieldIcon size={32} />}
-                                </div>
-                                <div className="role-title">
-                                    {status === "CREATING" ? "Creating..." : "I Need Help"}
-                                </div>
-                                <div className="role-desc">
-                                    My browser is slow or acting up. I want to host a session and get fixed.
-                                </div>
+                            <button className="role-card host" onClick={startDiscovery}>
+                                <div className="role-icon"><ShieldIcon size={32} /></div>
+                                <div className="role-title">I Need Help</div>
+                                <div className="role-desc">Find an available expert to fix my browser using a visual list.</div>
                             </button>
 
-                            <div className="role-card guest" onClick={() => setMode("JOIN")}>
-                                <div className="role-icon">
-                                    <BoltIcon size={32} />
-                                </div>
+                            <button className="role-card guest" onClick={() => setMode("GUEST_QUEUE")}>
+                                <div className="role-icon"><BoltIcon size={32} /></div>
                                 <div className="role-title">I Want to Help</div>
-                                <div className="role-desc">
-                                    I am a technician or friend. I want to join a session to troubleshoot.
-                                </div>
-                            </div>
+                                <div className="role-desc">Go online and wait for someone who needs help.</div>
+                            </button>
                         </div>
                     </>
                 )}
 
-                {mode === "HOST" && (
-                    <div className="host-view">
-                        <div className="intro-text">
-                            <h2>Session Created</h2>
-                            <p>Share this code with your helper to let them join.</p>
-                        </div>
+                {/* HOST VIEW: helper list */}
+                {mode === "HOST_DISCOVERY" && (
+                    <div className="discovery-view">
+                        <h3>Available Helpers</h3>
+                        <p style={{ marginBottom: "2rem", color: "#666" }}>Click a user to invite them to control your session.</p>
 
-                        <div className="code-display-container">
-                            <div className="session-code">{sessionId}</div>
-
-                            <button className="copy-btn" onClick={copyToClipboard}>
-                                {copied ? (
-                                    <><span>✓</span> Copied!</>
-                                ) : (
-                                    <><span>📋</span> Copy Code</>
-                                )}
-                            </button>
-                        </div>
-
-                        <div style={{ marginTop: "3rem" }}>
-                            <button
-                                className="connect-btn"
-                                onClick={() => navigate('/diagnose')}
-                                style={{ background: "#4f46e5", width: "100%" }}
-                            >
-                                Open My Dashboard &rarr;
-                            </button>
-                            <p style={{ marginTop: "1rem", color: "#9ca3af", fontSize: "0.9rem" }}>
-                                Waiting for guests... (0 joined)
-                            </p>
-                        </div>
+                        {helpers.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="spinner-ring" style={{ margin: "2rem auto" }}></div>
+                                <p>Searching for available helpers...</p>
+                            </div>
+                        ) : (
+                            <div className="helpers-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                {helpers.map(h => (
+                                    <button
+                                        key={h.id}
+                                        onClick={() => inviteHelper(h.id)}
+                                        style={{
+                                            padding: "1.5rem", borderRadius: "12px", border: "1px solid #e5e7eb",
+                                            background: "white", cursor: "pointer", display: "flex", alignItems: "center",
+                                            justifyContent: "space-between", fontSize: "1.1rem", fontWeight: "600"
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#10b981' }}></div>
+                                            {h.name}
+                                        </div>
+                                        <span style={{ color: "#2563eb", fontWeight: "bold" }}>Invite &rarr;</span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                        <button onClick={() => setMode("MENU")} style={{ marginTop: "2rem", background: "none", border: "none", textDecoration: "underline", cursor: "pointer" }}>Cancel</button>
                     </div>
                 )}
 
-                {mode === "JOIN" && (
-                    <div className="join-view">
-                        <div className="intro-text">
-                            <h2>Join Session</h2>
-                            <p>Enter the 6-digit code provided by the host.</p>
-                        </div>
-
-                        <input
-                            type="text"
-                            className="huge-input"
-                            placeholder="000000"
-                            maxLength={6}
-                            value={inputCode}
-                            onChange={(e) => setInputCode(e.target.value.replace(/[^0-9]/g, ''))}
-                            autoFocus
-                        />
-
-                        {errorMsg && (
-                            <div style={{ color: "#ef4444", marginBottom: "1.5rem", fontWeight: "600" }}>{errorMsg}</div>
+                {/* GUEST VIEW: waiting */}
+                {mode === "GUEST_QUEUE" && (
+                    <div className="queue-view">
+                        {status === "IDLE" && (
+                            <>
+                                <h3>Ready to Help?</h3>
+                                <p>You will be listed as available.</p>
+                                <button className="connect-btn" onClick={goOnline}>Go Online</button>
+                            </>
                         )}
-
-                        <div>
-                            <button
-                                className="connect-btn"
-                                onClick={joinSession}
-                                disabled={status === "CONNECTING"}
-                            >
-                                {status === "CONNECTING" ? "Connecting..." : "Connect to Remote PC"}
-                            </button>
-                        </div>
-
-                        <button
-                            onClick={() => { setMode("MENU"); setErrorMsg(""); }}
-                            style={{
-                                marginTop: "2rem", background: "none", border: "none",
-                                color: "#6b7280", cursor: "pointer", fontSize: "1rem",
-                                textDecoration: "underline"
-                            }}
-                        >
-                            &larr; Go Back
-                        </button>
+                        {status === "WAITING" && (
+                            <div style={{ padding: "2rem" }}>
+                                <div className="spinner-ring" style={{ width: 60, height: 60, margin: "0 auto 2rem" }}></div>
+                                <h3>You are Online</h3>
+                                <p style={{ color: "#10b981", fontWeight: "bold" }}>● {guestId}</p>
+                                <p style={{ marginTop: "1rem", color: "#6b7280" }}>Waiting for a host to invite you...</p>
+                                <p style={{ fontSize: "0.8rem", color: "#9ca3af", marginTop: "2rem" }}>Do not close this tab.</p>
+                            </div>
+                        )}
+                        <button onClick={() => setMode("MENU")} style={{ marginTop: "2rem", background: "none", border: "none", textDecoration: "underline", cursor: "pointer" }}>Cancel</button>
                     </div>
                 )}
             </div>
