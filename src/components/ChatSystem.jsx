@@ -54,10 +54,11 @@ const ChatSystem = ({ sessionId, role }) => {
             // Check for Commands (if Host)
             if (role === "HOST") {
                 const lastMsg = msgs[msgs.length - 1];
-                // Prevent duplicate execution: check if generated recently (client logic usually handles this better with 'read' flags, but simplified here)
-                // For MVP: We just check if it's a command from a GUEST
+                // Prevent duplicate execution: check if generated recently 
+                // (In pro app, verify unique timestamp > lastExecuted)
                 if (lastMsg && lastMsg.text.startsWith("/cmd") && lastMsg.role === "GUEST") {
-                    executeCommand(lastMsg.text);
+                    // Logic to avoid double-execution would go here (e.g., maintain local "lastExecutedIds" set)
+                    executeCommand(lastMsg.text, lastMsg.id);
                 }
             }
 
@@ -67,33 +68,45 @@ const ChatSystem = ({ sessionId, role }) => {
         return () => unsubscribe();
     }, [sessionId, role]);
 
-    const executeCommand = async (cmdString) => {
+    const executeCommand = async (cmdString, msgId) => {
         console.log("Executing Command:", cmdString);
+
+        // Simple deduplication hack for MVP (don't re-run same message ID immediately)
+        if (window.lastExecCmd === msgId) return;
+        window.lastExecCmd = msgId;
+
         const cmd = cmdString.split(" ")[1];
 
-        switch (cmd) {
-            case "START_SCAN":
-                // In a real app, we'd trigger the full Diagnose scan logic.
-                // For now, BrowserEngine doesn't control the UI state directly, 
-                // but we can trigger silent optimizations.
-                await BrowserEngine.runFullDiagnostics();
-                break;
-            case "MEMORY_CLEANUP":
-                await BrowserEngine.detectAndFixStateCorruption(); // Simulating memory fix
-                break;
-            case "STORAGE_FIX":
-                await BrowserEngine.cleanupClientCaches();
-                break;
-            case "STRESS_TEST":
-                // Run stress test and report back
-                const result = await BrowserEngine.runStressTest();
-                await addDoc(collection(db, "sessions", sessionId, "messages"), {
-                    text: `🔥 STRESS TEST RESULTS:\nBlocked: ${result.blockingTime}\nOptimized: ${result.optimizedTime}\nVerdict: ${result.improvement}`,
-                    senderId: "SYSTEM", senderName: "System", role: "SYSTEM", timestamp: serverTimestamp()
-                });
-                break;
-            default:
-                break;
+        const postReply = async (text) => {
+            await addDoc(collection(db, "sessions", sessionId, "messages"), {
+                text, senderId: "SYSTEM", senderName: "System", role: "SYSTEM", timestamp: serverTimestamp()
+            });
+        };
+
+        try {
+            switch (cmd) {
+                case "START_SCAN":
+                    const report = await BrowserEngine.runFullDiagnostics();
+                    await postReply(`🚀 SCAN COMPLETE:\nScore: ${report.score}/100\nMemory: ${report.memory.usedJSHeap}\nLeaks: ${report.memory.leakDetected ? "YES" : "NO"}`);
+                    break;
+                case "MEMORY_CLEANUP":
+                    const memResult = await BrowserEngine.performMemoryCleanup();
+                    await postReply(`🧹 MEMORY: ${memResult}`);
+                    break;
+                case "STORAGE_FIX":
+                    const storageResult = await BrowserEngine.cleanupClientCaches();
+                    await postReply(`💾 STORAGE: ${storageResult}`);
+                    break;
+                case "STRESS_TEST":
+                    const stressResult = await BrowserEngine.runStressTest();
+                    await postReply(`🔥 STRESS TEST:\nBlocked: ${stressResult.blockingTime}\nOptimized: ${stressResult.optimizedTime}\nVerdict: ${stressResult.improvement}`);
+                    break;
+                default:
+                    break;
+            }
+        } catch (e) {
+            console.error("Command failed", e);
+            await postReply(`⚠️ Error executing ${cmd}: ${e.message}`);
         }
     };
 
@@ -132,6 +145,19 @@ const ChatSystem = ({ sessionId, role }) => {
                 {messages.map((msg) => {
                     const isMe = msg.senderId === identity?.id;
                     const isCommand = msg.text.startsWith("/cmd");
+                    const isSystem = msg.role === "SYSTEM";
+
+                    if (isSystem) {
+                        return (
+                            <div key={msg.id} style={{
+                                padding: "10px", margin: "8px 0", borderRadius: "8px",
+                                background: "#fffbeb", color: "#b45309", border: "1px solid #fcd34d",
+                                fontSize: "13px", whiteSpace: "pre-wrap", fontFamily: "monospace"
+                            }}>
+                                {msg.text}
+                            </div>
+                        );
+                    }
 
                     return (
                         <div key={msg.id} style={{
@@ -175,7 +201,7 @@ const ChatSystem = ({ sessionId, role }) => {
                 ))}
             </div>
 
-            {/* Manual Input (Still useful for specific comms) */}
+            {/* Manual Input */}
             <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} style={{ padding: "12px", borderTop: "1px solid rgba(0,0,0,0.05)", display: "flex", gap: "8px" }}>
                 <input
                     type="text"

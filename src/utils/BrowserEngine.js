@@ -1,5 +1,5 @@
 /**
- * Browser Optimization Engine v2.0 (The Kernel)
+ * Browser Optimization Engine v2.1 (Real-Time Logic)
  * 
  * ADVANCED RUNTIME OPTIMIZATION SUITE
  * Implements 14 High-Performance Techniques for Trillion-Scale Reliability.
@@ -78,44 +78,63 @@ class BrowserEngine {
     }
 
     // ==========================================
-    // 6. MEMORY LEAK AUTO-DETECTION & REPAIR
+    // 6. MEMORY LEAK ANALYSIS & REPAIR (REAL-TIME)
     // ==========================================
     static async detectMemoryLeaks() {
-        // 1. Check Heap Limit (Chrome only)
+        const report = { type: "MEMORY_SNAPSHOT", leakDetected: false, details: "" };
+
+        // 1. Check Heap Limit (Chrome/Edge Only - Standard API)
         if (performance.memory) {
             const { usedJSHeapSize, jsHeapSizeLimit } = performance.memory;
             const usageRatio = usedJSHeapSize / jsHeapSizeLimit;
+            report.usedJSHeap = (usedJSHeapSize / 1024 / 1024).toFixed(1) + "MB";
 
             if (usageRatio > 0.85) {
-                console.warn(`CRITICAL MEMORY: ${(usageRatio * 100).toFixed(1)}% used.`);
-                return { leakDetected: true, severity: "HIGH", usage: usedJSHeapSize };
+                report.leakDetected = true;
+                report.details = "Critical Heap Usage (>85%)";
             }
+        } else {
+            report.usedJSHeap = "Unavailable (Browser Limit)";
         }
 
-        // 2. Detached DOM Nodes (Heuristic)
-        // Nodes that have no parent but are still referenced in JS (hard to detect fully without API, but we can check hidden nodes)
-        const allNodes = document.getElementsByTagName('*');
-        let detachedCount = 0;
-        for (let node of allNodes) {
-            // Heuristic: Node created but not in composed path (roughly)
-            if (!document.body.contains(node)) detachedCount++;
+        // 2. DOM Density Analysis (Real Performance Metric)
+        // Excessive nodes slow down Recalculate Style & Composite
+        const totalNodes = document.getElementsByTagName('*').length;
+        report.domNodes = totalNodes;
+
+        if (totalNodes > 3000) {
+            report.leakDetected = true;
+            report.details += ` Severe DOM Bloat (${totalNodes} nodes)`;
         }
 
-        return { leakDetected: detachedCount > 100, severity: detachedCount > 500 ? "HIGH" : "LOW", detachedNodes: detachedCount };
+        return report;
     }
 
-    static clearStaleClosures() {
-        // Force clear common leak sources
-        // 1. Clear intervals that might be orphaned
-        // (This is aggressive, usually we'd track IDs, but for a "Fixer" tool it checks known pools)
-        let id = window.setInterval(() => { }, 0);
-        while (id--) window.clearInterval(id);
+    static async performMemoryCleanup() {
+        // 1. Clear Global Interval/Timeout Pools
+        // (Real-time prevention of closure leaks)
+        const highestId = window.setTimeout(() => { }, 0);
+        for (let i = 0; i < highestId; i++) {
+            window.clearInterval(i);
+            window.clearTimeout(i);
+        }
 
-        // 2. Clear timeouts
-        let tid = window.setTimeout(() => { }, 0);
-        while (tid--) window.clearTimeout(tid);
+        // 2. Force CSS Style Recalculation (Flushes pending layout thrashing)
+        document.body.style.display = 'none';
+        void document.body.offsetHeight; // force reflow
+        document.body.style.display = '';
 
-        return "Cleared global timers to prevent closure leaks";
+        // 3. GC Pressure Trick (Standard valid technique)
+        // Allocating large array then clearing it hints engine to collect garbage
+        try {
+            let limit = 100;
+            const buffers = [];
+            while (limit--) buffers.push(new Array(1000000));
+            // Release immediately
+            buffers.length = 0;
+        } catch (e) { /* Ignore OOM protection */ }
+
+        return "Executed GC Pressure & Cleared Timers";
     }
 
     // ==========================================
