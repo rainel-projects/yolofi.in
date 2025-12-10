@@ -6,7 +6,6 @@ import { BoltIcon, ShieldIcon, ScanIcon, SearchIcon, CheckCircleIcon } from "./I
 import "./LinkSystem.css";
 
 // Generate 12-Digit ID (1 Trillion Combinations)
-// Format: 1234 5678 9012
 const generateRoomId = () => {
     const min = 100000000000;
     const max = 999999999999;
@@ -21,7 +20,6 @@ const LinkSystem = () => {
     const [searchId, setSearchId] = useState("");
     const [status, setStatus] = useState("IDLE");
 
-    // 1. INITIALIZE NETWORK
     useEffect(() => {
         try { enableNetwork(db); } catch (e) { }
     }, []);
@@ -29,27 +27,22 @@ const LinkSystem = () => {
     // --- HOST LOGIC ---
     const startHosting = async () => {
         setMode("HOST_WAITING");
-
-        // 12-Digit ID Generation
-        let newId = generateRoomId();
+        const newId = generateRoomId();
         setMySessionId(newId);
 
         try {
-            // Collision Check
+            // Collision Check (Best Effort)
             try {
                 const checkRef = doc(db, "sessions", newId);
                 const checkSnap = await getDoc(checkRef);
                 if (checkSnap.exists()) {
-                    newId = generateRoomId();
-                    setMySessionId(newId);
+                    const retryId = generateRoomId();
+                    setMySessionId(retryId);
                 }
-            } catch (e) {
-                console.warn("Offline check skipped.");
-            }
+            } catch (e) { console.warn("Offline check skipped"); }
 
             // 1. Create Private Doc
-            const sessionRef = doc(db, "sessions", newId);
-            await setDoc(sessionRef, {
+            await setDoc(doc(db, "sessions", newId), {
                 created: Date.now(),
                 status: "WAITING",
                 hostJoined: true,
@@ -62,64 +55,74 @@ const LinkSystem = () => {
                 lastActive: Date.now(),
                 status: "ONLINE"
             });
+            console.log("Write Success: public_hosts/" + newId);
 
             // 3. Listen for Guest
-            const unsub = onSnapshot(sessionRef, (snap) => {
+            const unsub = onSnapshot(doc(db, "sessions", newId), (snap) => {
                 const data = snap.data();
                 if (data && data.guestJoined) {
                     sessionStorage.setItem("yolofi_session_id", newId);
                     sessionStorage.setItem("yolofi_session_role", "HOST");
-                    // Cleanup public listing so it doesn't clutter the "Trillion" user list
                     deleteDoc(doc(db, "public_hosts", newId)).catch(console.error);
                     navigate('/diagnose');
                 }
             });
 
             const interval = setInterval(() => {
-                updateDoc(doc(db, "public_hosts", newId), { lastActive: Date.now() }).catch(() => { });
+                updateDoc(doc(db, "public_hosts", newId), { lastActive: Date.now() }).catch(e => console.warn("Heartbeat fail", e));
             }, 4000);
 
             return () => { clearInterval(interval); unsub(); };
 
         } catch (e) {
             console.error("Host Error:", e);
+            alert("Database Write Failed! \n\nCause: " + e.message + "\n\nFix: Enable 'Test Mode' in Firestore Rules.");
+            setMode("MENU");
         }
     };
 
     // --- GUEST LOGIC ---
     useEffect(() => {
         if (mode === "GUEST_FIND") {
-            const q = query(collection(db, "public_hosts"), orderBy("lastActive", "desc"), limit(20));
+            // INDEX BYPASS: Fetch ALL (Limit 50), Sort Client-Side
+            // This guarantees results even if Indexes are missing
+            const q = query(collection(db, "public_hosts"), limit(50));
+
             const unsub = onSnapshot(q, (snapshot) => {
-                const valid = [];
-                snapshot.forEach(d => valid.push(d.data()));
-                setRecentHosts(valid);
-            }, (err) => console.warn(err));
+                const list = [];
+                snapshot.forEach(d => list.push(d.data()));
+
+                // Sort by newest first
+                list.sort((a, b) => b.lastActive - a.lastActive);
+
+                setRecentHosts(list);
+            }, (err) => {
+                console.error("List Error:", err);
+                if (err.code === 'permission-denied') {
+                    alert("Guest Error: Permission Denied.\n\nCheck Firestore Security Rules.");
+                }
+            });
             return () => unsub();
         }
     }, [mode]);
 
     const joinSession = async (targetIdInput) => {
         const targetId = targetIdInput.replace(/\D/g, "");
-
         if (!targetId || targetId.length !== 12) {
             alert("Enter valid 12-digit ID"); return;
         }
 
         setStatus("CONNECTING");
 
-        // 1. CACHE (Local Efficiency)
+        // 1. CACHE
         if (recentHosts.some(h => h.id === targetId)) {
             await connectToId(targetId);
             return;
         }
 
-        // 2. GLOBAL SCALABLE SEARCH (Direct Index Look-up)
-        // This is O(1) in Firestore, supporting trillions of records.
+        // 2. DIRECT SEARCH
         let found = false;
-        const sessionRef = doc(db, "sessions", targetId);
-
-        const unsub = onSnapshot(sessionRef, (docSnap) => {
+        const unsub = onSnapshot(doc(db, "sessions", targetId), (docSnap) => {
             if (docSnap.exists() && !found) {
                 found = true;
                 connectToId(targetId);
@@ -147,16 +150,14 @@ const LinkSystem = () => {
             navigate(`/remote/${id}`);
         } catch (e) {
             console.error("Join Failed:", e);
-            if (e.message.includes("offline")) {
-                navigate(`/remote/${id}`);
-            } else {
+            if (e.message.includes("offline")) navigate(`/remote/${id}`);
+            else {
                 alert("Connection Error. Check console.");
                 setStatus("IDLE");
             }
         }
     };
 
-    // Helper: 1234 5678 9012 (Chunks of 4)
     const formatIdDisplay = (id) => (id ? id.match(/.{1,4}/g) || [] : []);
 
     return (
