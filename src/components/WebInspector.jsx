@@ -12,7 +12,7 @@ const WebInspector = () => {
     const [activeFix, setActiveFix] = useState(null); // { title, code }
 
     // Use a public key if you have one, or leave blank for lower limits.
-    // For a demo/portfolio, blank usually works fine for modest usage.
+    const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY || '';
     const API_ENDPOINT = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed';
 
     const handleScan = async (e) => {
@@ -28,11 +28,20 @@ const WebInspector = () => {
         setResult(null);
 
         try {
-            // Fetch Mobile Strategy by default
-            const response = await fetch(`${API_ENDPOINT}?url=${encodeURIComponent(target)}&strategy=mobile&category=PERFORMANCE&category=SEO`);
+            // Construct URL with Key if available
+            let fetchUrl = `${API_ENDPOINT}?url=${encodeURIComponent(target)}&strategy=mobile&category=PERFORMANCE&category=SEO`;
+            if (API_KEY) {
+                fetchUrl += `&key=${API_KEY}`;
+            }
+
+            const response = await fetch(fetchUrl);
             const data = await response.json();
 
             if (data.error) {
+                // Handle Quota Errors specifically
+                if (data.error.message.includes('Quota exceeded')) {
+                    throw new Error("Daily scan limit reached. Please add a Google API Key to your .env file.");
+                }
                 throw new Error(data.error.message);
             }
 
@@ -164,8 +173,8 @@ const WebInspector = () => {
 
                 {/* Error */}
                 {error && (
-                    <div style={{ marginTop: '2rem', padding: '1rem', background: '#fee2e2', color: '#991b1b', borderRadius: '8px', textAlign: 'center' }}>
-                        ⚠️ {error}
+                    <div style={{ marginTop: '2rem', padding: '1rem', background: '#fee2e2', color: '#991b1b', borderRadius: '8px', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                        <ShieldIcon size={20} color="#991b1b" /> {error}
                     </div>
                 )}
 
