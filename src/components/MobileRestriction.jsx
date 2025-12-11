@@ -9,7 +9,7 @@ const MobileRestriction = ({ children }) => {
         const checkAccess = () => {
             const path = location.pathname;
             // Allow Guest/Host/Marketing routes on mobile
-            if (path.startsWith('/link') || path.startsWith('/remote') || path.startsWith('/host-live') || path.startsWith('/join') || path.startsWith('/showcase')) {
+            if (path.startsWith('/link') || path.startsWith('/remote') || path.startsWith('/host-live') || path.startsWith('/join') || path.startsWith('/showcase') || path.startsWith('/inspector')) {
                 setIsMobile(false);
                 return;
             }

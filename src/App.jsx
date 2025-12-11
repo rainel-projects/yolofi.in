@@ -38,6 +38,7 @@ const HomePage = () => (
 
 import CoffeePopup from "./components/CoffeePopup";
 import Showcase from "./components/Showcase";
+import WebInspector from "./components/WebInspector";
 
 export default function App() {
   return (
@@ -51,6 +52,9 @@ export default function App() {
 
           {/* Marketing / Portfolio */}
           <Route path="/showcase" element={<Showcase />} />
+
+          {/* Web Inspector */}
+          <Route path="/inspector" element={<WebInspector />} />
 
           <Route path="/diagnose" element={
             <div className="diagnose-page">
