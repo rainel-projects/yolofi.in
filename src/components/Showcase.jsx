@@ -57,6 +57,18 @@ const Showcase = () => {
                         <BoltIcon size={20} color="white" /> Launch Application
                     </button>
 
+                    <button
+                        onClick={() => navigate('/autonomy')}
+                        style={{
+                            padding: '1rem 2rem', fontSize: '1.1rem', background: '#111827', color: 'white',
+                            border: '1px solid #374151', borderRadius: '12px', fontWeight: '600', cursor: 'pointer',
+                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', transition: 'transform 0.2s',
+                            display: 'flex', alignItems: 'center', gap: '8px'
+                        }}
+                    >
+                        <ActivityIcon size={20} color="#34D399" /> Autonomy Console
+                    </button>
+
 
                 </div>
 

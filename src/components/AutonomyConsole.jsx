@@ -55,101 +55,153 @@ const ConsoleUI = () => {
 
     return (
         <div style={{
-            background: '#000',
+            background: '#f9fafb',
             minHeight: '100vh',
-            color: '#0f0',
-            fontFamily: 'monospace',
+            color: '#111827',
+            fontFamily: "'Inter', sans-serif",
             padding: '2rem'
         }}>
             {/* HEADER */}
-            <header style={{ borderBottom: '1px solid #333', paddingBottom: '1rem', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between' }}>
+            <header style={{
+                maxWidth: '1000px', margin: '0 auto 2rem auto',
+                background: '#fff', padding: '1.5rem', borderRadius: '16px',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+            }}>
                 <div>
-                    <h1 style={{ margin: 0, fontSize: '1.5rem' }}>AUTONOMY CONSOLE v1.0</h1>
-                    <span style={{ color: '#666', fontSize: '0.8rem' }}>DETERMINISTIC GOVERNANCE ENGINE</span>
+                    <h1 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: '#111827' }}>Autonomy Console</h1>
+                    <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>Deterministic Governance Engine</span>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                     <div style={{
-                        background: metrics.status === 'ACTIVE' ? '#0f0' : '#f00',
-                        color: '#000',
-                        padding: '2px 8px',
-                        fontWeight: 'bold',
-                        borderRadius: '2px'
+                        background: metrics.status === 'ACTIVE' ? '#dcfce7' : '#fee2e2',
+                        color: metrics.status === 'ACTIVE' ? '#166534' : '#991b1b',
+                        padding: '4px 12px',
+                        fontWeight: '600',
+                        fontSize: '0.8rem',
+                        borderRadius: '20px',
+                        display: 'inline-block'
                     }}>
                         {metrics.status}
                     </div>
-                    <div style={{ fontSize: '0.8rem', marginTop: '4px' }}>HASH: {metrics.hash}</div>
                 </div>
             </header>
 
             {/* METRICS GRID */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
+            <div style={{ maxWidth: '1000px', margin: '0 auto 2rem auto', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '1.5rem' }}>
 
-                {/* STABILITY GRAPH (Visual Proof) */}
-                <div style={{ border: '1px solid #333', padding: '1rem' }}>
-                    <h3>SYSTEM STABILITY (Main Thread)</h3>
-                    <div style={{ fontSize: '3rem', fontWeight: 'bold' }}>
+                {/* STABILITY GRAPH */}
+                <div style={{ background: '#fff', padding: '1.5rem', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                    <h3 style={{ fontSize: '0.75rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', marginBottom: '1rem', letterSpacing: '0.05em' }}>System Stability</h3>
+                    <div style={{ fontSize: '3.5rem', fontWeight: '800', color: '#111827', marginBottom: '0.5rem' }}>
                         {metrics.stability}%
                     </div>
-                    <div style={{ height: '4px', background: '#333', marginTop: '1rem' }}>
-                        <div style={{ height: '100%', width: `${metrics.stability}%`, background: '#0f0' }} />
+                    <div style={{ height: '8px', background: '#f3f4f6', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${metrics.stability}%`, background: '#22c55e', borderRadius: '4px', transition: 'width 0.5s ease' }} />
                     </div>
-                    <p style={{ color: '#666', fontSize: '0.8rem' }}>
-                        Target: 100% | Measured: {metrics.stability}%
-                    </p>
                 </div>
 
                 {/* CONTROLS */}
-                <div style={{ border: '1px solid #333', padding: '1rem' }}>
-                    <h3>CHAOS CONTROLS</h3>
+                <div style={{ background: '#fff', padding: '1.5rem', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                    <h3 style={{ fontSize: '0.75rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', marginBottom: '1rem', letterSpacing: '0.05em' }}>Chaos Controls</h3>
                     <button
                         onClick={toggleSimulation}
                         style={{
-                            background: simIntensity > 0 ? '#f00' : '#333',
+                            background: simIntensity > 0 ? '#ef4444' : '#2563eb',
                             color: '#fff',
                             border: 'none',
-                            padding: '1rem',
+                            padding: '0.75rem',
                             width: '100%',
+                            borderRadius: '8px',
+                            fontWeight: '600',
                             cursor: 'pointer',
-                            marginBottom: '1rem'
+                            marginBottom: '1rem',
+                            transition: 'background 0.2s'
                         }}
                     >
-                        {simIntensity > 0 ? '⛔ STOP TRAFFIC SIM' : '🔥 INJECT 5,000 OPS/SEC'}
+                        {simIntensity > 0 ? 'Stop Traffic Simulation' : 'Inject 5,000 Ops/Sec'}
                     </button>
-
-                    <div style={{ fontSize: '0.8rem', color: '#888' }}>
-                        Simulates heavy load. Notice the UI does not freeze.
-                        (Proof of Isolation).
-                    </div>
+                    <p style={{ fontSize: '0.85rem', color: '#6b7280', lineHeight: '1.5' }}>
+                        Simulates heavy computational load. Observe that the UI remains fluid (Proof of Isolation).
+                    </p>
                 </div>
             </div>
 
-            {/* REVENUE ACTION */}
-            <div style={{ textAlign: 'center', marginTop: '4rem' }}>
+            {/* LOCKED INTEGRATIONS */}
+            <div style={{ maxWidth: '1000px', margin: '0 auto 2rem auto' }}>
+                <h3 style={{ fontSize: '0.75rem', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', marginBottom: '1rem', letterSpacing: '0.05em' }}>Enterprise Adapters</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+
+                    {/* CLOUDFLARE */}
+                    <div style={{ background: '#fff', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e5e7eb', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ filter: 'blur(3px)', opacity: 0.4, pointerEvents: 'none' }}>
+                            <h4 style={{ margin: '0 0 0.5rem 0', color: '#111827' }}>Cloudflare Edge-State</h4>
+                            <p style={{ fontSize: '0.9rem', color: '#6b7280' }}>Syncs agent state with Workers KV.</p>
+                        </div>
+                        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+                            <div style={{ background: '#f3f4f6', padding: '8px 16px', borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+                                <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#374151', textTransform: 'uppercase', letterSpacing: '0.05em' }}>LOCKED FEATURE</span>
+                                <a href="https://github.com/sponsors/yourusername" target="_blank" rel="noreferrer" style={{ color: '#2563eb', fontSize: '0.9rem', fontWeight: '600', textDecoration: 'none' }}>Unlock for $1k →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* DATADOG */}
+                    <div style={{ background: '#fff', padding: '1.5rem', borderRadius: '16px', border: '1px solid #e5e7eb', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ filter: 'blur(3px)', opacity: 0.4, pointerEvents: 'none' }}>
+                            <h4 style={{ margin: '0 0 0.5rem 0', color: '#111827' }}>Datadog RUM Stream</h4>
+                            <p style={{ fontSize: '0.9rem', color: '#6b7280' }}>Real-time telemetry injection.</p>
+                        </div>
+                        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+                            <div style={{ background: '#f3f4f6', padding: '8px 16px', borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+                                <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#374151', textTransform: 'uppercase', letterSpacing: '0.05em' }}>LOCKED FEATURE</span>
+                                <a href="https://github.com/sponsors/yourusername" target="_blank" rel="noreferrer" style={{ color: '#2563eb', fontSize: '0.9rem', fontWeight: '600', textDecoration: 'none' }}>Unlock for $2.5k →</a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            {/* ACTION */}
+            <div style={{ textAlign: 'center', padding: '2rem 0' }}>
                 <button
                     onClick={handleExport}
                     style={{
-                        background: '#0f0',
-                        color: '#000',
-                        border: 'none',
+                        background: '#ffffff',
+                        color: '#111827',
+                        border: '1px solid #e5e7eb',
                         padding: '1rem 2rem',
-                        fontSize: '1.2rem',
-                        fontWeight: 'bold',
+                        fontSize: '1rem',
+                        fontWeight: '600',
+                        borderRadius: '12px',
                         cursor: 'pointer',
-                        boxShadow: '0 0 10px rgba(0,255,0,0.4)'
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                        transition: 'all 0.2s',
+                        outline: 'none'
                     }}
                 >
-                    ⬇️ EXPORT AUDIT REPORT (JSON)
+                    Export Compliance Report (JSON)
                 </button>
-                <div style={{ marginTop: '1rem', color: '#666' }}>
-                    Generates verification proof for compliance teams.
-                </div>
             </div>
 
             {/* SPONSOR BADGE */}
             <div style={{ position: 'fixed', bottom: '1rem', right: '1rem', opacity: 0.7 }}>
-                <span style={{ border: '1px solid #333', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>
-                    ❤️ Supported by GitHub Sponsors
-                </span>
+                <a href="https://github.com/sponsors/yourusername" target="_blank" rel="noreferrer" style={{
+                    textDecoration: 'none',
+                    border: '1px solid #e5e7eb',
+                    background: 'white',
+                    padding: '6px 12px',
+                    borderRadius: '20px',
+                    fontSize: '0.8rem',
+                    color: '#6b7280',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                }}>
+                    <span style={{ color: '#ef4444' }}>♥</span> Supported by GitHub Sponsors
+                </a>
             </div>
         </div>
     );

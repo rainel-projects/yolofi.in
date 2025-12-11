@@ -38,6 +38,7 @@ const HomePage = () => (
 
 import CoffeePopup from "./components/CoffeePopup";
 import Showcase from "./components/Showcase";
+import AutonomyConsole from "./components/AutonomyConsole";
 
 export default function App() {
   return (
@@ -51,6 +52,7 @@ export default function App() {
 
           {/* Marketing / Portfolio */}
           <Route path="/showcase" element={<Showcase />} />
+          <Route path="/autonomy" element={<AutonomyConsole />} />
 
 
 
