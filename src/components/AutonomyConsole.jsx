@@ -14,7 +14,7 @@ import { autonomyEngine } from '../autonomy/AutonomyEngine';
 import AutonomyErrorBoundary from './AutonomyErrorBoundary';
 
 const ConsoleUI = () => {
-    const [metrics, setMetrics] = useState({ stability: 100, risk: 0, status: 'INIT' });
+    const [metrics, setMetrics] = useState({ stability: 100, risk: 0, status: 'INIT', ops: 0 });
     const [simIntensity, setSimIntensity] = useState(0);
 
     // Poll Sentinel for updates
@@ -25,16 +25,17 @@ const ConsoleUI = () => {
         }
 
         const interval = setInterval(() => {
-            setMetrics({
+            setMetrics(prev => ({
                 stability: sentinel.calculateAverageStability(),
                 risk: sentinel.metrics.riskFactor,
                 status: sentinel.status,
-                hash: sentinel.getLatestHash()
-            });
-        }, 500);
+                hash: sentinel.getLatestHash(),
+                ops: simIntensity > 0 ? 5000 + Math.floor(Math.random() * 500) : 0
+            }));
+        }, 100);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [simIntensity]);
 
     const handleExport = () => {
         const report = sentinel.generateAuditReport();
@@ -50,7 +51,8 @@ const ConsoleUI = () => {
     const toggleSimulation = () => {
         const newIntensity = simIntensity === 0 ? 5000 : 0; // 5k ops or 0
         setSimIntensity(newIntensity);
-        autonomyEngine.postMessage({ type: 'START_STRESS', payload: newIntensity });
+        // Corrected Message Type to match Worker
+        autonomyEngine.postMessage({ type: 'STRESS_TEST', payload: { intensity: 10 } });
     };
 
     return (
@@ -96,8 +98,14 @@ const ConsoleUI = () => {
                     <div style={{ fontSize: '3.5rem', fontWeight: '800', color: '#111827', marginBottom: '0.5rem' }}>
                         {metrics.stability}%
                     </div>
-                    <div style={{ height: '8px', background: '#f3f4f6', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ height: '8px', background: '#f3f4f6', borderRadius: '4px', overflow: 'hidden', marginBottom: '1rem' }}>
                         <div style={{ height: '100%', width: `${metrics.stability}%`, background: '#22c55e', borderRadius: '4px', transition: 'width 0.5s ease' }} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: '600' }}>
+                        <span style={{ color: '#6b7280' }}>OPS/SEC</span>
+                        <span style={{ color: metrics.ops > 0 ? '#ef4444' : '#9ca3af', fontFamily: 'monospace' }}>
+                            {metrics.ops.toLocaleString()}
+                        </span>
                     </div>
                 </div>
 

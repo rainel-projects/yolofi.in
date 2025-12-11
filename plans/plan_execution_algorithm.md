@@ -66,21 +66,19 @@
 
 ---
 
-## 🔴 PHASE 5: THE LAUNCH (Safe Growth)
-**Objective**: Distribute without getting banned.
-**Ref**: `non_reddit_platforms.md` & `promotion_plan.md`
+## 🔴 PHASE 5: THE LAUNCH (X-Only Protocol)
+**Objective**: 10,000 Impressions on X (Twitter).
+**Ref**: `launch_multiplier_strategy.md`
 
-1.  [ ] **Step 5.1 (Day 1): The "Big 5" Launch (Tier 1)**.
-    *   *Channels*: Product Hunt (Launch), Dev.to (Tutorial), Hashnode (Mirror), Peerlist (Spotlight).
-    *   *Risk*: Zero traffic.
-    *   *Mitigation*: **Diversification**. We launch on 5 platforms. Probability of *all* failing is statistical zero (~0.01%).
-2.  [ ] **Step 5.2 (Day 1): The AI Niche (Tier 2)**.
-    *   *Channels*: *Futurepedia*, *TopAI.tools*.
-    *   *Pitch*: "Zero-Hallucination Agent".
-3.  [ ] **Step 5.3 (Day 2): The Newsletter Drop (Tier 5)**.
-    *   *Action*: Submit to *JavaScript Weekly*.
-4.  [ ] **Step 5.4 (Day 3): The Aggregators (Tier 6)**.
-    *   *Action*: PR to `awesome-web-performance`.
+1.  [ ] **Step 5.1 (Day 1)**: **The Asset Setup**.
+    *   *Action*: Optimize Bio ("High-SRA Architect").
+    *   *Action*: Pin "The Master Thread" (Visual Proof).
+2.  [ ] **Step 5.2 (Day 1)**: **The Offensive**.
+    *   *Action*: Execute "Reply Guy" strategy on 5 accounts (`vercel`, `reactjs`, etc).
+    *   *Goal*: Siphon traffic to Pinned Tweet.
+3.  [ ] **Step 5.3 (Day 2)**: **The Fail-Safe (Protocol X)**.
+    *   *Logic*: If views < 1k, Delete & Repost with "Revenue" Hook.
+
 
 ---
 
