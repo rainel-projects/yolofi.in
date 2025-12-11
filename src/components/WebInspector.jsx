@@ -51,48 +51,55 @@ const WebInspector = () => {
             }
 
             const lh = data.lighthouseResult;
-            const score = Math.round(lh.categories.performance.score * 100);
+            // Safety check for performance score
+            const perfCategory = lh?.categories?.performance;
+            const score = perfCategory?.score ? Math.round(perfCategory.score * 100) : 0;
 
-            // Extract useful audits
-            const audits = lh.audits;
+            // Extract useful audits safely
+            const audits = lh?.audits || {};
             const opportunities = [];
 
             // 1. Text Compression
-            if (audits['uses-text-compression'].score < 0.9) {
+            const txtComp = audits['uses-text-compression'];
+            if (txtComp?.score !== undefined && txtComp.score < 0.9) {
                 opportunities.push({
                     id: 'compression',
                     title: 'Enable Text Compression',
                     desc: 'Text-based resources should be served with compression (Gzip/Brotli).',
-                    savings: audits['uses-text-compression'].displayValue,
+                    savings: txtComp.displayValue,
                     fixType: 'SERVER_CONFIG'
                 });
             }
 
             // 2. Browser Caching
-            if (audits['uses-long-cache-ttl'].score < 0.9) {
+            const cacheAudit = audits['uses-long-cache-ttl'];
+            if (cacheAudit?.score !== undefined && cacheAudit.score < 0.9) {
                 opportunities.push({
                     id: 'caching',
                     title: 'Leverage Browser Caching',
                     desc: 'Serve static assets with an efficient cache policy.',
-                    savings: audits['uses-long-cache-ttl'].displayValue,
+                    savings: cacheAudit.displayValue,
                     fixType: 'SERVER_CONFIG'
                 });
             }
 
             // 3. Image Sizing
-            if (audits['uses-responsive-images'].score < 0.9) {
+            const imgAudit = audits['uses-responsive-images'];
+            if (imgAudit?.score !== undefined && imgAudit.score < 0.9) {
                 opportunities.push({
                     id: 'images',
                     title: 'Properly Size Images',
                     desc: 'Serve images that are appropriately sized to save cellular data.',
-                    savings: audits['uses-responsive-images'].displayValue,
+                    savings: imgAudit.displayValue,
                     fixType: 'MANUAL',
-                    items: audits['uses-responsive-images'].details?.items || []
+                    items: imgAudit.details?.items || []
                 });
             }
 
             // 4. SEO
-            const seoScore = Math.round(lh.categories.seo.score * 100);
+            const seoCategory = lh?.categories?.seo;
+            const seoScore = seoCategory?.score ? Math.round(seoCategory.score * 100) : 0;
+
             if (seoScore < 90) {
                 opportunities.push({
                     id: 'seo',
