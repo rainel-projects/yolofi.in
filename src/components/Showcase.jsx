@@ -99,7 +99,7 @@ const Showcase = () => {
                             </div>
                             <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '0.75rem' }}>Remote Debugging</h3>
                             <p style={{ color: '#6b7280', lineHeight: '1.5' }}>
-                                Generate a secure P2P link to diagnose a friend's device remotely. View live telemetry via WebRTC.
+                                Generate a secure P2P link to diagnose any device globally. View live telemetry via WebRTC.
                             </p>
                         </div>
                     </div>

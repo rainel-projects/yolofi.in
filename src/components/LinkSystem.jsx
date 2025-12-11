@@ -93,7 +93,7 @@ const LinkSystem = () => {
                         <div className="use-cases" style={{ marginTop: '2rem', padding: '1rem', background: '#f8fafc', borderRadius: '12px', fontSize: '0.85rem', color: '#64748b' }}>
                             <strong>Start here if you want to:</strong>
                             <ul style={{ textAlign: 'left', marginTop: '0.5rem', paddingLeft: '1.5rem', lineHeight: '1.6' }}>
-                                <li>Fix a friend's browser remotely</li>
+                                <li>Diagnose any browser globally via P2P</li>
                                 <li>Debug mobile performance from a desktop</li>
                                 <li>Monitor a headless display</li>
                             </ul>
