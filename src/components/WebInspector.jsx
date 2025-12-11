@@ -42,6 +42,11 @@ const WebInspector = () => {
                 if (data.error.message.includes('Quota exceeded')) {
                     throw new Error("Daily scan limit reached. Please add a Google API Key to your .env file.");
                 }
+                // Handle Disabled API specifically
+                if (data.error.message.includes('API has not been used') || data.error.message.includes('is disabled')) {
+                    const projectId = data.error.message.match(/project[:\s]+(\d+)/)?.[1] || 'your-project';
+                    throw new Error(`API not enabled. Please enable "PageSpeed Insights API" in Google Cloud Console.`);
+                }
                 throw new Error(data.error.message);
             }
 
