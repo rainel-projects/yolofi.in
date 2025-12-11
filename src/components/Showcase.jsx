@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldIcon, ScanIcon, BoltIcon, CheckCircleIcon, ActivityIcon, HeartIcon } from './Icons';
+import { ShieldIcon, ScanIcon, BoltIcon, CheckCircleIcon, ActivityIcon, HeartIcon, SearchIcon } from './Icons';
 import CoffeePopup from './CoffeePopup';
 
 const Showcase = () => {
@@ -55,6 +55,17 @@ const Showcase = () => {
                         }}
                     >
                         <BoltIcon size={20} color="white" /> Launch Application
+                    </button>
+
+                    <button
+                        onClick={() => navigate('/inspector')}
+                        style={{
+                            padding: '1rem 2rem', fontSize: '1.1rem', background: 'white', color: '#1f2937',
+                            border: '1px solid #e5e7eb', borderRadius: '12px', fontWeight: '600', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', gap: '8px'
+                        }}
+                    >
+                        <SearchIcon size={20} color="#1f2937" /> Analyze a Website
                     </button>
                 </div>
 
