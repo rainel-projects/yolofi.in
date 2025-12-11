@@ -178,8 +178,8 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                                     } else {
                                         logs.push("Cache API not supported");
                                     }
-                                } catch (e) {
-                                    logs.push(`Cache Access Error: ${e.message}`);
+                                } catch {
+                                    logs.push(`Cache Access Error`);
                                 }
 
                                 // 2. Session Storage Purge
@@ -187,7 +187,7 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                                     const sessionCount = sessionStorage.length;
                                     sessionStorage.clear();
                                     logs.push(`Purged Session Storage (${sessionCount} items)`);
-                                } catch (e) {
+                                } catch {
                                     logs.push("Session Storage: Access Denied");
                                 }
 
@@ -201,7 +201,7 @@ const GamifiedResults = ({ onRescan, results, baseline }) => {
                                         }
                                         if (registrations.length === 0) logs.push("Background Workers: None Active");
                                     }
-                                } catch (e) {
+                                } catch {
                                     logs.push("Service Worker Access Denied");
                                 }
 

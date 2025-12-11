@@ -132,7 +132,7 @@ class BrowserEngine {
             while (limit--) buffers.push(new Array(1000000));
             // Release immediately
             buffers.length = 0;
-        } catch (e) { /* Ignore OOM protection */ }
+        } catch { /* Ignore OOM protection */ }
 
         return "Executed GC Pressure & Cleared Timers";
     }
@@ -168,6 +168,7 @@ class BrowserEngine {
             if (this.isPrime(i)) primes++;
         }
         results.blockingTime = (performance.now() - startBlock).toFixed(2) + "ms";
+        results.primesFoundBlocking = primes;
 
         // 2. Simulate Optimized Task (MTLS)
         const startOpt = performance.now();
@@ -177,6 +178,7 @@ class BrowserEngine {
             (num) => { if (this.isPrime(num)) primesOpt++; }
         );
         results.optimizedTime = (performance.now() - startOpt).toFixed(2) + "ms";
+        results.primesFoundOptimized = primesOpt;
 
         // 3. Analysis
         results.improvement = "User Interface remained responsive during Optimized Task";
@@ -261,7 +263,7 @@ class BrowserEngine {
             if (val && (val.startsWith("{") || val.startsWith("["))) {
                 try {
                     JSON.parse(val);
-                } catch (e) {
+                } catch {
                     console.warn("Corrupted JSON found in " + key + ". Purging.");
                     localStorage.removeItem(key);
                     fixed++;
@@ -313,12 +315,12 @@ class BrowserEngine {
         void document.body.offsetHeight;
 
         // 3. Promote Layers (Safe CSS change)
-        const gpuMsg = this.optimizeLayerCompositing();
+        this.optimizeLayerCompositing();
 
         // 4. Force GC Hint (Memory Optimization)
         try {
             if (window.gc) { window.gc(); } // For browsers started with --js-flags="--expose-gc"
-        } catch (e) { /* ignore */ }
+        } catch { /* ignore */ }
 
         return `Pipeline Optimized: Cleared Buffers & Promoted Layers`;
     }
