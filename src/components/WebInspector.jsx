@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ScanIcon, ShieldIcon, BoltIcon, CheckCircleIcon, ActivityIcon, TrashIcon } from './Icons';
+import { ScanIcon, ShieldIcon, CheckCircleIcon } from './Icons';
 import FixGenerator from '../utils/FixGenerator';
 
 const WebInspector = () => {
@@ -44,7 +44,6 @@ const WebInspector = () => {
                 }
                 // Handle Disabled API specifically
                 if (data.error.message.includes('API has not been used') || data.error.message.includes('is disabled')) {
-                    const projectId = data.error.message.match(/project[:\s]+(\d+)/)?.[1] || 'your-project';
                     throw new Error(`API not enabled. Please enable "PageSpeed Insights API" in Google Cloud Console.`);
                 }
                 throw new Error(data.error.message);
