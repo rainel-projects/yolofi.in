@@ -91,7 +91,7 @@ const Showcase = () => {
             </div>
 
             <div style={{ textAlign: 'center', marginTop: '4rem', color: '#a1a1aa' }}>
-                v1.0.0-HighSRA • Run Locally at localhost:5173
+                v1.0.0-HighSRA
             </div>
         </div>
     );
