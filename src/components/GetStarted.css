@@ -504,7 +504,10 @@
     }
 
     .showcase-grid>div {
-        min-width: 85vw;
+        min-width: 80vw;
+        /* Slightly reduced to show peek of next card */
+        flex-shrink: 0;
+        /* CRITICAL: Prevent squashing */
         scroll-snap-align: center;
     }
 }
