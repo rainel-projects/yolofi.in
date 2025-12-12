@@ -1,0 +1,113 @@
+/* FocusShield Container */
+.focus-shield-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 20px 0;
+}
+
+/* The Shield Button */
+.shield-toggle {
+    background: rgba(20, 20, 30, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.shield-toggle:hover {
+    transform: scale(1.05);
+    background: rgba(30, 30, 40, 0.9);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Icons */
+.shield-icon {
+    width: 40px;
+    height: 40px;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+/* --- ACTIVE STATE --- */
+.shield-toggle.active {
+    background: rgba(0, 20, 40, 0.9);
+    border-color: #00A3FF;
+    box-shadow: 0 0 20px rgba(0, 163, 255, 0.3), inset 0 0 15px rgba(0, 163, 255, 0.1);
+    animation: shieldBreathing 3s infinite ease-in-out;
+}
+
+.shield-toggle.active .shield-icon {
+    color: #00A3FF;
+    filter: drop-shadow(0 0 5px rgba(0, 163, 255, 0.5));
+}
+
+/* Pulse Ring Animation */
+.shield-toggle.active::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border-radius: 50%;
+    border: 2px solid #00A3FF;
+    opacity: 0;
+    animation: pulseRing 2s infinite;
+}
+
+/* Text / Status */
+.shield-status {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #888;
+    letter-spacing: 0.05em;
+    min-height: 20px;
+}
+
+.shield-status.active {
+    color: #00A3FF;
+    text-shadow: 0 0 8px rgba(0, 163, 255, 0.4);
+}
+
+/* --- ANIMATIONS --- */
+@keyframes shieldBreathing {
+
+    0%,
+    100% {
+        box-shadow: 0 0 20px rgba(0, 163, 255, 0.3), inset 0 0 15px rgba(0, 163, 255, 0.1);
+    }
+
+    50% {
+        box-shadow: 0 0 35px rgba(0, 163, 255, 0.5), inset 0 0 25px rgba(0, 163, 255, 0.2);
+    }
+}
+
+@keyframes pulseRing {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scale(1.4);
+        opacity: 0;
+    }
+}
+
+/* Tooltip Context */
+.shield-tooltip {
+    font-size: 0.75rem;
+    color: #555;
+    margin-top: 4px;
+    max-width: 200px;
+    text-align: center;
+}

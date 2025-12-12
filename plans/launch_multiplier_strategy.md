@@ -99,7 +99,35 @@ To hit 10k/tweet, you must **Reply-Jack** viral threads or use **Trending Topics
 **Visual**: ![Architecture](assets/architecture_worker_diagram.png)
 **Target**: 12k Views (Dev Humor audience).
 
+### Tweet 5: The "Free Value" (Direct Thread with Hashtags)
+**The Tweet**:
+> "I am auditing Agent architectures for free today.
+> 
+> Drop your GitHub link. I'll tell you if your Main Thread is blocked.
+> 
+> #buildinpublic #reactjs #webdev"
+**Target**: 10k Views (Algo boosts tweets with high reply counts).
+
 ### Tweet 6: The "Speed Run" (Visual Video)
+**The Tweet**:
+> "How fast is Zero-Copy Transfer?
+> 
+> Here is 50MB of State moving from Worker -> Main in 2ms.
+> 
+> Don't use `JSON.parse()`. Use Binary buffers.
+> 
+> Demo: `yolofi.in/autonomy`"
+**Visual**: ![Stability Graph](assets/chaos_stability_graph.png)
+**Target**: 10k Views (Tech porn).
+
+### Tweet 7: The "Ego Bait" (Tag a specific Tech Influencer)
+*Tag @acemarke (Redux Maintainer) or similar.*
+**The Tweet**:
+> "@acemarke This architecture uses Redux patterns but inside a Worker with SharedMemory. Is this the future of 'Local-First' AI state?
+> 
+> `github.com/[username]/yolofi`"
+**Visual**: ![Architecture](assets/architecture_worker_diagram.png)
+**Target**: 50k Views (If they reply/RT).
 **The Tweet**:
 > "How fast is Zero-Copy Transfer?
 > 
@@ -151,3 +179,34 @@ To hit 10k/tweet, you must **Reply-Jack** viral threads or use **Trending Topics
 1.  **Do NOT post 10 times in a row**. Space them out every 2 hours.
 2.  **Do NOT post naked links**. Put links in the *second* tweet or reply.
 3.  **Engage**. If someone replies, reply back instantly (boosts dwell time).
+4.  **The Rule of 5 (Frequency)**:
+    *   **On Your Posts**: Reply to **100%** of comments. (20 comments = 40 interactions = 2x algorithmic reach).
+    *   **On Others' Posts (Drafting)**: Reply to **5 Viral Tweets** per day. (Math: 5 replies x 2k views each = 10k baseline).
+
+---
+
+## 6. Follower Acquisition Protocol (Traffic -> Audience)
+
+Impressions are Vanity. Followers are Assets. To convert the 10k views into 100+ followers, use these 3 mechanics:
+
+### Mechanic A: The "Auto-Plug" (Thread Closer)
+*Every single thread* (even the 2-tweet ones) must end with this exact template.
+> "If you found this insight useful:
+> 1. Follow @[username] for more High-Performance Agent patterns.
+> 2. Quote RT the first tweet with your biggest takeaway.
+> 
+> I write about removing Main Thread blockers daily."
+
+### Mechanic B: The "Journey" Narrative
+People follow *movements*, not brands.
+*   **The Hook**: "I am documenting every step of building a Deterministic Agent Runtime."
+*   **The Promise**: "Follow to see if I fail or fix the web."
+
+### Mechanic C: The "Gated Value" (Access)
+Use the "Free Audit" offer to force a follow.
+> "I am auditing 5 more Codebases tonight.
+> 
+> **Must be following so I can DM you the report.**
+> 
+> Reply 'AUDIT' below."
+*Why*: X restricts DMs from non-followers. This is a legitimate technical reason to ask for a follow.

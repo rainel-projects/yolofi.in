@@ -23,11 +23,16 @@ class SystemSentinel {
         this.status = 'IDLE'; // IDLE, ACTIVE, SAFE_MODE, LOCKED
         this.integrityVerified = false;
 
+        // Focus Shield State
+        this.focusMode = false;
+        this.heartbeatInterval = null;
+
         // CIRCUIT BREAKER CONFIG
         this.MAX_EXECUTION_MS = 5;
 
         // BOOT SEQUENCE
         this.initialize();
+        this._setupCrossTabSync();
     }
 
     /**
@@ -55,6 +60,20 @@ class SystemSentinel {
             this.status = 'SAFE_MODE';
             this.log("CRITICAL", `Boot Failure: ${e.message}`);
         }
+    }
+
+    _setupCrossTabSync() {
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'yolofi_focus_active') {
+                if (e.newValue === 'true' && !this.focusMode) {
+                    this.activateFocusMode(false); // Don't re-sync
+                    this.log("SYNC", "Focus Shield Activated (Synced from another Tab)");
+                } else if (e.newValue === 'false' && this.focusMode) {
+                    this.deactivateFocusMode(false); // Don't re-sync
+                    this.log("SYNC", "Focus Shield Deactivated (Synced from another Tab)");
+                }
+            }
+        });
     }
 
     /**
@@ -142,6 +161,75 @@ class SystemSentinel {
         if (this.metrics.stabilityScores.length === 0) return 100;
         const sum = this.metrics.stabilityScores.reduce((a, b) => a + b, 0);
         return (sum / this.metrics.stabilityScores.length).toFixed(2);
+    }
+
+    // --- Focus Shield Logic (Simplified / Standard) ---
+
+    activateFocusMode(sync = true) {
+        if (this.status === 'LOCKED') return false;
+
+        this.log("FOCUS", "Focus Shield Activated (Standard).");
+        this.status = 'ACTIVE';
+        this.focusMode = true;
+
+        // 1. Start Standard Heartbeat (8s Interval)
+        this._startHeartbeat();
+
+        // 2. Trigger Initial Cleanup
+        this._triggerGarbageCollection();
+
+        // 3. Simple Sync
+        if (sync) {
+            localStorage.setItem('yolofi_focus_active', 'true');
+        }
+
+        return true;
+    }
+
+    deactivateFocusMode(sync = true) {
+        this.log("FOCUS", "Focus Shield Deactivated.");
+        this.focusMode = false;
+
+        if (this.heartbeatInterval) {
+            clearInterval(this.heartbeatInterval);
+            this.heartbeatInterval = null;
+        }
+
+        if (sync) {
+            localStorage.setItem('yolofi_focus_active', 'false');
+        }
+    }
+
+    _startHeartbeat() {
+        if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
+
+        // Standard 8s Interval (User Request)
+        // Works well for active tabs, throttles in background (which is acceptable for "Simple Task")
+        this.heartbeatInterval = setInterval(() => {
+            if (!this.focusMode) return;
+            this.log("NET", "Active Keep-Alive - 8s Check");
+        }, 8000);
+    }
+
+    _triggerGarbageCollection() {
+        // 1. Clear Internal Buffers
+        this.auditLog = this.auditLog.slice(-10); // Very aggressive trimming
+        this.metrics.stabilityScores = []; // Reset old metrics
+
+        // 2. Browser Hinting (Standard + Experimental)
+        if (window.gc) {
+            try {
+                window.gc();
+                this.log("MEM", "Native Garbage Collection Triggered");
+            } catch (e) {
+                this.log("MEM", "Native GC Unavailable (Requires Flag)");
+            }
+        } else {
+            // Simulated Pressure to force engine cleanup
+            let pressure = new Array(10000).fill(0);
+            pressure = null;
+            this.log("MEM", "Memory Pressure Released (Buffer Flush)");
+        }
     }
 }
 

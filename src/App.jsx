@@ -39,6 +39,7 @@ const HomePage = () => (
 import CoffeePopup from "./components/CoffeePopup";
 import Showcase from "./components/Showcase";
 import AutonomyConsole from "./components/AutonomyConsole";
+import FocusShieldPage from "./components/FocusShieldPage";
 
 export default function App() {
   return (
@@ -66,6 +67,7 @@ export default function App() {
           <Route path="/link" element={<LinkSystem />} />
           <Route path="/host-live" element={<MultiplexHost />} />
           <Route path="/remote/:sessionId" element={<RemoteView />} />
+          <Route path="/focus-shield" element={<FocusShieldPage />} />
 
           {/* Legacy/Dev Routes */}
           <Route path="/home" element={<HomePage />} />

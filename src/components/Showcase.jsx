@@ -1,136 +1,132 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldIcon, ScanIcon, BoltIcon, CheckCircleIcon, ActivityIcon, HeartIcon } from './Icons';
-import CoffeePopup from './CoffeePopup';
+import { ShieldIcon, BrainIcon, BoltIcon, CheckCircleIcon } from './Icons';
+import './GetStarted.css'; // Reusing base styles for container
 
 const Showcase = () => {
     const navigate = useNavigate();
 
     return (
         <div style={{
-            fontFamily: "'Inter', sans-serif",
-            background: '#ffffff',
             minHeight: '100vh',
-            color: '#111827',
-            overflowX: 'hidden'
+            background: '#ffffff',
+            color: '#18181b',
+            padding: '4rem 2rem',
+            fontFamily: 'Inter, sans-serif'
         }}>
-            {/* HERO SECTION */}
-            <header style={{
-                maxWidth: '1200px', margin: '0 auto', padding: '4rem 1.5rem',
-                textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center'
-            }}>
-                <div style={{
-                    marginBottom: '1.5rem', background: '#eff6ff', color: '#2563eb',
-                    padding: '0.5rem 1rem', borderRadius: '50px', fontWeight: '600', fontSize: '0.9rem',
-                    boxShadow: '0 0 0 4px #eff6ff', display: 'inline-flex', alignItems: 'center', gap: '8px'
-                }}>
-                    <ActivityIcon size={16} /> Now Live: Version 3.0
-                </div>
-
+            {/* Header */}
+            <div style={{ maxWidth: '1200px', margin: '0 auto 4rem', textAlign: 'center' }}>
                 <h1 style={{
-                    fontSize: '3.5rem', fontWeight: '800', lineHeight: '1.1',
-                    marginBottom: '1.5rem', letterSpacing: '-0.02em',
-                    background: 'linear-gradient(to right, #1e3a8a, #2563eb)',
+                    fontSize: '3rem', fontWeight: 800, marginBottom: '1rem',
+                    background: 'linear-gradient(to right, #000, #444)',
                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
                 }}>
-                    The Serverless <br /> Browser Optimizer.
+                    YOLOFI SUITE
                 </h1>
-
-                <p style={{
-                    fontSize: '1.25rem', color: '#4b5563', maxWidth: '600px',
-                    lineHeight: '1.6', marginBottom: '2.5rem'
-                }}>
-                    Yolofi instantly diagnoses RAM leaks, clears bloat, and optimizes runtime performance.
-                    Running entirely locally in your browser. No installs.
+                <p style={{ color: '#52525b', fontSize: '1.2rem' }}>
+                    Professional-Grade Browser Optimization Tools
                 </p>
+            </div>
 
-                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                    <button
-                        onClick={() => navigate('/')}
-                        style={{
-                            padding: '1rem 2rem', fontSize: '1.1rem', background: '#2563eb', color: 'white',
-                            border: 'none', borderRadius: '12px', fontWeight: '600', cursor: 'pointer',
-                            boxShadow: '0 10px 15px -3px rgba(37, 99, 235, 0.3)', transition: 'transform 0.2s',
-                            display: 'flex', alignItems: 'center', gap: '8px'
-                        }}
-                    >
-                        <BoltIcon size={20} color="white" /> Launch Application
-                    </button>
+            {/* Grid */}
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: '24px',
+                maxWidth: '1200px',
+                margin: '0 auto'
+            }}>
 
-                    <button
-                        onClick={() => navigate('/autonomy')}
-                        style={{
-                            padding: '1rem 2rem', fontSize: '1.1rem', background: '#111827', color: 'white',
-                            border: '1px solid #374151', borderRadius: '12px', fontWeight: '600', cursor: 'pointer',
-                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', transition: 'transform 0.2s',
-                            display: 'flex', alignItems: 'center', gap: '8px'
-                        }}
-                    >
-                        <ActivityIcon size={20} color="#34D399" /> Autonomy Console
-                    </button>
-
-
-                </div>
-
-                {/* Mobile Note */}
-                <div style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: '#9ca3af', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <ShieldIcon size={14} color="#9ca3af" /> Works best on Desktop Chrome/Edge
-                </div>
-            </header>
-
-            {/* FEATURE GRID */}
-            <section style={{ background: '#f9fafb', padding: '4rem 1.5rem' }}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                    <div style={{
-                        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem'
-                    }}>
-                        {/* F1 */}
-                        <div style={{ background: 'white', padding: '2rem', borderRadius: '16px', border: '1px solid #f3f4f6' }}>
-                            <div style={{ width: '48px', height: '48px', background: '#dbeafe', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                                <ScanIcon size={24} color="#2563eb" />
-                            </div>
-                            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '0.75rem' }}>Zero-Install Core</h3>
-                            <p style={{ color: '#6b7280', lineHeight: '1.5' }}>
-                                Uses advanced browser APIs (`performance.memory`, `navigator.storage`) to analyze system health without requiring any downloads.
-                            </p>
-                        </div>
-
-                        {/* F2 */}
-                        <div style={{ background: 'white', padding: '2rem', borderRadius: '16px', border: '1px solid #f3f4f6' }}>
-                            <div style={{ width: '48px', height: '48px', background: '#dcfce7', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                                <BoltIcon size={24} color="#16a34a" />
-                            </div>
-                            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '0.75rem' }}>Instant RAM Flush</h3>
-                            <p style={{ color: '#6b7280', lineHeight: '1.5' }}>
-                                Triggers garbage collection hints and detaches unused DOM nodes to reclaim up to 40% of wasted memory instantly.
-                            </p>
-                        </div>
-
-                        {/* F3 */}
-                        <div style={{ background: 'white', padding: '2rem', borderRadius: '16px', border: '1px solid #f3f4f6' }}>
-                            <div style={{ width: '48px', height: '48px', background: '#fae8ff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                                <ShieldIcon size={24} color="#c026d3" />
-                            </div>
-                            <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '0.75rem' }}>Remote Debugging</h3>
-                            <p style={{ color: '#6b7280', lineHeight: '1.5' }}>
-                                Generate a secure P2P link to diagnose any device globally. View live telemetry via WebRTC.
-                            </p>
-                        </div>
+                {/* Card 1: Diagnostics (Main) */}
+                <div style={cardStyle} onClick={() => navigate('/diagnose')}>
+                    <div style={iconBoxStyle('#eff6ff', '#2563eb')}>
+                        <BoltIcon size={32} color="#2563eb" />
                     </div>
+                    <h3 style={titleStyle}>System Diagnostics</h3>
+                    <p style={descStyle}>
+                        Full-stack analysis of memory, storage, and network latency.
+                        Auto-fixes common browser bottlenecks.
+                    </p>
+                    <div style={linkStyle}>Launch Scanner →</div>
                 </div>
-            </section>
 
-            {/* FOOTER */}
-            <footer style={{ padding: '3rem 1.5rem', textAlign: 'center', color: '#6b7280' }}>
-                <p style={{ fontWeight: '500', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                    built with <HeartIcon size={16} color="#ef4444" style={{ fill: '#ef4444' }} /> for the web.
-                </p>
-                <div style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
-                    © 2025 Yolofi Inc.
+                {/* Card 2: Focus Shield (New Feature) */}
+                <div style={{ ...cardStyle, border: '2px solid #bae6fd', background: '#f0f9ff' }} onClick={() => navigate('/focus-shield')}>
+                    <div style={iconBoxStyle('#e0f2fe', '#0ea5e9')}>
+                        <ShieldIcon size={32} color="#0ea5e9" />
+                    </div>
+                    <h3 style={titleStyle}>Focus Shield</h3>
+                    <p style={descStyle}>
+                        Active stabilizer for **Gaming** and **Video Calls**.
+                        Prevents lag spikes via keep-alive pings.
+                    </p>
+                    <div style={{ ...linkStyle, color: '#0284c7' }}>Activate Shield →</div>
                 </div>
-            </footer>
+
+                {/* Card 3: Autonomy (Admin) */}
+                <div style={cardStyle} onClick={() => navigate('/autonomy')}>
+                    <div style={iconBoxStyle('#f3e8ff', '#7c3aed')}>
+                        <BrainIcon size={32} color="#7c3aed" />
+                    </div>
+                    <h3 style={titleStyle}>Autonomy Console</h3>
+                    <p style={descStyle}>
+                        Inspect the High-SRA Engine's internal decision matrix.
+                        For developers and auditors.
+                    </p>
+                    <div style={linkStyle}>View Engine →</div>
+                </div>
+
+                {/* Card 4: Link System (Peer) */}
+                <div style={cardStyle} onClick={() => navigate('/link')}>
+                    <div style={iconBoxStyle('#ecfdf5', '#059669')}>
+                        <CheckCircleIcon size={32} color="#059669" />
+                    </div>
+                    <h3 style={titleStyle}>Yolofi Link</h3>
+                    <p style={descStyle}>
+                        Remote troubleshooting. Connect to another device and diagnose it from anywhere.
+                    </p>
+                    <div style={linkStyle}>Open Link →</div>
+                </div>
+
+            </div>
+
+            <div style={{ textAlign: 'center', marginTop: '4rem', color: '#a1a1aa' }}>
+                v1.0.0-HighSRA • Run Locally at localhost:5173
+            </div>
         </div>
     );
+};
+
+// Styles
+const cardStyle = {
+    background: '#ffffff',
+    border: '1px solid #e4e4e7',
+    borderRadius: '16px',
+    padding: '2rem',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)'
+};
+
+const iconBoxStyle = (bg, color) => ({
+    width: '56px', height: '56px', borderRadius: '12px',
+    background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    marginBottom: '1.5rem'
+});
+
+const titleStyle = {
+    fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem', color: '#18181b'
+};
+
+const descStyle = {
+    fontSize: '1rem', color: '#52525b', lineHeight: 1.6, marginBottom: '2rem', flex: 1
+};
+
+const linkStyle = {
+    fontSize: '1rem', fontWeight: 600, color: '#2563eb', marginTop: 'auto'
 };
 
 export default Showcase;

@@ -94,17 +94,9 @@ const Diagnose = () => {
         const finalScore = Math.min(100, (report.score || 80) + 15);
         const finalReport = { ...report, score: finalScore, optimized: true };
 
-        // HABIT LOOP: Save Timestamp & Streak
+        // HABIT LOOP: Save Timestamp only (for internal tracking if needed, or remove completely)
+        // Removing Streak Logic as requested
         const now = Date.now();
-        const lastScan = localStorage.getItem("yolofi_last_scan");
-        let streak = parseInt(localStorage.getItem("yolofi_streak") || "0");
-
-        // If last scan was yesterday (approx), increment streak. If older, reset? 
-        // Let's just be kind and increment if > 12h.
-        if (!lastScan || (now - parseInt(lastScan)) > 12 * 60 * 60 * 1000) {
-            streak++;
-            localStorage.setItem("yolofi_streak", streak.toString());
-        }
         localStorage.setItem("yolofi_last_scan", now.toString());
 
         setReport(finalReport);
@@ -199,14 +191,7 @@ const Diagnose = () => {
                                     <ShieldIcon size={20} /> Resolve All Issues
                                 </button>
                                 <FundingPrompt />
-                                {/* STREAK BADGE */}
-                                <div style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: '8px',
-                                    marginTop: '1rem', padding: '6px 12px', background: '#ecfdf5',
-                                    borderRadius: '20px', border: '1px solid #10b981', color: '#047857', fontWeight: 'bold'
-                                }}>
-                                    🔥 {localStorage.getItem("yolofi_streak") || 1} Day Streak
-                                </div>
+
                             </div>
                         )}
 

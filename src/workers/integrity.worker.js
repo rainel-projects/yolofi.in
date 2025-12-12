@@ -8,6 +8,8 @@
  * GUARANTEE: Zero-Risk (Cannot block Main Thread)
  */
 
+let heartbeatInterval = null;
+
 self.onmessage = async (e) => {
     const { type, payload } = e.data;
 
@@ -19,6 +21,22 @@ self.onmessage = async (e) => {
         else if (type === 'STRESS_TEST') {
             const result = runTrafficSimulation(payload.intensity || 1);
             self.postMessage({ type: 'STRESS_RESULT', data: result });
+        }
+        // --- Focus Shield Logic (Background Thread) ---
+        else if (type === 'START_SHIELD') {
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+
+            // 8-Second Heartbeat (User Request: "Every 8 Seconds")
+            heartbeatInterval = setInterval(() => {
+                self.postMessage({ type: 'HEARTBEAT' });
+            }, 8000);
+
+            self.postMessage({ type: 'SHIELD_STARTED' });
+        }
+        else if (type === 'STOP_SHIELD') {
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+            heartbeatInterval = null;
+            self.postMessage({ type: 'SHIELD_STOPPED' });
         }
     } catch (error) {
         // Zero-Risk Fallback: Always fail open
