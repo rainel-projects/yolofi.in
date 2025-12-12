@@ -62,13 +62,7 @@ const Showcase = () => {
             </div>
 
             {/* Grid */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', // robust mobile min-width
-                gap: '24px',
-                maxWidth: '1200px',
-                margin: '0 auto'
-            }}>
+            <div className="showcase-grid">
 
                 {/* Card 1: Diagnostics */}
                 <Card
