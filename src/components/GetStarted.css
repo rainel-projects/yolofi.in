@@ -511,3 +511,34 @@
         scroll-snap-align: center;
     }
 }
+
+/* Showcase Page Container */
+.showcase-container {
+    min-height: 100vh;
+    background: #ffffff;
+    color: #18181b;
+    padding: 4rem 2rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.showcase-header {
+    max-width: 1200px;
+    margin: 0 auto 4rem;
+    text-align: center;
+}
+
+/* Mobile Adjustments for Showcase */
+@media (max-width: 768px) {
+    .showcase-container {
+        padding: 2rem 0;
+        /* Remove side padding on mobile for edge-to-edge scroll */
+        overflow-x: hidden;
+        /* Prevent page scroll */
+    }
+
+    .showcase-header {
+        padding: 0 1.5rem;
+        /* Add padding back to header text */
+        margin-bottom: 2rem;
+    }
+}

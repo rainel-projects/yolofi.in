@@ -18,16 +18,10 @@ const Showcase = () => {
     };
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            background: theme.bg,
-            color: theme.text,
-            padding: 'clamp(2rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem)', // Fluid Padding
-            fontFamily: 'Inter, sans-serif'
-        }}>
+        <div className="showcase-container">
 
             {/* Header */}
-            <div style={{ maxWidth: '1200px', margin: '0 auto clamp(2rem, 5vw, 4rem)', textAlign: 'center' }}>
+            <div className="showcase-header">
                 <h1 style={{
                     fontSize: 'clamp(2rem, 5vw, 3.5rem)', // Fluid Font
                     fontWeight: 800, marginBottom: '1rem',

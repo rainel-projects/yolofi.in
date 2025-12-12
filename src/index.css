@@ -30,11 +30,10 @@ body {
 }
 
 #root {
-  width: 100vw;
+  width: 100%;
+  /* Fix: changed from 100vw to prevent horizontal scrollbar issues */
   min-height: 100vh;
-  /* changed from height: 100vh to allow scrolling */
   display: flex;
   flex-direction: column;
-  /* changed for natural flow */
   align-items: center;
 }
