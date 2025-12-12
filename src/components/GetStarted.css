@@ -487,28 +487,23 @@
     padding-bottom: 2rem;
 }
 
-/* Mobile: Horizontal Snap Scroll */
+/* Mobile: Vertical Stack (Default) */
 @media (max-width: 768px) {
     .showcase-grid {
-        display: flex;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        gap: 16px;
-        padding: 0 1rem 2rem 1rem;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-    }
-
-    .showcase-grid::-webkit-scrollbar {
-        display: none;
+        display: grid;
+        /* Reset to grid for vertical stack */
+        grid-template-columns: 1fr;
+        /* Single column */
+        gap: 24px;
+        padding: 0 1.5rem 2rem 1.5rem;
+        /* Standard side padding */
+        overflow-x: visible;
     }
 
     .showcase-grid>div {
-        min-width: 80vw;
-        /* Slightly reduced to show peek of next card */
-        flex-shrink: 0;
-        /* CRITICAL: Prevent squashing */
-        scroll-snap-align: center;
+        min-width: unset;
+        /* Remove fixed width */
+        width: 100%;
     }
 }
 
