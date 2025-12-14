@@ -516,7 +516,13 @@
             <div class="sidebar-section">
                 <div class="sidebar-label">Providers</div>
                 <div class="provider-list">
-                    <button class="provider-item active" data-provider="google">
+                    <button class="provider-item active" data-provider="yolofi">
+                        <svg>
+                            <use href="#icon-sparkles"></use>
+                        </svg>
+                        YoloFi Native
+                    </button>
+                    <button class="provider-item" data-provider="google">
                         <svg>
                             <use href="#icon-search"></use>
                         </svg>
@@ -587,13 +593,14 @@
                 <div class="results-container" id="resultsContainer">
                     <div class="results-header">
                         <div class="results-meta">
-                            Results from <strong id="providerName">Google</strong>
+                            Results from <strong id="providerName">YoloFi Native</strong>
                         </div>
                         <div class="results-meta" id="queryDisplay"></div>
                     </div>
                     <iframe id="resultsFrame" class="results-frame"
                         sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox"
                         src="about:blank"></iframe>
+                    <div id="nativeResults" class="native-results"></div>
                 </div>
             </div>
         </main>
