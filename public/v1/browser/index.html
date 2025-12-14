@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YoloFi Meta Browser | Universal Intent Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #fafbfc;
+            --surface: #ffffff;
+            --primary: #5b4cdb;
+            --primary-light: #7c6fe6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text: #1a202c;
+            --text-light: #718096;
+            --border: #e2e8f0;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .browser-container {
+            background: var(--surface);
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .browser-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            padding: 32px;
+            text-align: center;
+            color: white;
+        }
+
+        .browser-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .browser-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .search-section {
+            padding: 40px;
+            background: var(--bg);
+        }
+
+        .search-bar-container {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 20px 24px;
+            font-size: 18px;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s;
+            background: var(--surface);
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(91, 76, 219, 0.1);
+        }
+
+        .temporal-selector {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            justify-content: center;
+        }
+
+        .temporal-btn {
+            padding: 12px 24px;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text);
+        }
+
+        .temporal-btn:hover {
+            border-color: var(--primary);
+            background: rgba(91, 76, 219, 0.05);
+        }
+
+        .temporal-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .intent-analysis {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 2px solid var(--border);
+            display: none;
+        }
+
+        .intent-analysis.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .intent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .intent-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .intent-badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .intent-badge.past {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .intent-badge.present {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .intent-badge.future {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .primary-result {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .primary-result:hover {
+            transform: translateY(-2px);
+        }
+
+        .result-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .result-url {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .result-desc {
+            font-size: 13px;
+            opacity: 0.85;
+        }
+
+        .alternatives-section {
+            margin-top: 16px;
+        }
+
+        .alternatives-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-light);
+            margin-bottom: 12px;
+        }
+
+        .alternatives-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+        }
+
+        .alternative-card {
+            background: var(--bg);
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .alternative-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .alt-domain {
+            font-size: 11px;
+            color: var(--text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .alt-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .alt-url {
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 24px;
+            padding: 16px;
+            background: var(--surface);
+            border-radius: 12px;
+            margin-top: 16px;
+        }
+
+        .stat-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .browser-title {
+                font-size: 24px;
+            }
+
+            .search-bar {
+                font-size: 16px;
+                padding: 16px 20px;
+            }
+
+            .temporal-selector {
+                flex-wrap: wrap;
+            }
+
+            .alternatives-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="browser-container">
+        <div class="browser-header">
+            <div class="browser-title">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M2 12h20"></path>
+                    <path
+                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                    </path>
+                </svg>
+                YoloFi Meta Browser
+            </div>
+            <div class="browser-subtitle">Universal Intent Engine with Infinite Alternatives</div>
+        </div>
+
+        <div class="search-section">
+            <div class="search-bar-container">
+                <input type="text" class="search-bar" id="searchInput"
+                    placeholder="Enter your query... (e.g., 'buy laptop', 'weather tokyo', 'history of bitcoin')"
+                    autocomplete="off">
+            </div>
+
+            <div class="temporal-selector">
+                <button class="temporal-btn active" data-temporal="present">Present</button>
+                <button class="temporal-btn" data-temporal="past">Past</button>
+                <button class="temporal-btn" data-temporal="future">Future</button>
+            </div>
+
+            <div class="intent-analysis" id="intentAnalysis">
+                <div class="intent-header">
+                    <div class="intent-title">Intent Analysis</div>
+                    <div class="intent-badge present" id="temporalBadge">Present</div>
+                </div>
+
+                <div class="primary-result" id="primaryResult" onclick="navigateToPrimary()">
+                    <div class="result-label">PRIMARY DESTINATION</div>
+                    <div class="result-url" id="primaryUrl">—</div>
+                    <div class="result-desc" id="primaryDesc">—</div>
+                </div>
+
+                <div class="alternatives-section">
+                    <div class="alternatives-title">Alternative Destinations</div>
+                    <div class="alternatives-grid" id="alternativesGrid"></div>
+                </div>
+
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-value" id="domainCount">0</div>
+                        <div class="stat-label">Domain</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="actionCount">0</div>
+                        <div class="stat-label">Action</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="altCount">0</div>
+                        <div class="stat-label">Alternatives</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Intent Database (Comprehensive)
+        const INTENT_DATABASE = {
+            // Finance & Crypto
+            finance: {
+                patterns: ['price', 'stock', 'crypto', 'btc', 'eth', 'value', 'market'],
+                primary: 'https://www.coingecko.com/en/coins/{}',
+                alternatives: [
+                    { domain: 'Finance', title: 'Yahoo Finance', url: 'https://finance.yahoo.com/quote/{}' },
+                    { domain: 'Finance', title: 'CoinMarketCap', url: 'https://coinmarketcap.com/currencies/{}/' },
+                    { domain: 'Finance', title: 'TradingView', url: 'https://www.tradingview.com/symbols/{}/' },
+                    { domain: 'Finance', title: 'Bloomberg', url: 'https://www.bloomberg.com/quote/{}' },
+                ]
+            },
+            // Weather
+            weather: {
+                patterns: ['weather', 'forecast', 'temperature', 'climate'],
+                primary: 'https://wttr.in/{}',
+                alternatives: [
+                    { domain: 'Weather', title: 'Weather.com', url: 'https://weather.com/weather/today/l/{}' },
+                    { domain: 'Weather', title: 'AccuWeather', url: 'https://www.accuweather.com/en/search-locations?query={}' },
+                    { domain: 'Weather', title: 'Windy', url: 'https://www.windy.com/{}' },
+                ]
+            },
+            // Shopping
+            shopping: {
+                patterns: ['buy', 'shop', 'purchase', 'order'],
+                primary: 'https://www.amazon.com/s?k={}',
+                alternatives: [
+                    { domain: 'Shopping', title: 'eBay', url: 'https://www.ebay.com/sch/i.html?_nkw={}' },
+                    { domain: 'Shopping', title: 'Best Buy', url: 'https://www.bestbuy.com/site/searchpage.jsp?st={}' },
+                    { domain: 'Shopping', title: 'Walmart', url: 'https://www.walmart.com/search?q={}' },
+                    { domain: 'Shopping', title: 'AliExpress', url: 'https://www.aliexpress.com/wholesale?SearchText={}' },
+                ]
+            },
+            // Knowledge
+            knowledge: {
+                patterns: ['what', 'define', 'wiki', 'meaning', 'explain'],
+                primary: 'https://en.wikipedia.org/wiki/{}',
+                alternatives: [
+                    { domain: 'Knowledge', title: 'Britannica', url: 'https://www.britannica.com/search?query={}' },
+                    { domain: 'Knowledge', title: 'Dictionary', url: 'https://www.merriam-webster.com/dictionary/{}' },
+                    { domain: 'Knowledge', title: 'Simple Wikipedia', url: 'https://simple.wikipedia.org/wiki/{}' },
+                ]
+            },
+            // Development
+            development: {
+                patterns: ['error', 'debug', 'fix', 'code', 'stackoverflow'],
+                primary: 'https://stackoverflow.com/search?q={}',
+                alternatives: [
+                    { domain: 'Development', title: 'GitHub', url: 'https://github.com/search?q={}' },
+                    { domain: 'Development', title: 'Dev.to', url: 'https://dev.to/search?q={}' },
+                    { domain: 'Development', title: 'MDN Docs', url: 'https://developer.mozilla.org/en-US/search?q={}' },
+                ]
+            },
+            // Entertainment
+            entertainment: {
+                patterns: ['movie', 'watch', 'film', 'show', 'series'],
+                primary: 'https://www.imdb.com/find?q={}',
+                alternatives: [
+                    { domain: 'Entertainment', title: 'Rotten Tomatoes', url: 'https://www.rottentomatoes.com/search?search={}' },
+                    { domain: 'Entertainment', title: 'Netflix', url: 'https://www.netflix.com/search?q={}' },
+                    { domain: 'Entertainment', title: 'YouTube', url: 'https://www.youtube.com/results?search_query={}' },
+                ]
+            },
+            // Food
+            food: {
+                patterns: ['recipe', 'cook', 'make', 'food'],
+                primary: 'https://www.allrecipes.com/search?q={}',
+                alternatives: [
+                    { domain: 'Food', title: 'Tasty', url: 'https://tasty.co/search?q={}' },
+                    { domain: 'Food', title: 'Food Network', url: 'https://www.foodnetwork.com/search/{}-' },
+                    { domain: 'Food', title: 'Serious Eats', url: 'https://www.seriouseats.com/search?q={}' },
+                ]
+            },
+            // Travel
+            travel: {
+                patterns: ['flight', 'hotel', 'travel', 'trip'],
+                primary: 'https://www.google.com/travel/flights',
+                alternatives: [
+                    { domain: 'Travel', title: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss={}' },
+                    { domain: 'Travel', title: 'Expedia', url: 'https://www.expedia.com/Hotel-Search?destination={}' },
+                    { domain: 'Travel', title: 'Kayak', url: 'https://www.kayak.com/flights' },
+                ]
+            },
+        };
+
+        // State
+        let currentTemporal = 'present';
+        let currentPrimaryUrl = '';
+
+        // Elements
+        const searchInput = document.getElementById('searchInput');
+        const intentAnalysis = document.getElementById('intentAnalysis');
+        const temporalBadge = document.getElementById('temporalBadge');
+        const primaryUrl = document.getElementById('primaryUrl');
+        const primaryDesc = document.getElementById('primaryDesc');
+        const alternativesGrid = document.getElementById('alternativesGrid');
+        const domainCount = document.getElementById('domainCount');
+        const actionCount = document.getElementById('actionCount');
+        const altCount = document.getElementById('altCount');
+
+        // Temporal selector
+        document.querySelectorAll('.temporal-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.temporal-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTemporal = btn.dataset.temporal;
+                temporalBadge.textContent = currentTemporal.charAt(0).toUpperCase() + currentTemporal.slice(1);
+                temporalBadge.className = `intent-badge ${currentTemporal}`;
+
+                if (searchInput.value.trim()) {
+                    analyzeIntent(searchInput.value);
+                }
+            });
+        });
+
+        // Search input
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            if (query.length > 2) {
+                analyzeIntent(query);
+            } else {
+                intentAnalysis.classList.remove('show');
+            }
+        });
+
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && currentPrimaryUrl) {
+                navigateToPrimary();
+            }
+        });
+
+        function analyzeIntent(query) {
+            const lowerQuery = query.toLowerCase();
+            let matchedCategory = null;
+
+            // Find matching category
+            for (const [category, data] of Object.entries(INTENT_DATABASE)) {
+                if (data.patterns.some(pattern => lowerQuery.includes(pattern))) {
+                    matchedCategory = { category, ...data };
+                    break;
+                }
+            }
+
+            if (!matchedCategory) {
+                // Default fallback
+                matchedCategory = {
+                    category: 'search',
+                    primary: 'https://www.google.com/search?q={}',
+                    alternatives: [
+                        { domain: 'Search', title: 'DuckDuckGo', url: 'https://duckduckgo.com/?q={}' },
+                        { domain: 'Search', title: 'Bing', url: 'https://www.bing.com/search?q={}' },
+                    ]
+                };
+            }
+
+            // Extract subject from query
+            const subject = query.split(' ').slice(1).join('+') || query.replace(/\s+/g, '+');
+
+            // Set primary result
+            currentPrimaryUrl = matchedCategory.primary.replace('{}', subject);
+            primaryUrl.textContent = currentPrimaryUrl;
+            primaryDesc.textContent = `${currentTemporal.charAt(0).toUpperCase() + currentTemporal.slice(1)} intent detected for "${query}"`;
+
+            // Set alternatives
+            alternativesGrid.innerHTML = '';
+            matchedCategory.alternatives.forEach(alt => {
+                const card = document.createElement('div');
+                card.className = 'alternative-card';
+                card.onclick = () => window.open(alt.url.replace('{}', subject), '_blank');
+                card.innerHTML = `
+                    <div class="alt-domain">${alt.domain}</div>
+                    <div class="alt-title">${alt.title}</div>
+                    <div class="alt-url">${alt.url.replace('{}', subject).substring(0, 40)}...</div>
+                `;
+                alternativesGrid.appendChild(card);
+            });
+
+            // Update stats
+            domainCount.textContent = matchedCategory.category.toUpperCase();
+            actionCount.textContent = currentTemporal.toUpperCase();
+            altCount.textContent = matchedCategory.alternatives.length;
+
+            // Show analysis
+            intentAnalysis.classList.add('show');
+        }
+
+        function navigateToPrimary() {
+            if (currentPrimaryUrl) {
+                window.open(currentPrimaryUrl, '_blank');
+            }
+        }
+    </script>
+</body>
+
+</html>
