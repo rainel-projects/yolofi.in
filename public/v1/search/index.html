@@ -4,10 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YoloFi Search</title>
+    <title>YoloFi Search - Your Premium Search Experience</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
 
     <style>
         * {
@@ -17,226 +18,511 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: #fafbfc;
-            overflow: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        .yolofi-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 16px 24px;
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Premium Header */
+        .premium-header {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .brand-section {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            position: relative;
-            z-index: 1000;
+            margin-bottom: 24px;
         }
 
-        .yolofi-brand {
+        .brand-logo {
             display: flex;
             align-items: center;
             gap: 12px;
-            color: white;
         }
 
-        .yolofi-logo {
-            font-size: 20px;
-            font-weight: 800;
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            color: white;
         }
 
-        .search-bar-wrapper {
-            flex: 1;
-            max-width: 600px;
-            margin: 0 24px;
+        .brand-text h1 {
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .search-bar {
-            width: 100%;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 24px;
-            font-size: 15px;
-            font-family: 'Inter', sans-serif;
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        .brand-tagline {
+            font-size: 13px;
+            color: #6b7280;
+            font-weight: 500;
         }
 
-        .search-bar:focus {
-            outline: none;
-            background: white;
-        }
-
-        .provider-switcher {
+        .perks-badges {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
-        .provider-btn {
+        .perk-badge {
             padding: 8px 16px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Search Section */
+        .search-section {
+            position: relative;
+        }
+
+        .search-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 20px 60px 20px 24px;
+            font-size: 18px;
+            border: 3px solid #e5e7eb;
+            border-radius: 16px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s;
+            background: white;
+            font-weight: 500;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        .provider-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.5);
+        .search-btn:hover {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
 
-        .provider-btn.active {
+        .provider-tabs {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .provider-tab {
+            padding: 12px 32px;
+            border: 2px solid #e5e7eb;
             background: white;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #6b7280;
+        }
+
+        .provider-tab:hover {
+            border-color: #667eea;
             color: #667eea;
-            border-color: white;
         }
 
-        .results-container {
-            height: calc(100vh - 120px);
-            position: relative;
+        .provider-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Perks Section */
+        .perks-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .perks-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .perks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .perk-card {
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s;
+        }
+
+        .perk-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .perk-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .perk-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .perk-desc {
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        /* Results Section */
+        .results-section {
             background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            min-height: 600px;
+        }
+
+        .results-header {
+            background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 16px 24px;
+            border-bottom: 2px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .results-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        .provider-badge {
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
         }
 
         .results-frame {
             width: 100%;
-            height: 100%;
+            height: 600px;
             border: none;
+            background: white;
         }
 
-        .credits-bar {
-            background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 12px 24px;
+        /* Credits Footer */
+        .credits-footer {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px 32px;
+            margin-top: 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-top: 1px solid #dee2e6;
-            font-size: 13px;
-            color: #6c757d;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
         }
 
         .credits-left {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+            font-size: 14px;
+            color: #6b7280;
         }
 
-        .credits-logo {
-            height: 20px;
-            opacity: 0.7;
-        }
-
-        .credits-text {
-            font-weight: 500;
+        .credits-left strong {
+            color: #667eea;
+            font-weight: 800;
         }
 
         .powered-by {
-            font-size: 12px;
-            color: #adb5bd;
+            font-size: 13px;
+            color: #9ca3af;
+            font-weight: 600;
         }
 
         .powered-by strong {
-            color: #667eea;
-            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 900;
         }
 
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .premium-header,
+        .perks-section,
+        .results-section,
+        .credits-footer {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* Mobile Responsive */
         @media (max-width: 768px) {
-            .yolofi-header {
+            .main-container {
+                padding: 12px;
+            }
+
+            .premium-header {
+                padding: 20px;
+            }
+
+            .brand-section {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .brand-text h1 {
+                font-size: 24px;
+            }
+
+            .search-input {
+                font-size: 16px;
+                padding: 16px 20px;
+            }
+
+            .search-btn {
+                position: static;
+                transform: none;
+                width: 100%;
+                margin-top: 12px;
+            }
+
+            .provider-tabs {
+                flex-direction: column;
+            }
+
+            .provider-tab {
+                width: 100%;
+                text-align: center;
+            }
+
+            .perks-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .credits-footer {
                 flex-direction: column;
                 gap: 12px;
-                padding: 12px 16px;
-            }
-
-            .search-bar-wrapper {
-                margin: 0;
-                width: 100%;
-            }
-
-            .provider-switcher {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .results-container {
-                height: calc(100vh - 180px);
+                text-align: center;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="yolofi-header">
-        <div class="yolofi-brand">
-            <div class="yolofi-logo">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M2 12h20"></path>
-                    <path
-                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
-                    </path>
-                </svg>
-                YoloFi Search
+    <div class="main-container">
+        <!-- Premium Header -->
+        <div class="premium-header">
+            <div class="brand-section">
+                <div class="brand-logo">
+                    <div class="logo-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M2 12h20"></path>
+                            <path
+                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div class="brand-text">
+                        <h1>YoloFi Search</h1>
+                        <div class="brand-tagline">Your Premium Search Experience</div>
+                    </div>
+                </div>
+                <div class="perks-badges">
+                    <div class="perk-badge">
+                        <span>✓</span> Ad-Free
+                    </div>
+                    <div class="perk-badge">
+                        <span>✓</span> Fast Results
+                    </div>
+                    <div class="perk-badge">
+                        <span>✓</span> Privacy First
+                    </div>
+                </div>
+            </div>
+
+            <div class="search-section">
+                <div class="search-wrapper">
+                    <input type="text" class="search-input" id="searchInput"
+                        placeholder="What would you like to search today?" autocomplete="off">
+                    <button class="search-btn" onclick="performSearch()">Search</button>
+                </div>
+                <div class="provider-tabs">
+                    <button class="provider-tab active" data-provider="google">
+                        <span>🔍</span> Google
+                    </button>
+                    <button class="provider-tab" data-provider="bing">
+                        <span>🌐</span> Bing
+                    </button>
+                </div>
             </div>
         </div>
 
-        <div class="search-bar-wrapper">
-            <input type="text" class="search-bar" id="searchInput" placeholder="Search the web..." autocomplete="off">
+        <!-- Perks Section -->
+        <div class="perks-section">
+            <div class="perks-title">
+                <span>✨</span> Why You'll Love YoloFi Search
+            </div>
+            <div class="perks-grid">
+                <div class="perk-card">
+                    <div class="perk-icon">🚀</div>
+                    <div class="perk-title">Lightning Fast</div>
+                    <div class="perk-desc">Instant results with optimized performance</div>
+                </div>
+                <div class="perk-card">
+                    <div class="perk-icon">🔒</div>
+                    <div class="perk-title">Privacy Protected</div>
+                    <div class="perk-desc">Your searches stay private, always</div>
+                </div>
+                <div class="perk-card">
+                    <div class="perk-icon">🎨</div>
+                    <div class="perk-title">Beautiful Design</div>
+                    <div class="perk-desc">Clean, modern interface you'll enjoy</div>
+                </div>
+                <div class="perk-card">
+                    <div class="perk-icon">⚡</div>
+                    <div class="perk-title">No Distractions</div>
+                    <div class="perk-desc">Focus on what matters - your results</div>
+                </div>
+            </div>
         </div>
 
-        <div class="provider-switcher">
-            <button class="provider-btn active" data-provider="google">Google</button>
-            <button class="provider-btn" data-provider="duckduckgo">DuckDuckGo</button>
-            <button class="provider-btn" data-provider="bing">Bing</button>
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <div class="results-header">
+                <div class="results-info">
+                    <span>Results from</span>
+                    <div class="provider-badge" id="currentProvider">Google</div>
+                </div>
+                <div class="results-info">
+                    <span id="queryDisplay"></span>
+                </div>
+            </div>
+            <iframe id="resultsFrame" class="results-frame"
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox"
+                src="about:blank"></iframe>
         </div>
-    </div>
 
-    <div class="results-container">
-        <iframe id="resultsFrame" class="results-frame"
-            sandbox="allow-same-origin allow-scripts allow-popups allow-forms" src="about:blank"></iframe>
-    </div>
-
-    <div class="credits-bar">
-        <div class="credits-left">
-            <span class="credits-text">Search results provided by</span>
-            <strong id="providerName">Google</strong>
-        </div>
-        <div class="powered-by">
-            Powered by <strong>YoloFi Meta Browser</strong>
+        <!-- Credits Footer -->
+        <div class="credits-footer">
+            <div class="credits-left">
+                <span>Search results provided by</span>
+                <strong id="providerCredit">Google</strong>
+            </div>
+            <div class="powered-by">
+                Powered by <strong>YoloFi Meta Browser</strong>
+            </div>
         </div>
     </div>
 
     <script>
         const searchInput = document.getElementById('searchInput');
         const resultsFrame = document.getElementById('resultsFrame');
-        const providerName = document.getElementById('providerName');
-        const providerBtns = document.querySelectorAll('.provider-btn');
+        const resultsSection = document.getElementById('resultsSection');
+        const currentProvider = document.getElementById('currentProvider');
+        const providerCredit = document.getElementById('providerCredit');
+        const queryDisplay = document.getElementById('queryDisplay');
+        const providerTabs = document.querySelectorAll('.provider-tab');
 
-        let currentProvider = 'google';
+        let activeProvider = 'google';
         let currentQuery = '';
 
-        // Get query from URL if present
+        // Get query from URL
         const urlParams = new URLSearchParams(window.location.search);
         const initialQuery = urlParams.get('q');
         if (initialQuery) {
             searchInput.value = initialQuery;
-            performSearch(initialQuery);
+            performSearch();
         }
 
-        // Search providers
+        // Providers
         const providers = {
             google: {
                 name: 'Google',
                 url: 'https://www.google.com/search?q={}&igu=1'
-            },
-            duckduckgo: {
-                name: 'DuckDuckGo',
-                url: 'https://duckduckgo.com/?q={}'
             },
             bing: {
                 name: 'Bing',
@@ -244,54 +530,71 @@
             }
         };
 
-        // Provider switcher
-        providerBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                providerBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentProvider = btn.dataset.provider;
-                providerName.textContent = providers[currentProvider].name;
+        // Provider tabs
+        providerTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                providerTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                activeProvider = tab.dataset.provider;
 
                 if (currentQuery) {
-                    performSearch(currentQuery);
+                    performSearch();
                 }
             });
         });
 
-        // Search input
+        // Search on Enter
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                const query = searchInput.value.trim();
-                if (query) {
-                    performSearch(query);
-                }
+                performSearch();
             }
         });
 
-        function performSearch(query) {
+        function performSearch() {
+            const query = searchInput.value.trim();
+            if (!query) return;
+
             currentQuery = query;
-            const provider = providers[currentProvider];
+            const provider = providers[activeProvider];
             const searchUrl = provider.url.replace('{}', encodeURIComponent(query));
 
-            // Update URL without reload
+            // Update URL
             const newUrl = `${window.location.pathname}?q=${encodeURIComponent(query)}`;
             window.history.pushState({}, '', newUrl);
 
-            // Load results
+            // Update UI
+            currentProvider.textContent = provider.name;
+            providerCredit.textContent = provider.name;
+            queryDisplay.textContent = `"${query}"`;
+
+            // Show results
+            resultsSection.style.display = 'block';
             resultsFrame.src = searchUrl;
-            providerName.textContent = provider.name;
+
+            // Smooth scroll to results
+            setTimeout(() => {
+                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
         }
 
-        // Handle frame load errors
+        // Handle frame errors
         resultsFrame.addEventListener('error', () => {
             resultsFrame.srcdoc = `
                 <html>
-                    <body style="font-family: 'Inter', sans-serif; padding: 40px; text-align: center; background: #f8f9fa;">
-                        <h2 style="color: #6c757d;">Unable to load search results</h2>
-                        <p style="color: #adb5bd;">The search provider may have blocked embedding. Try opening in a new tab.</p>
-                        <a href="${resultsFrame.src}" target="_blank" style="color: #667eea; text-decoration: none; font-weight: 600;">
-                            Open in New Tab →
-                        </a>
+                    <body style="font-family: 'Inter', sans-serif; padding: 60px; text-align: center; background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);">
+                        <div style="max-width: 500px; margin: 0 auto;">
+                            <div style="font-size: 64px; margin-bottom: 20px;">🔍</div>
+                            <h2 style="color: #1f2937; font-size: 24px; margin-bottom: 12px;">Unable to load results</h2>
+                            <p style="color: #6b7280; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+                                The search provider may have blocked embedding. No worries - you can open the results in a new tab!
+                            </p>
+                            <a href="${resultsFrame.src}" target="_blank" 
+                               style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                      color: white; text-decoration: none; border-radius: 12px; font-weight: 700; 
+                                      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
+                                Open in New Tab →
+                            </a>
+                        </div>
                     </body>
                 </html>
             `;
