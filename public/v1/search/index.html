@@ -161,6 +161,13 @@
             cursor: pointer;
             transition: all 0.2s;
             color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .provider-tab svg {
+            stroke-width: 2.5;
         }
 
         .provider-tab:hover {
@@ -216,8 +223,12 @@
         }
 
         .perk-icon {
-            font-size: 24px;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
+            color: #667eea;
+        }
+
+        .perk-icon svg {
+            stroke-width: 2;
         }
 
         .perk-title {
@@ -413,13 +424,22 @@
                 </div>
                 <div class="perks-badges">
                     <div class="perk-badge">
-                        <span>✓</span> Ad-Free
+                        <svg width="14" height="14">
+                            <use href="#icon-check"></use>
+                        </svg>
+                        Ad-Free
                     </div>
                     <div class="perk-badge">
-                        <span>✓</span> Fast Results
+                        <svg width="14" height="14">
+                            <use href="#icon-zap"></use>
+                        </svg>
+                        Fast Results
                     </div>
                     <div class="perk-badge">
-                        <span>✓</span> Privacy First
+                        <svg width="14" height="14">
+                            <use href="#icon-shield"></use>
+                        </svg>
+                        Privacy First
                     </div>
                 </div>
             </div>
@@ -432,10 +452,16 @@
                 </div>
                 <div class="provider-tabs">
                     <button class="provider-tab active" data-provider="google">
-                        <span>🔍</span> Google
+                        <svg width="16" height="16">
+                            <use href="#icon-search"></use>
+                        </svg>
+                        Google
                     </button>
                     <button class="provider-tab" data-provider="bing">
-                        <span>🌐</span> Bing
+                        <svg width="16" height="16">
+                            <use href="#icon-globe"></use>
+                        </svg>
+                        Bing
                     </button>
                 </div>
             </div>
@@ -444,26 +470,45 @@
         <!-- Perks Section -->
         <div class="perks-section">
             <div class="perks-title">
-                <span>✨</span> Why You'll Love YoloFi Search
+                <svg width="20" height="20">
+                    <use href="#icon-sparkles"></use>
+                </svg>
+                Why You'll Love YoloFi Search
             </div>
             <div class="perks-grid">
                 <div class="perk-card">
-                    <div class="perk-icon">🚀</div>
+                    <div class="perk-icon">
+                        <svg width="32" height="32">
+                            <use href="#icon-zap"></use>
+                        </svg>
+                    </div>
                     <div class="perk-title">Lightning Fast</div>
                     <div class="perk-desc">Instant results with optimized performance</div>
                 </div>
                 <div class="perk-card">
-                    <div class="perk-icon">🔒</div>
+                    <div class="perk-icon">
+                        <svg width="32" height="32">
+                            <use href="#icon-shield"></use>
+                        </svg>
+                    </div>
                     <div class="perk-title">Privacy Protected</div>
                     <div class="perk-desc">Your searches stay private, always</div>
                 </div>
                 <div class="perk-card">
-                    <div class="perk-icon">🎨</div>
+                    <div class="perk-icon">
+                        <svg width="32" height="32">
+                            <use href="#icon-sparkles"></use>
+                        </svg>
+                    </div>
                     <div class="perk-title">Beautiful Design</div>
                     <div class="perk-desc">Clean, modern interface you'll enjoy</div>
                 </div>
                 <div class="perk-card">
-                    <div class="perk-icon">⚡</div>
+                    <div class="perk-icon">
+                        <svg width="32" height="32">
+                            <use href="#icon-eye-off"></use>
+                        </svg>
+                    </div>
                     <div class="perk-title">No Distractions</div>
                     <div class="perk-desc">Focus on what matters - your results</div>
                 </div>
@@ -583,7 +628,10 @@
                 <html>
                     <body style="font-family: 'Inter', sans-serif; padding: 60px; text-align: center; background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);">
                         <div style="max-width: 500px; margin: 0 auto;">
-                            <div style="font-size: 64px; margin-bottom: 20px;">🔍</div>
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" style="margin-bottom: 20px;">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
                             <h2 style="color: #1f2937; font-size: 24px; margin-bottom: 12px;">Unable to load results</h2>
                             <p style="color: #6b7280; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
                                 The search provider may have blocked embedding. No worries - you can open the results in a new tab!
