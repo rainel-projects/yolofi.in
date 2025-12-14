@@ -333,14 +333,17 @@
             GROCERY: {
                 triggers: ['milk', 'bread', 'fruit', 'vegetable', 'banana', 'apple', 'orange', 'egg', 'organic', 'snack', 'grocery', 'food'],
                 site: "https://www.amazon.com/s?i=grocery&k=",
-                label: "GROCERY", style: "fact" // distinctive color 
+                label: "GROCERY", style: "fact" // distinctive color
             },
             COMMERCE: { triggers: ['buy', 'shop', 'price', 'cost', 'cheap', 'amazon'], site: "https://www.amazon.com/s?k=", label: "COMMERCE", style: "valid" },
             VIDEO: { triggers: ['watch', 'video', 'movie', 'stream', 'youtube'], site: "https://www.youtube.com/results?search_query=", label: "VIDEO", style: "valid" },
             COMPUTE: { triggers: ['solve', 'calculate', 'math', 'graph', '+', '-', '*', '/', '^'], site: "https://www.wolframalpha.com/input?i=", label: "COMPUTE", style: "tech" },
-            DEV: { triggers: ['error', 'bug', 'debug', 'code', 'function', 'rust', 'js', 'api'], site: "https://stackoverflow.com/search?q=", label: "DEV", style: "tech" },
+            // Removed generic DEV, splitting into smart routing below
             Fact: { triggers: ['what', 'who', 'when', 'meaning', 'define'], site: "https://en.wikipedia.org/wiki/", label: "FACT", style: "fact" }
         };
+
+        // Tech keywords to force StackOverflow
+        const TECH_TRIGGERS = ['error', 'bug', 'debug', 'code', 'function', 'rust', 'js', 'api', 'compile', 'install', 'deploy', 'react', 'css', 'html', 'python', 'java', 'git', 'terminal', 'loop', 'array', 'string', 'int', 'float'];
 
         renderChips(); input.focus();
 
@@ -351,7 +354,7 @@
         function analyze(raw) {
             const q = raw.trim().toLowerCase();
             currentIntent = null;
-            fab.classList.remove('visible');
+            fab.classList.remove('valid', 'tech', 'fact', 'invalid');
             input.classList.remove('valid', 'tech', 'fact', 'invalid');
             statusText.innerText = "SYSTEM READY";
 
@@ -362,6 +365,23 @@
                 return;
             }
 
+            // 1. Check "How To" explicitly for mature branching
+            if (q.startsWith('how to') || q.includes(' how to ')) {
+                // Check if it's a TECH problem
+                const isTech = TECH_TRIGGERS.some(t => q.includes(t));
+                if (isTech) {
+                    // Route to StackOverflow
+                    const cleanQ = q.replace('how to', '').trim();
+                    lockIntent('DEV GUIDE', `https://stackoverflow.com/search?q=${encodeURIComponent(cleanQ)}`, 'tech');
+                    return;
+                } else {
+                    // Route to wikiHow (Life/General skills)
+                    lockIntent('LIFE GUIDE', `https://www.wikihow.com/wikiHowTo?search=${encodeURIComponent(q)}`, 'fact');
+                    return;
+                }
+            }
+
+            // 2. Standard NLP Loop for other intents
             let bestScore = 0, bestMatch = null;
             for (const [key, rule] of Object.entries(NLP_Rules)) {
                 let score = 0;
@@ -369,25 +389,27 @@
 
                 // Context Scoring
                 if (key === 'GROCERY') {
-                    // "buy apple" (Commerce+Grocery) -> Grocery wins if we exclude Tech context
                     if (q.includes('buy') || q.includes('shop')) score += 1;
-                    // Anti-Triggers for Apple (Tech vs Fruit)
                     if (q.includes('watch') || q.includes('mac') || q.includes('phone') || q.includes('pad')) score -= 10;
                 }
-                if (key === 'DEV' && q.includes('how to')) score += 2;
+                // Compute Context
+                if (key === 'COMPUTE' && (q.includes('=') || !isNaN(q[0]))) score += 2;
 
                 if (score > bestScore) { bestScore = score; bestMatch = rule; }
             }
 
             if (bestScore > 0) {
                 let dest = bestMatch.site + encodeURIComponent(q);
-                // Smart Routing logic
                 if (bestMatch.label === 'FACT' && !q.includes(' ')) dest = bestMatch.site + q;
-                if (bestMatch.label === 'DEV') dest = bestMatch.site + encodeURIComponent(q.replace('how to', ''));
 
                 lockIntent(bestMatch.label, dest, bestMatch.style);
             } else {
-                statusText.innerText = "AMBIGUOUS QUERY";
+                // Try loose matching for Tech triggers if no specific intent found
+                if (TECH_TRIGGERS.some(t => q.includes(t))) {
+                    lockIntent('DEV SEARCH', `https://stackoverflow.com/search?q=${encodeURIComponent(q)}`, 'tech');
+                } else {
+                    statusText.innerText = "AMBIGUOUS QUERY";
+                }
             }
         }
 
