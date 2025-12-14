@@ -4,49 +4,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YoloFi Search - Your Premium Search Experience</title>
+    <title>YoloFi Search</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-    <!-- YoloFi Native Icons -->
+    <!-- YoloFi Icons -->
     <svg style="display: none;">
-        <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-            stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
-        </symbol>
-        <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
             <path d="m21 21-4.35-4.35"></path>
         </symbol>
-        <symbol id="icon-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        <symbol id="icon-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="2" y1="12" x2="22" y2="12"></line>
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
-            </path>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
         </symbol>
-        <symbol id="icon-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        <symbol id="icon-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
         </symbol>
-        <symbol id="icon-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        <symbol id="icon-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
         </symbol>
-        <symbol id="icon-sparkles" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        <symbol id="icon-sparkles" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
             <path
                 d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z">
             </path>
-            <path d="M5 3v4"></path>
-            <path d="M19 17v4"></path>
-            <path d="M3 5h4"></path>
-            <path d="M17 19h4"></path>
         </symbol>
-        <symbol id="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        <symbol id="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
             <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
             <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
@@ -63,266 +53,290 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #0a0a0f;
+            color: #e4e4e7;
             min-height: 100vh;
-            overflow-x: hidden;
+            font-weight: 300;
+            letter-spacing: 0.01em;
         }
 
-        .main-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
+        /* Classified Grid Layout */
+        .classified-container {
+            display: grid;
+            grid-template-areas:
+                "header header"
+                "sidebar main"
+                "footer footer";
+            grid-template-columns: 280px 1fr;
+            grid-template-rows: auto 1fr auto;
+            min-height: 100vh;
+            gap: 1px;
+            background: #18181b;
         }
 
-        /* Premium Header */
-        .premium-header {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 32px;
-            margin-bottom: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-        }
-
-        .brand-section {
+        /* Header - Classified Style */
+        .classified-header {
+            grid-area: header;
+            background: linear-gradient(135deg, #1e1e2e 0%, #27272a 100%);
+            border-bottom: 1px solid #3f3f46;
+            padding: 16px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 24px;
         }
 
-        .brand-logo {
+        .brand {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .logo-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 12px;
+        .brand-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
         }
 
-        .brand-text h1 {
-            font-size: 28px;
-            font-weight: 900;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .brand-tagline {
-            font-size: 13px;
-            color: #6b7280;
+        .brand-text {
+            font-size: 18px;
             font-weight: 500;
+            color: #f4f4f5;
+            letter-spacing: -0.02em;
         }
 
-        .perks-badges {
+        .status-badges {
             display: flex;
             gap: 8px;
-            flex-wrap: wrap;
         }
 
-        .perk-badge {
-            padding: 8px 16px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
+        .status-badge {
+            padding: 4px 10px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 400;
+            color: #86efac;
             display: flex;
             align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            gap: 4px;
         }
 
-        /* Search Section */
-        .search-section {
-            position: relative;
+        .status-dot {
+            width: 4px;
+            height: 4px;
+            background: #22c55e;
+            border-radius: 50%;
+        }
+
+        /* Sidebar - Classified Navigation */
+        .classified-sidebar {
+            grid-area: sidebar;
+            background: #18181b;
+            border-right: 1px solid #27272a;
+            padding: 20px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-label {
+            font-size: 10px;
+            font-weight: 500;
+            color: #71717a;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+        }
+
+        .provider-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .provider-item {
+            padding: 10px 12px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 400;
+            color: #a1a1aa;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .provider-item:hover {
+            background: rgba(99, 102, 241, 0.05);
+            border-color: rgba(99, 102, 241, 0.2);
+            color: #e4e4e7;
+        }
+
+        .provider-item.active {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.4);
+            color: #c7d2fe;
+        }
+
+        .provider-item svg {
+            width: 14px;
+            height: 14px;
+            opacity: 0.7;
+        }
+
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .feature-icon {
+            width: 16px;
+            height: 16px;
+            color: #6366f1;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .feature-content {
+            flex: 1;
+        }
+
+        .feature-title {
+            font-size: 12px;
+            font-weight: 500;
+            color: #e4e4e7;
+            margin-bottom: 2px;
+        }
+
+        .feature-desc {
+            font-size: 11px;
+            font-weight: 300;
+            color: #71717a;
+            line-height: 1.4;
+        }
+
+        /* Main Content - Search Area */
+        .classified-main {
+            grid-area: main;
+            background: #0a0a0f;
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        .search-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .search-label {
+            font-size: 11px;
+            font-weight: 400;
+            color: #71717a;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
         }
 
         .search-wrapper {
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 32px;
         }
 
         .search-input {
             width: 100%;
-            padding: 20px 60px 20px 24px;
-            font-size: 18px;
-            border: 3px solid #e5e7eb;
-            border-radius: 16px;
+            padding: 16px 20px;
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 300;
+            color: #f4f4f5;
             font-family: 'Inter', sans-serif;
-            transition: all 0.3s;
-            background: white;
-            font-weight: 500;
+            transition: all 0.2s;
         }
 
         .search-input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            border-color: #6366f1;
+            background: #1e1e2e;
+        }
+
+        .search-input::placeholder {
+            color: #52525b;
+            font-weight: 300;
         }
 
         .search-btn {
             position: absolute;
-            right: 8px;
+            right: 6px;
             top: 50%;
             transform: translateY(-50%);
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             border: none;
-            border-radius: 12px;
-            font-weight: 700;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: white;
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .search-btn:hover {
-            transform: translateY(-50%) scale(1.05);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            opacity: 0.9;
+            transform: translateY(-50%) scale(1.02);
         }
 
-        .provider-tabs {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-
-        .provider-tab {
-            padding: 12px 32px;
-            border: 2px solid #e5e7eb;
-            background: white;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #6b7280;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .provider-tab svg {
-            stroke-width: 2.5;
-        }
-
-        .provider-tab:hover {
-            border-color: #667eea;
-            color: #667eea;
-        }
-
-        .provider-tab.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-color: transparent;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-
-        /* Perks Section */
-        .perks-section {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        .perks-title {
-            font-size: 16px;
-            font-weight: 800;
-            color: #1f2937;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .perks-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-        }
-
-        .perk-card {
-            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
-            padding: 16px;
-            border-radius: 12px;
-            border: 2px solid #e5e7eb;
-            transition: all 0.2s;
-        }
-
-        .perk-card:hover {
-            border-color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
-        }
-
-        .perk-icon {
-            margin-bottom: 12px;
-            color: #667eea;
-        }
-
-        .perk-icon svg {
-            stroke-width: 2;
-        }
-
-        .perk-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 4px;
-        }
-
-        .perk-desc {
-            font-size: 12px;
-            color: #6b7280;
-            line-height: 1.5;
-        }
-
-        /* Results Section */
-        .results-section {
-            background: white;
-            border-radius: 20px;
+        /* Results Frame */
+        .results-container {
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
             min-height: 600px;
+            display: none;
+        }
+
+        .results-container.active {
+            display: block;
         }
 
         .results-header {
-            background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 16px 24px;
-            border-bottom: 2px solid #dee2e6;
+            padding: 12px 20px;
+            background: #1e1e2e;
+            border-bottom: 1px solid #27272a;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .results-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 14px;
-            color: #6b7280;
-            font-weight: 600;
+        .results-meta {
+            font-size: 12px;
+            font-weight: 400;
+            color: #71717a;
         }
 
-        .provider-badge {
-            padding: 6px 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
+        .results-meta strong {
+            color: #a78bfa;
+            font-weight: 500;
         }
 
         .results-frame {
@@ -332,275 +346,193 @@
             background: white;
         }
 
-        /* Credits Footer */
-        .credits-footer {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 20px 32px;
-            margin-top: 24px;
+        /* Footer */
+        .classified-footer {
+            grid-area: footer;
+            background: #18181b;
+            border-top: 1px solid #27272a;
+            padding: 16px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
         }
 
-        .credits-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 14px;
-            color: #6b7280;
+        .footer-text {
+            font-size: 11px;
+            font-weight: 300;
+            color: #71717a;
         }
 
-        .credits-left strong {
-            color: #667eea;
-            font-weight: 800;
-        }
-
-        .powered-by {
-            font-size: 13px;
-            color: #9ca3af;
-            font-weight: 600;
-        }
-
-        .powered-by strong {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: 900;
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .premium-header,
-        .perks-section,
-        .results-section,
-        .credits-footer {
-            animation: fadeIn 0.6s ease-out;
+        .footer-text strong {
+            color: #a78bfa;
+            font-weight: 500;
         }
 
         /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .main-container {
-                padding: 12px;
-            }
-
-            .premium-header {
-                padding: 20px;
-            }
-
-            .brand-section {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
-            }
-
-            .brand-text h1 {
-                font-size: 24px;
-            }
-
-            .search-input {
-                font-size: 16px;
-                padding: 16px 20px;
-            }
-
-            .search-btn {
-                position: static;
-                transform: none;
-                width: 100%;
-                margin-top: 12px;
-            }
-
-            .provider-tabs {
-                flex-direction: column;
-            }
-
-            .provider-tab {
-                width: 100%;
-                text-align: center;
-            }
-
-            .perks-grid {
+        @media (max-width: 968px) {
+            .classified-container {
+                grid-template-areas:
+                    "header"
+                    "main"
+                    "footer";
                 grid-template-columns: 1fr;
             }
 
-            .credits-footer {
-                flex-direction: column;
-                gap: 12px;
-                text-align: center;
+            .classified-sidebar {
+                display: none;
+            }
+
+            .classified-main {
+                padding: 20px;
+            }
+
+            .search-input {
+                padding-right: 100px;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="main-container">
-        <!-- Premium Header -->
-        <div class="premium-header">
-            <div class="brand-section">
-                <div class="brand-logo">
-                    <div class="logo-icon">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="M2 12h20"></path>
-                            <path
-                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
-                            </path>
-                        </svg>
-                    </div>
-                    <div class="brand-text">
-                        <h1>YoloFi Search</h1>
-                        <div class="brand-tagline">Your Premium Search Experience</div>
-                    </div>
+    <div class="classified-container">
+        <!-- Header -->
+        <header class="classified-header">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M2 12h20"></path>
+                        <path
+                            d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                        </path>
+                    </svg>
                 </div>
-                <div class="perks-badges">
-                    <div class="perk-badge">
-                        <svg width="14" height="14">
-                            <use href="#icon-check"></use>
-                        </svg>
-                        Ad-Free
-                    </div>
-                    <div class="perk-badge">
-                        <svg width="14" height="14">
-                            <use href="#icon-zap"></use>
-                        </svg>
-                        Fast Results
-                    </div>
-                    <div class="perk-badge">
-                        <svg width="14" height="14">
-                            <use href="#icon-shield"></use>
-                        </svg>
-                        Privacy First
-                    </div>
+                <div class="brand-text">YoloFi Search</div>
+            </div>
+            <div class="status-badges">
+                <div class="status-badge">
+                    <span class="status-dot"></span>
+                    Operational
+                </div>
+                <div class="status-badge">
+                    <span class="status-dot"></span>
+                    Secure
                 </div>
             </div>
+        </header>
 
-            <div class="search-section">
-                <div class="search-wrapper">
-                    <input type="text" class="search-input" id="searchInput"
-                        placeholder="What would you like to search today?" autocomplete="off">
-                    <button class="search-btn" onclick="performSearch()">Search</button>
-                </div>
-                <div class="provider-tabs">
-                    <button class="provider-tab active" data-provider="google">
-                        <svg width="16" height="16">
+        <!-- Sidebar -->
+        <aside class="classified-sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-label">Providers</div>
+                <div class="provider-list">
+                    <button class="provider-item active" data-provider="google">
+                        <svg>
                             <use href="#icon-search"></use>
                         </svg>
                         Google
                     </button>
-                    <button class="provider-tab" data-provider="bing">
-                        <svg width="16" height="16">
+                    <button class="provider-item" data-provider="bing">
+                        <svg>
                             <use href="#icon-globe"></use>
                         </svg>
                         Bing
                     </button>
                 </div>
             </div>
-        </div>
 
-        <!-- Perks Section -->
-        <div class="perks-section">
-            <div class="perks-title">
-                <svg width="20" height="20">
-                    <use href="#icon-sparkles"></use>
-                </svg>
-                Why You'll Love YoloFi Search
-            </div>
-            <div class="perks-grid">
-                <div class="perk-card">
-                    <div class="perk-icon">
-                        <svg width="32" height="32">
+            <div class="sidebar-section">
+                <div class="sidebar-label">Features</div>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <svg class="feature-icon">
                             <use href="#icon-zap"></use>
                         </svg>
+                        <div class="feature-content">
+                            <div class="feature-title">Fast</div>
+                            <div class="feature-desc">Optimized performance</div>
+                        </div>
                     </div>
-                    <div class="perk-title">Lightning Fast</div>
-                    <div class="perk-desc">Instant results with optimized performance</div>
-                </div>
-                <div class="perk-card">
-                    <div class="perk-icon">
-                        <svg width="32" height="32">
+                    <div class="feature-item">
+                        <svg class="feature-icon">
                             <use href="#icon-shield"></use>
                         </svg>
+                        <div class="feature-content">
+                            <div class="feature-title">Private</div>
+                            <div class="feature-desc">No tracking</div>
+                        </div>
                     </div>
-                    <div class="perk-title">Privacy Protected</div>
-                    <div class="perk-desc">Your searches stay private, always</div>
-                </div>
-                <div class="perk-card">
-                    <div class="perk-icon">
-                        <svg width="32" height="32">
+                    <div class="feature-item">
+                        <svg class="feature-icon">
                             <use href="#icon-sparkles"></use>
                         </svg>
+                        <div class="feature-content">
+                            <div class="feature-title">Clean</div>
+                            <div class="feature-desc">Minimal interface</div>
+                        </div>
                     </div>
-                    <div class="perk-title">Beautiful Design</div>
-                    <div class="perk-desc">Clean, modern interface you'll enjoy</div>
-                </div>
-                <div class="perk-card">
-                    <div class="perk-icon">
-                        <svg width="32" height="32">
+                    <div class="feature-item">
+                        <svg class="feature-icon">
                             <use href="#icon-eye-off"></use>
                         </svg>
+                        <div class="feature-content">
+                            <div class="feature-title">Focused</div>
+                            <div class="feature-desc">No distractions</div>
+                        </div>
                     </div>
-                    <div class="perk-title">No Distractions</div>
-                    <div class="perk-desc">Focus on what matters - your results</div>
                 </div>
             </div>
-        </div>
+        </aside>
 
-        <!-- Results Section -->
-        <div class="results-section" id="resultsSection" style="display: none;">
-            <div class="results-header">
-                <div class="results-info">
-                    <span>Results from</span>
-                    <div class="provider-badge" id="currentProvider">Google</div>
+        <!-- Main Content -->
+        <main class="classified-main">
+            <div class="search-container">
+                <div class="search-label">Query</div>
+                <div class="search-wrapper">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Enter search query..."
+                        autocomplete="off">
+                    <button class="search-btn" onclick="performSearch()">Search</button>
                 </div>
-                <div class="results-info">
-                    <span id="queryDisplay"></span>
-                </div>
-            </div>
-            <iframe id="resultsFrame" class="results-frame"
-                sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox"
-                src="about:blank"></iframe>
-        </div>
 
-        <!-- Credits Footer -->
-        <div class="credits-footer">
-            <div class="credits-left">
-                <span>Search results provided by</span>
-                <strong id="providerCredit">Google</strong>
+                <div class="results-container" id="resultsContainer">
+                    <div class="results-header">
+                        <div class="results-meta">
+                            Results from <strong id="providerName">Google</strong>
+                        </div>
+                        <div class="results-meta" id="queryDisplay"></div>
+                    </div>
+                    <iframe id="resultsFrame" class="results-frame"
+                        sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox"
+                        src="about:blank"></iframe>
+                </div>
             </div>
-            <div class="powered-by">
+        </main>
+
+        <!-- Footer -->
+        <footer class="classified-footer">
+            <div class="footer-text">
+                Search results provided by <strong id="footerProvider">Google</strong>
+            </div>
+            <div class="footer-text">
                 Powered by <strong>YoloFi Meta Browser</strong>
             </div>
-        </div>
+        </footer>
     </div>
 
     <script>
         const searchInput = document.getElementById('searchInput');
         const resultsFrame = document.getElementById('resultsFrame');
-        const resultsSection = document.getElementById('resultsSection');
-        const currentProvider = document.getElementById('currentProvider');
-        const providerCredit = document.getElementById('providerCredit');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const providerName = document.getElementById('providerName');
+        const footerProvider = document.getElementById('footerProvider');
         const queryDisplay = document.getElementById('queryDisplay');
-        const providerTabs = document.querySelectorAll('.provider-tab');
+        const providerItems = document.querySelectorAll('.provider-item');
 
         let activeProvider = 'google';
         let currentQuery = '';
 
-        // Get query from URL
+        // URL params
         const urlParams = new URLSearchParams(window.location.search);
         const initialQuery = urlParams.get('q');
         if (initialQuery) {
@@ -620,12 +552,12 @@
             }
         };
 
-        // Provider tabs
-        providerTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                providerTabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                activeProvider = tab.dataset.provider;
+        // Provider switching
+        providerItems.forEach(item => {
+            item.addEventListener('click', () => {
+                providerItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                activeProvider = item.dataset.provider;
 
                 if (currentQuery) {
                     performSearch();
@@ -649,42 +581,35 @@
             const searchUrl = provider.url.replace('{}', encodeURIComponent(query));
 
             // Update URL
-            const newUrl = `${window.location.pathname}?q=${encodeURIComponent(query)}`;
-            window.history.pushState({}, '', newUrl);
+            window.history.pushState({}, '', `?q=${encodeURIComponent(query)}`);
 
             // Update UI
-            currentProvider.textContent = provider.name;
-            providerCredit.textContent = provider.name;
+            providerName.textContent = provider.name;
+            footerProvider.textContent = provider.name;
             queryDisplay.textContent = `"${query}"`;
 
             // Show results
-            resultsSection.style.display = 'block';
+            resultsContainer.classList.add('active');
             resultsFrame.src = searchUrl;
-
-            // Smooth scroll to results
-            setTimeout(() => {
-                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
         }
 
-        // Handle frame errors
+        // Error handling
         resultsFrame.addEventListener('error', () => {
             resultsFrame.srcdoc = `
                 <html>
-                    <body style="font-family: 'Inter', sans-serif; padding: 60px; text-align: center; background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);">
+                    <body style="font-family: 'Inter', sans-serif; padding: 60px; text-align: center; background: #0a0a0f; color: #e4e4e7;">
                         <div style="max-width: 500px; margin: 0 auto;">
-                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" style="margin-bottom: 20px;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" style="margin-bottom: 20px;">
                                 <circle cx="11" cy="11" r="8"></circle>
                                 <path d="m21 21-4.35-4.35"></path>
                             </svg>
-                            <h2 style="color: #1f2937; font-size: 24px; margin-bottom: 12px;">Unable to load results</h2>
-                            <p style="color: #6b7280; font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
-                                The search provider may have blocked embedding. No worries - you can open the results in a new tab!
+                            <h2 style="font-size: 18px; font-weight: 500; margin-bottom: 12px;">Unable to load results</h2>
+                            <p style="font-size: 13px; font-weight: 300; color: #71717a; line-height: 1.6; margin-bottom: 24px;">
+                                The search provider blocked embedding. Open in new tab instead.
                             </p>
                             <a href="${resultsFrame.src}" target="_blank" 
-                               style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                      color: white; text-decoration: none; border-radius: 12px; font-weight: 700; 
-                                      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
+                               style="display: inline-block; padding: 12px 24px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); 
+                                      color: white; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 500;">
                                 Open in New Tab →
                             </a>
                         </div>
