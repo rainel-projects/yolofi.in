@@ -628,7 +628,7 @@
             <div class="crate-title" style="color: #ff0055;" id="vip-title">SUPPORT YOLOMINT</div>
             <p class="crate-desc" id="vip-desc" style="line-height: 1.6;">
                 Premium features are <b>Coming Soon</b>!<br><br>
-                If you love the addiction loop, <b>Buy a Coffee</b> to help us cover server costs and ship Premium
+                If you enjoy the <b>experience</b>, <b>Buy a Coffee</b> to help us cover server costs and ship Premium
                 faster.
             </p>
             <ul
@@ -664,6 +664,11 @@
         let clickPower = 1.00;
         let totalClicks = 0;
         let isPremium = false;
+
+        // Combo System
+        let combo = 0;
+        let lastClickTime = 0;
+        let maxCombo = 50;
 
         // Energy System
         let energy = 100;
@@ -765,41 +770,74 @@
         }, 200);
 
         // --- INTERACTION ---
+        // --- INTERACTION ---
         function mint(e) {
+            const now = Date.now();
+
             // Check Energy
             if (!isPremium) {
                 if (energy < 5) {
                     haptic(50);
-                    // Trigger UPSell
                     openCoffee('forced');
                     return;
                 }
-                energy -= 5; // Use 5 energy per click
+                energy -= 5;
             }
 
-            const power = isPremium ? clickPower * 10 : clickPower;
+            // COMBO LOGIC
+            if (now - lastClickTime < 400) {
+                combo++;
+                if (combo > maxCombo) combo = maxCombo;
+            } else {
+                combo = 0;
+            }
+            lastClickTime = now;
+
+            // CRITICAL HIT & MULTIPLIERS
+            let mult = 1 + (Math.floor(combo / 5) * 0.5); // +0.5x every 5 combo
+            let isCrit = Math.random() < 0.05; // 5% Crit chance
+            if (isCrit) mult *= 5;
+
+            let power = (isPremium ? clickPower * 10 : clickPower) * mult;
             balance += power;
             totalClicks++;
 
             // Visuals
-            spawnParticle(e.clientX, e.clientY, `+$${format(power)}`);
-            spawnDebris(e.clientX, e.clientY); // PHYSICS EXPLOSION
-            haptic(10);
+            let label = `+$${format(power)}`;
+            if (isCrit) label = `CRIT! +$${format(power)}`;
+            else if (combo > 5) label += ` (x${mult.toFixed(1)})`;
+
+            spawnParticle(e.clientX, e.clientY, label, isCrit);
+            spawnDebris(e.clientX, e.clientY, isCrit ? 15 : 6);
+
+            haptic(isCrit ? 50 : 10);
+
+            // INTENSITY
+            let intensity = Math.min(combo, 20);
+            if (intensity > 0) {
+                document.body.style.transform = `translate(${Math.random() * intensity - intensity / 2}px, ${Math.random() * intensity - intensity / 2}px)`;
+                setTimeout(() => document.body.style.transform = 'none', 50);
+            }
 
             // Btn Shake
-            btnMint.style.transform = `scale(0.95) rotate(${Math.random() * 4 - 2}deg)`;
+            let scale = isCrit ? 1.2 : 0.95;
+            btnMint.style.transform = `scale(${scale}) rotate(${Math.random() * 8 - 4}deg)`;
             setTimeout(() => btnMint.style.transform = 'none', 50);
 
             updateUI();
         }
 
-        function spawnParticle(x, y, text) {
+        function spawnParticle(x, y, text, isCrit = false) {
             const p = document.createElement('div');
             p.className = 'particle';
             p.innerText = text;
             p.style.left = x + 'px';
             p.style.top = y + 'px';
-            p.style.color = Math.random() > 0.9 ? 'var(--gold)' : (isPremium ? 'var(--gold)' : 'var(--primary)');
+            p.style.color = isCrit ? '#ff0055' : (Math.random() > 0.9 ? 'var(--gold)' : (isPremium ? 'var(--gold)' : 'var(--primary)'));
+            p.style.fontSize = isCrit ? '24px' : '14px';
+            p.style.textShadow = isCrit ? '0 0 10px #ff0055' : 'none';
+            p.style.fontWeight = isCrit ? '900' : 'bold';
+            p.style.zIndex = isCrit ? 100 : 50;
             document.body.appendChild(p);
             setTimeout(() => p.remove(), 1000);
         }
@@ -871,7 +909,7 @@
                 title.style.color = 'red';
             } else {
                 title.innerText = "SUPPORT YOLOMINT";
-                desc.innerHTML = "Premium features are <b>Coming Soon</b>!<br><br>If you love the addiction loop, <b>Buy a Coffee</b> to help us cover server costs.";
+                desc.innerHTML = "Premium features are <b>Coming Soon</b>!<br><br>If you enjoy the <b>experience</b>, <b>Buy a Coffee</b> to help us cover server costs.";
                 title.style.color = '#ff0055';
             }
 
