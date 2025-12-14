@@ -20,7 +20,6 @@
             animation: gradient 15s ease infinite;
             color: var(--primary);
             font-family: 'Outfit', sans-serif;
-            /* Modern, friendly font */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -57,6 +56,66 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            position: relative;
+        }
+
+        /* AI AGENT OVERLAY */
+        .agent-overlay {
+            position: absolute;
+            top: -60px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .agent-overlay.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .agent-bubble {
+            background: rgba(30, 39, 46, 0.95);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .agent-dot {
+            width: 8px;
+            height: 8px;
+            background: #00cec9;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00cec9;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+                transform: scale(0.9);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+
+            100% {
+                opacity: 0.5;
+                transform: scale(0.9);
+            }
         }
 
         .omnibar-wrapper {
@@ -117,7 +176,43 @@
             color: #e17055;
         }
 
-        /* Output & Floating Action */
+        /* CLARIFICATION CHOICES */
+        .choice-container {
+            display: none;
+            gap: 10px;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+        }
+
+        .choice-container.active {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .choice-btn {
+            background: white;
+            border: 1px solid #dfe6e9;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #2d3436;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .choice-btn:hover {
+            transform: translateY(-2px);
+            border-color: #0984e3;
+            color: #0984e3;
+            box-shadow: 0 6px 15px rgba(9, 132, 227, 0.15);
+        }
+
+
         .output-area {
             height: 30px;
             font-family: 'JetBrains Mono', monospace;
@@ -163,13 +258,21 @@
             stroke-width: 3;
         }
     </style>
-    <!-- Modern Font -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=JetBrains+Mono&display=swap"
         rel="stylesheet">
 </head>
 
 <body>
+
     <div class="glass-card">
+        <!-- AI Agent -->
+        <div class="agent-overlay" id="agent">
+            <div class="agent-bubble">
+                <div class="agent-dot"></div>
+                <span id="agent-msg">AI: Analyzing Intent...</span>
+            </div>
+        </div>
+
         <div class="omnibar-wrapper">
             <input type="text" class="omnibar" id="q" placeholder="Type intent..." autocomplete="off" autofocus>
             <button class="fab" id="go-btn" onclick="execute()">
@@ -180,6 +283,9 @@
                 </svg>
             </button>
         </div>
+
+        <!-- Clarification UI replaces Chips when active -->
+        <div class="choice-container" id="choices"></div>
 
         <div class="chips" id="suggestions">
             <!-- Dynamic Chips -->
@@ -195,10 +301,56 @@
         const output = document.getElementById('output');
         const fab = document.getElementById('go-btn');
         const chipsContainer = document.getElementById('suggestions');
+        const agent = document.getElementById('agent');
+        const agentMsg = document.getElementById('agent-msg');
+        const choiceBox = document.getElementById('choices');
 
-        // "Trillion Times" means it remembers. Load History.
         let history = JSON.parse(localStorage.getItem('yolofi_history') || '[]');
         let destination = null;
+
+        // 0. AI AMBIGUITY MATRIX
+        const ambiguous = {
+            'apple': {
+                msg: "Ambiguous Entity. Clarify Context:",
+                options: [
+                    { label: "Stock (AAPL)", cmd: "price aapl" },
+                    { label: "Product (Buy)", cmd: "buy apple" },
+                    { label: "Fruit (Bio)", cmd: "wiki Apple" }
+                ]
+            },
+            'tesla': {
+                msg: "Ambiguous Entity. Clarify Context:",
+                options: [
+                    { label: "Stock (TSLA)", cmd: "price tsla" },
+                    { label: "Car (Buy)", cmd: "buy tesla" },
+                    { label: "Inventor (Bio)", cmd: "wiki Nikola_Tesla" }
+                ]
+            },
+            'rust': {
+                msg: "Language or Material?",
+                options: [
+                    { label: "Code (Lang)", cmd: "gh rust" },
+                    { label: "Game", cmd: "wiki Rust_(video_game)" },
+                    { label: "Oxidation", cmd: "wiki Rust" }
+                ]
+            },
+            'amazon': {
+                msg: "Context needed:",
+                options: [
+                    { label: "Shop", cmd: "buy amazon" },
+                    { label: "Stock (AMZN)", cmd: "price amzn" },
+                    { label: "River", cmd: "wiki Amazon_River" }
+                ]
+            },
+            'python': {
+                msg: "Clarify Species:",
+                options: [
+                    { label: "Code (Lang)", cmd: "gh python" },
+                    { label: "Snake", cmd: "wiki Python_(genus)" },
+                    { label: "Comedy", cmd: "wiki Monty_Python" }
+                ]
+            }
+        };
 
         // Init UI
         renderChips();
@@ -214,83 +366,81 @@
 
         function resolve(raw) {
             const q = raw.trim().toLowerCase();
+
+            // Reset UI
             output.classList.remove('visible');
             fab.classList.remove('visible');
             destination = null;
 
-            if (!q) return;
+            if (!q) {
+                resetAgent();
+                return;
+            }
 
-            // Logic (Should match Rust backend ideally)
+            // 1. Check AI Ambiguity
+            if (ambiguous[q]) {
+                activateAI(q);
+                return;
+            } else {
+                resetAgent();
+            }
+
             const parts = q.split(' ');
-            let label = "";
 
-            // 1. Exact Shortcuts (Fast Maps)
+            // 2. Exact Shortcuts
             const shortcuts = {
                 'google': 'google.com', 'yt': 'youtube.com', 'gh': 'github.com',
                 'twitter': 'x.com', 'gpt': 'chatgpt.com', 'weather': 'wttr.in'
             };
+            if (shortcuts[q]) { setDest(`https://${shortcuts[q]}`, `Fast Nav: ${shortcuts[q]}`); return; }
+            if (q.includes('.') && !q.includes(' ')) { setDest(`https://${q}`, `Direct Connect: ${q}`); return; }
 
-            if (shortcuts[q]) {
-                setDest(`https://${shortcuts[q]}`, `Fast Nav: ${shortcuts[q]}`);
-                return;
-            }
-            if (q.includes('.') && !q.includes(' ')) {
-                setDest(`https://${q}`, `Direct Connect: ${q}`);
-                return;
-            }
-
-            // 2. Intents (Multi-word)
+            // 3. Intents (Deterministic)
             const cmd = parts[0];
             const query = parts.slice(1).join(' ');
 
-            // ENTERTAINMENT
-            if (cmd === 'watch' && parts.length > 1) {
-                setDest(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, `Stream: YouTube`);
-                return;
-            }
-            if (cmd === 'listen' && parts.length > 1) {
-                setDest(`https://open.spotify.com/search/${encodeURIComponent(query)}`, `Audio: Spotify`);
-                return;
-            }
+            if (cmd === 'watch' && parts.length > 1) { setDest(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, `Stream: YouTube`); return; }
+            if (cmd === 'listen' && parts.length > 1) { setDest(`https://open.spotify.com/search/${encodeURIComponent(query)}`, `Audio: Spotify`); return; }
+            if ((cmd === 'buy' || cmd === 'shop') && parts.length > 1) { setDest(`https://www.amazon.com/s?k=${encodeURIComponent(query)}`, `Market: Amazon`); return; }
+            if ((cmd === 'map' || cmd === 'where') && parts.length > 1) { setDest(`https://www.openstreetmap.org/search?query=${encodeURIComponent(query)}`, `Geo: OpenStreetMap`); return; }
+            if (cmd === 'npm' && parts.length > 1) { setDest(`https://www.npmjs.com/search?q=${encodeURIComponent(query)}`, `Registry: NPM`); return; }
+            if (cmd === 'weather' && parts.length > 1) { setDest(`https://wttr.in/${parts.slice(1).join('+')}`, `Data Stream: Weather`); return; }
+            if (cmd === 'price' && parts.length > 1) { setDest(`https://www.coingecko.com/en/coins/${parts[1]}`, `Data Stream: Price`); return; }
+            if ((cmd === 'gh' || cmd === 'github') && parts.length > 1) { setDest(`https://github.com/${parts[1]}`, `Git Navigation`); return; }
 
-            // COMMERCE
-            if ((cmd === 'buy' || cmd === 'shop') && parts.length > 1) {
-                setDest(`https://www.amazon.com/s?k=${encodeURIComponent(query)}`, `Market: Amazon`);
-                return;
-            }
-
-            // LOCATION
-            if ((cmd === 'map' || cmd === 'where') && parts.length > 1) {
-                setDest(`https://www.openstreetmap.org/search?query=${encodeURIComponent(query)}`, `Geo: OpenStreetMap`);
-                return;
-            }
-
-            // CODE
-            if (cmd === 'npm' && parts.length > 1) {
-                setDest(`https://www.npmjs.com/search?q=${encodeURIComponent(query)}`, `Registry: NPM`);
-                return;
-            }
-
-            // Legacy Intents (Keep these useful ones)
-            if (cmd === 'weather' && parts.length > 1) {
-                setDest(`https://wttr.in/${parts.slice(1).join('+')}`, `Data Stream: Weather`);
-                return;
-            }
-            if (cmd === 'price' && parts.length > 1) {
-                setDest(`https://www.coingecko.com/en/coins/${parts[1]}`, `Data Stream: Price`);
-                return;
-            }
-            if ((cmd === 'gh' || cmd === 'github') && parts.length > 1) {
-                setDest(`https://github.com/${parts[1]}`, `Git Navigation`);
-                return;
-            }
-
-            // 3. The "Zero-Assumption" Fallback (Wikipedia)
-            // NO GOOGLE. NO BING. NO ADS.
+            // 4. Zero-Assumption Fallback (Wikipedia)
             if (q.length > 1) {
                 setDest(`https://en.wikipedia.org/wiki/${parts.join('_')}`, `Knowledge Graph: ${q}`);
-                return;
             }
+        }
+
+        function activateAI(key) {
+            const data = ambiguous[key];
+            agentMsg.innerText = `AI: ${data.msg}`;
+            agent.classList.add('active');
+
+            chipsContainer.style.display = 'none'; // Hide normal chips
+            choiceBox.innerHTML = '';
+
+            data.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.innerText = opt.label;
+                btn.onclick = () => {
+                    input.value = opt.cmd;
+                    resolve(opt.cmd);
+                    input.focus();
+                };
+                choiceBox.appendChild(btn);
+            });
+            choiceBox.classList.add('active');
+        }
+
+        function resetAgent() {
+            agent.classList.remove('active');
+            choiceBox.classList.remove('active');
+            choiceBox.style.display = 'none';
+            chipsContainer.style.display = 'flex';
         }
 
         function setDest(url, label) {
@@ -302,22 +452,17 @@
 
         function execute() {
             if (!destination) return;
-
-            // Save to History (The "Trillion Times" reliability)
             const val = input.value.trim();
             if (val && !history.includes(val)) {
                 history.unshift(val);
                 if (history.length > 5) history.pop();
                 localStorage.setItem('yolofi_history', JSON.stringify(history));
             }
-
             window.location.href = destination;
         }
 
         function renderChips() {
             chipsContainer.innerHTML = '';
-
-            // 1. History (Orange)
             history.slice(0, 3).forEach(h => {
                 const chip = document.createElement('div');
                 chip.className = 'chip history';
@@ -325,9 +470,7 @@
                 chip.onclick = () => { input.value = h; resolve(h); input.focus(); };
                 chipsContainer.appendChild(chip);
             });
-
-            // 2. Suggestions (Default)
-            ['weather london', 'gh rust', 'price btc', 'wiki quantum'].forEach(s => {
+            ['weather london', 'gh rust', 'price btc'].forEach(s => {
                 const chip = document.createElement('div');
                 chip.className = 'chip';
                 chip.innerText = s;
