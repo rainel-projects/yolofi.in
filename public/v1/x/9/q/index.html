@@ -849,12 +849,13 @@
                         { name: 'Google', url: 'https://www.google.com/search?q=' }
                     ]
                 };
-                if (isTech) { currentQuery = q.replace('how to', '').trim(); } else { currentQuery = q; }
-                lockIntent(match, q);
+                if(isTech) { currentQuery = q.replace('how to','').trim(); } else { currentQuery = q; }
+                lockIntent(match, q); 
                 return;
             }
             
             // GAME MODE INTERCEPT
+            // Only trigger if specifically "play snake" or "game", not partial matches
             if (q === 'play snake' || q === 'game') {
                 launchSnake();
                 return;
@@ -865,7 +866,7 @@
             for (const [key, rule] of Object.entries(NLP_Rules)) {
                 let score = 0;
                 rule.triggers.forEach(t => { if (q.includes(t)) score++; });
-
+                
                 if (key === 'GROCERY') {
                     if (q.includes('buy') || q.includes('shop')) score += 1;
                     if (q.includes('watch') || q.includes('mac') || q.includes('phone') || q.includes('pad')) score -= 10;
@@ -879,15 +880,95 @@
                 currentQuery = q;
                 lockIntent(bestMatch, q);
             } else {
-                if (TECH_TRIGGERS.some(t => q.includes(t))) {
-                    currentQuery = q;
-                    lockIntent(NLP_Rules.DEV, q);
-                } else {
-                    statusText.innerText = "AMBIGUOUS QUERY";
-                }
+                 if (TECH_TRIGGERS.some(t => q.includes(t))) {
+                      currentQuery = q;
+                      lockIntent(NLP_Rules.DEV, q);
+                 } else {
+                      statusText.innerText = "AMBIGUOUS QUERY";
+                 }
             }
         }
 
+        // --- RUNTIME GAMES (SNAKE) ---
+        // Global Game Variables
+        let gameInterval;
+        let snake = [{x: 10, y: 10}];
+        let food = {x: 15, y: 15};
+        let dx = 0, dy = 0;
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Define Functions Globally
+        function launchSnake() {
+            const win = document.getElementById('app-window');
+            win.classList.add('game-active');
+            
+            // Adjust window size for game
+            win.style.width = '450px';
+            win.style.height = '550px';
+            
+            document.querySelector('.slogan').innerText = "Game Mode";
+            document.addEventListener('keydown', gameInput);
+            startGame();
+        }
+        
+        function startGame() {
+            dx = 1; dy = 0; snake = [{x:10, y:10}];
+            if(gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, 100);
+        }
+        
+        function gameLoop() {
+            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            snake.unshift(head);
+            
+            if (head.x === food.x && head.y === food.y) {
+                food = {x: Math.floor(Math.random()*20), y: Math.floor(Math.random()*20)};
+            } else {
+                snake.pop();
+            }
+            // Boundaries
+            if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20) return resetGame();
+            drawGame();
+        }
+        
+        function drawGame() {
+            ctx.fillStyle = 'rgba(255,255,255,0.2)'; // Clear with transparency
+            ctx.fillRect(0,0,400,400); 
+            ctx.fillStyle = '#00b894';
+            snake.forEach(part => ctx.fillRect(part.x*20, part.y*20, 18, 18));
+            ctx.fillStyle = '#e17055';
+            ctx.fillRect(food.x*20, food.y*20, 18, 18);
+        }
+        
+        function resetGame() {
+            clearInterval(gameInterval);
+            // alert("Game Over!"); // Removed annoying alert
+            startGame(); 
+        }
+        
+        function gameInput(e) {
+            // Prevent scrolling with arrows
+            if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
+            
+            if(e.key === 'ArrowUp' && dy === 0) { dx=0; dy=-1; }
+            if(e.key === 'ArrowDown' && dy === 0) { dx=0; dy=1; }
+            if(e.key === 'ArrowLeft' && dx === 0) { dx=-1; dy=0; }
+            if(e.key === 'ArrowRight' && dx === 0) { dx=1; dy=0; }
+            if(e.key === 'Escape') {
+                 // Quit Game Logic
+                 const win = document.getElementById('app-window');
+                 win.classList.remove('game-active');
+                 clearInterval(gameInterval);
+                 document.querySelector('.slogan').innerText = "Find exactly what you need.";
+                 win.style.width = '';
+                 win.style.height = '';
+                 document.removeEventListener('keydown', gameInput);
+                 input.focus();
+            }
+        }
+        
+        // Lock Intent Logic
         function lockIntent(rule, query) {
             currentMatch = rule;
             currentQuery = query;
@@ -899,6 +980,7 @@
             else fab.style.background = '#00b894';
         }
 
+        // Execution Logic
         function execute() {
             if (!currentMatch) return;
             const val = input.value.trim();
@@ -907,7 +989,6 @@
                 localStorage.setItem('yolofi_history', JSON.stringify(history));
             }
 
-            // SHOW DECISION UI
             statusText.innerText = "CHOOSE YOUR PATH";
             chipsContainer.innerHTML = '<div class="provider-list"></div>';
             const list = chipsContainer.querySelector('.provider-list');
@@ -915,9 +996,7 @@
             currentMatch.providers.forEach(p => {
                 const card = document.createElement('div');
                 card.className = 'provider-card';
-                // Safe Icon extraction (First letter)
                 const iconChar = p.name ? p.name[0] : '?';
-
                 card.innerHTML = `
                     <div class="p-icon">${iconChar}</div>
                     <div class="p-info">
