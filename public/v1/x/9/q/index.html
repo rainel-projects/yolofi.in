@@ -13,6 +13,12 @@
         content="YoloFi Quantum Query: A deterministic, sovereign, and privacy-focused intent engine.">
     <meta name="application-name" content="YoloFi">
 
+    <!-- CYBER SECURITY HEADERS -->
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' 'unsafe-inline' data: https://fonts.googleapis.com https://fonts.gstatic.com; frame-ancestors 'none'; upgrade-insecure-requests;">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
     <!-- ICON -->
     <link rel="icon" type="image/svg+xml"
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%230984e3'/%3E%3Cstop offset='100%25' style='stop-color:%2300b894'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='50' fill='url(%23g)'/%3E%3Cpath d='M30 30 L50 60 L70 30 M50 60 L50 85' stroke='white' stroke-width='8' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
@@ -102,6 +108,8 @@
             /* Sophisticated Gradient Mask */
             background: linear-gradient(135deg, #2d3436 0%, #0984e3 100%);
             -webkit-background-clip: text;
+            background-clip: text;
+            /* Standard Property */
             -webkit-text-fill-color: transparent;
             margin: 0;
             margin-bottom: 8px;
@@ -323,6 +331,11 @@
         // --- YOLOFI SECURITY ENCLAVE ---
         // RESTRICTED ACCESS: Anti-Tamper & Anti-Inspect Protocol
         (function () {
+            // 0. Force HTTPS (HSTS Simulation)
+            if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                location.replace(`https:${location.href.substring(location.protocol.length)}`);
+            }
+
             // 1. Disable Right Click
             document.addEventListener('contextmenu', event => event.preventDefault());
 
@@ -349,7 +362,6 @@
 
         const input = document.getElementById('q');
         const statusText = document.getElementById('status-text');
-        // ... (rest of the script)
 
         const fab = document.getElementById('go-btn');
         const chipsContainer = document.getElementById('suggestions');
