@@ -224,7 +224,7 @@
             const parts = q.split(' ');
             let label = "";
 
-            // Fast Maps
+            // 1. Exact Shortcuts (Fast Maps)
             const shortcuts = {
                 'google': 'google.com', 'yt': 'youtube.com', 'gh': 'github.com',
                 'twitter': 'x.com', 'gpt': 'chatgpt.com', 'weather': 'wttr.in'
@@ -239,17 +239,39 @@
                 return;
             }
 
-            // Intents
-            if (parts[0] === 'weather' && parts.length > 1) {
+            // 2. Intents (Multi-word)
+            const cmd = parts[0];
+            const query = parts.slice(1).join(' ');
+
+            if (cmd === 'weather' && parts.length > 1) {
                 setDest(`https://wttr.in/${parts.slice(1).join('+')}`, `Data Stream: Weather`);
                 return;
             }
-            if (parts[0] === 'price' && parts.length > 1) {
+            if (cmd === 'price' && parts.length > 1) {
                 setDest(`https://www.coingecko.com/en/coins/${parts[1]}`, `Data Stream: Price`);
                 return;
             }
-            if (parts[0] === 'wiki' && parts.length > 1) {
+            if (cmd === 'wiki' && parts.length > 1) {
                 setDest(`https://en.wikipedia.org/wiki/${parts.slice(1).join('_')}`, `Knowledge: Wikipedia`);
+                return;
+            }
+            if ((cmd === 'gh' || cmd === 'github') && parts.length > 1) {
+                setDest(`https://github.com/${parts[1]}`, `Git Navigation`);
+                return;
+            }
+            if ((cmd === 'google' || cmd === 'search') && parts.length > 1) {
+                setDest(`https://www.google.com/search?q=${encodeURIComponent(query)}`, `Google Search`);
+                return;
+            }
+            if ((cmd === 'yt' || cmd === 'youtube') && parts.length > 1) {
+                setDest(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, `YouTube Search`);
+                return;
+            }
+
+            // 3. Catch-All Fallback (Ensures button ALWAYS appears)
+            // If we don't know what to do, we search privately.
+            if (q.length > 1) {
+                setDest(`https://duckduckgo.com/?q=${encodeURIComponent(q)}`, `Search Safe: ${q}`);
                 return;
             }
         }
