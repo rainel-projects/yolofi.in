@@ -243,6 +243,35 @@
             const cmd = parts[0];
             const query = parts.slice(1).join(' ');
 
+            // ENTERTAINMENT
+            if (cmd === 'watch' && parts.length > 1) {
+                setDest(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, `Stream: YouTube`);
+                return;
+            }
+            if (cmd === 'listen' && parts.length > 1) {
+                setDest(`https://open.spotify.com/search/${encodeURIComponent(query)}`, `Audio: Spotify`);
+                return;
+            }
+
+            // COMMERCE
+            if ((cmd === 'buy' || cmd === 'shop') && parts.length > 1) {
+                setDest(`https://www.amazon.com/s?k=${encodeURIComponent(query)}`, `Market: Amazon`);
+                return;
+            }
+
+            // LOCATION
+            if ((cmd === 'map' || cmd === 'where') && parts.length > 1) {
+                setDest(`https://www.openstreetmap.org/search?query=${encodeURIComponent(query)}`, `Geo: OpenStreetMap`);
+                return;
+            }
+
+            // CODE
+            if (cmd === 'npm' && parts.length > 1) {
+                setDest(`https://www.npmjs.com/search?q=${encodeURIComponent(query)}`, `Registry: NPM`);
+                return;
+            }
+
+            // Legacy Intents (Keep these useful ones)
             if (cmd === 'weather' && parts.length > 1) {
                 setDest(`https://wttr.in/${parts.slice(1).join('+')}`, `Data Stream: Weather`);
                 return;
@@ -251,27 +280,15 @@
                 setDest(`https://www.coingecko.com/en/coins/${parts[1]}`, `Data Stream: Price`);
                 return;
             }
-            if (cmd === 'wiki' && parts.length > 1) {
-                setDest(`https://en.wikipedia.org/wiki/${parts.slice(1).join('_')}`, `Knowledge: Wikipedia`);
-                return;
-            }
             if ((cmd === 'gh' || cmd === 'github') && parts.length > 1) {
                 setDest(`https://github.com/${parts[1]}`, `Git Navigation`);
                 return;
             }
-            if ((cmd === 'google' || cmd === 'search') && parts.length > 1) {
-                setDest(`https://www.google.com/search?q=${encodeURIComponent(query)}`, `Google Search`);
-                return;
-            }
-            if ((cmd === 'yt' || cmd === 'youtube') && parts.length > 1) {
-                setDest(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, `YouTube Search`);
-                return;
-            }
 
-            // 3. Catch-All Fallback (Ensures button ALWAYS appears)
-            // If we don't know what to do, we search privately.
+            // 3. The "Zero-Assumption" Fallback (Wikipedia)
+            // NO GOOGLE. NO BING. NO ADS.
             if (q.length > 1) {
-                setDest(`https://duckduckgo.com/?q=${encodeURIComponent(q)}`, `Search Safe: ${q}`);
+                setDest(`https://en.wikipedia.org/wiki/${parts.join('_')}`, `Knowledge Graph: ${q}`);
                 return;
             }
         }
