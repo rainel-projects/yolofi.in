@@ -734,6 +734,25 @@
 
         const SHORTCUTS = { 'google': 'google.com', 'yt': 'youtube.com', 'gh': 'github.com', 'x': 'x.com' };
 
+        // --- DYNAMIC OMNI-THEMING ---
+        function randomizeTheme() {
+            const themes = [
+                "linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%)", // Glacial
+                "linear-gradient(120deg, #fccb90 0%, #d57eeb 100%)", // Sunset
+                "linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%)", // Lavender
+                "linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%)", // Ocean
+                "linear-gradient(120deg, #ffd3a5 0%, #fd6585 100%)", // Peach
+                "linear-gradient(120deg, #fa709a 0%, #fee140 100%)", // Sunrise
+                "linear-gradient(120deg, #4facfe 0%, #00f2fe 100%)", // Sky
+                "linear-gradient(120deg, #43e97b 0%, #38f9d7 100%)"  // Aurora
+            ];
+            const randomTheme = themes[Math.floor(Math.random() * themes.length)];
+            document.body.style.background = randomTheme;
+            document.body.style.backgroundSize = "400% 400%";
+            // Keep the animation name but let CSS handle the flow
+        }
+        randomizeTheme(); // Init on load
+
         const NLP_Rules = {
             TRAVEL: {
                 triggers: ['flight', 'hotel', 'book', 'travel', 'vacation', 'ticket', 'fly', 'trip', 'airbnb', 'tour'],
