@@ -1,5 +1,8 @@
 use tracing::info;
 
+pub mod intent_generator;
+pub use intent_generator::{IntentGenerator, Intent, IntentDomain, IntentAction, TemporalDimension};
+
 pub enum NavigationAction {
     DirectUrl(String),
     SearchFallback(String),
