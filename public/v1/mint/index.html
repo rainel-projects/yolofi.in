@@ -607,54 +607,52 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
-        /* --- SKILL CHECK --- */
-        .skill-overlay {
+        /* --- SIGNAL TARGET --- */
+        #signal-target {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px;
-            height: 40px;
-            background: #000;
-            border: 2px solid #555;
-            border-radius: 20px;
-            z-index: 60;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, var(--primary) 20%, transparent 60%);
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            z-index: 100;
+            cursor: pointer;
+            box-shadow: 0 0 20px var(--primary-glow);
+            animation: pulseTarget 1s infinite alternate;
             display: none;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            /* Hidden by default */
+            touch-action: manipulation;
         }
 
-        .skill-zone {
+        #signal-target::after {
+            content: '';
             position: absolute;
-            top: 0;
-            bottom: 0;
-            background: var(--primary);
-            opacity: 0.3;
-            width: 40px;
-            /* Difficulty width */
-            left: 50%;
+            inset: -10px;
+            border: 1px dashed var(--primary);
+            border-radius: 50%;
+            animation: spinTarget 4s linear infinite;
         }
 
-        .skill-cursor {
-            position: absolute;
-            top: -5px;
-            bottom: -5px;
-            width: 4px;
-            background: #fff;
-            left: 0%;
-            box-shadow: 0 0 10px #fff;
+        @keyframes pulseTarget {
+            from {
+                transform: scale(1);
+                box-shadow: 0 0 10px var(--primary-glow);
+            }
+
+            to {
+                transform: scale(1.1);
+                box-shadow: 0 0 30px var(--primary-glow);
+            }
         }
 
-        .skill-message {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            top: -30px;
-            font-size: 12px;
-            font-weight: 700;
-            color: #fff;
-            text-shadow: 0 2px 4px #000;
-            letter-spacing: 1px;
+        @keyframes spinTarget {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* --- DESKTOP HINT --- */
@@ -711,9 +709,9 @@
             </div>
 
             <div class="main-stage">
-                <button id="mint-btn" onpointerdown="act(event)">
-                    ACT
-                    <span class="sub-text">INITIATE SIGNAL</span>
+                <button id="mint-btn" onpointerdown="search(event)">
+                    SEARCH
+                    <span class="sub-text">SCAN NETWORK</span>
                     <!-- Flux Node Removed -->
                 </button>
                 <div class="desktop-hint">
@@ -724,14 +722,8 @@
                     </svg>
                 </div>
 
-                <!-- Skill Check UI -->
-                <div id="skill-container" style="display:none; position:absolute; z-index: 70;">
-                    <div class="skill-message">ALIGN SIGNAL TO REBOOT</div>
-                    <div class="skill-overlay" id="skill-bar">
-                        <div class="skill-zone" id="skill-target"></div>
-                        <div class="skill-cursor" id="skill-cursor"></div>
-                    </div>
-                </div>
+                <!-- Signal Target (Reflex) -->
+                <div id="signal-target" onpointerdown="shootTarget(event)"></div>
             </div>
         </div>
 
@@ -906,117 +898,135 @@
         // --- INTERACTION ---
 
         // Skill State
-        let isAiming = false;
-        let skillReqThisFrame = false;
-        let skillPos = 0;
-        let skillDir = 1;
-        let skillSpeed = 2;
-        let skillTarget = 50;
-        let skillWidth = 15; // as %
+        let isScanning = false;
+        let scanTimer = null;
+        let missTimer = null;
 
-        function act(e) {
-            // Prevent Browser Zoom/Scroll on rapid taps
+        const elTarget = document.getElementById('signal-target');
+
+        function search(e) {
             if (e.preventDefault) e.preventDefault();
 
-            // STATE 1: AIMING (SHOOT)
-            if (isAiming) {
-                resolveQuery();
-                return;
-            }
+            // If already scanning, do nothing (wait for spawn)
+            if (isScanning) return;
 
-            // STATE 0: IDLE (ACT)
-            // Start the skill check
-            initiateQuery();
+            startScanning();
         }
 
-        function initiateQuery() {
+        function startScanning() {
             // Check Energy
             if (!isPremium && energy < 5) {
-                showToast("⚠️ OVERHEATED - WAIT FOR COOLDOWN");
+                showToast("⚠️ LOW ENERGY");
                 haptic(50);
                 return;
             }
 
-            isAiming = true;
-            btnMint.innerHTML = `SHOOT<span class="sub-text">LOCK SIGNAL</span>`;
-            btnMint.style.borderColor = "#fff";
-            btnMint.style.color = "#fff";
+            isScanning = true;
 
-            elSkillContainer.style.display = 'block';
+            // Visual Update
+            btnMint.innerHTML = `SCANNING...<span class="sub-text">LOCATING SIGNAL</span>`;
+            btnMint.style.borderColor = "#555";
+            btnMint.style.color = "#888";
+            btnMint.style.pointerEvents = 'none'; // Disable button interaction
 
-            // Randomize Target
-            skillTarget = 20 + Math.random() * 60; // 20% to 80% range
-            skillWidth = 12 + Math.random() * 8; // Difficulty
-            skillSpeed = 1.5 + Math.random() * 2.5; // Speed
+            // Random Delay for Spawn (0.5s to 1.5s)
+            const delay = 500 + Math.random() * 1000;
 
-            elSkillTarget.style.left = (skillTarget - skillWidth / 2) + '%';
-            elSkillTarget.style.width = skillWidth + '%';
-
-            showToast("SIGNAL DETECTED - LOCK IT IN!");
-
-            // Start Loop
-            requestAnimationFrame(loopSkill);
+            scanTimer = setTimeout(() => {
+                spawnTarget();
+            }, delay);
         }
 
-        function resolveQuery() {
-            isAiming = false;
+        function spawnTarget() {
+            // Calculate Random Position
+            // Need to stay within .main-stage bounds.
+            // Let's assume stage is roughly window size minus panels.
+            // Safer to use 10% - 90% range of the container.
 
-            // HIT DETECTION
-            let min = skillTarget - skillWidth / 2;
-            let max = skillTarget + skillWidth / 2;
+            const x = 15 + Math.random() * 70; // %
+            const y = 15 + Math.random() * 70; // %
 
-            const isHit = skillPos >= min && skillPos <= max;
+            elTarget.style.left = x + '%';
+            elTarget.style.top = y + '%';
+            elTarget.style.display = 'block';
 
-            if (isHit) {
-                // SUCCESS
-                const now = Date.now();
+            haptic(20);
 
-                // Combo Logic
-                if (now - lastActTime < 2000) { // More lenient for skill
-                    combo++;
-                    if (combo > maxCombo) combo = maxCombo;
-                } else {
-                    combo = 0;
-                }
-                lastActTime = now;
+            // Timeout if they don't click fast enough (e.g. 1.5s window)
+            // Make it faster based on Combo?
+            let windowTime = 1500 - (combo * 10);
+            if (windowTime < 600) windowTime = 600; // Cap at 600ms
 
-                // Precision Bonus (Dead Center)
-                const center = skillTarget;
-                const dist = Math.abs(skillPos - center);
-                const isCrit = dist < (skillWidth * 0.2); // Top 20% accuracy
+            missTimer = setTimeout(() => {
+                missTarget();
+            }, windowTime);
+        }
 
-                // Calculate Rewards
-                let mult = 1 + (Math.floor(combo / 5) * 0.5);
-                if (isCrit) mult *= 2;
+        // REPLACES resolveQuery
+        function shootTarget(e) {
+            e.stopPropagation(); // prevent bubbling if needed
 
-                let power = (isPremium ? actPower * 10 : actPower) * mult * 10; // Higher base reward for skill
-                if (isPremium) power *= 1.5;
+            if (missTimer) clearTimeout(missTimer);
+            if (scanTimer) clearTimeout(scanTimer);
 
-                balance += power;
-                totalActs++;
+            isScanning = false;
 
-                if (!isPremium) energy -= 5;
+            // SUCCESS LOGIC
+            const now = Date.now();
 
-                // Visuals
-                spawnParticle(window.innerWidth / 2, window.innerHeight / 2, isCrit ? "PERFECT LOCK!" : "SIGNAL LOCKED", true);
-                spawnParticle(window.innerWidth / 2, window.innerHeight / 2 + 30, `+$${format(power)}`);
-                haptic(isCrit ? 50 : 20);
-
-                // Animation
-                btnMint.style.transform = `scale(1.1)`;
-                setTimeout(() => btnMint.style.transform = 'none', 100);
-
+            // Combo
+            if (now - lastActTime < 3000) {
+                combo++;
+                if (combo > maxCombo) combo = maxCombo;
             } else {
-                // FAIL
-                showToast("❌ SIGNAL LOST");
-                haptic(100);
-                combo = 0; // Reset combo on miss? Maybe too harsh. Let's keep it partial.
-                if (combo > 0) combo = Math.floor(combo / 2);
+                combo = 0;
             }
+            lastActTime = now;
 
-            // RESET STATE
-            elSkillContainer.style.display = 'none';
-            btnMint.innerHTML = `ACT<span class="sub-text">INITIATE SIGNAL</span>`;
+            // Calculate Rewards
+            let mult = 1 + (Math.floor(combo / 5) * 0.5);
+
+            // Critical Hit? (maybe based on reaction time? For now mostly even)
+            let isCrit = Math.random() < 0.1; // 10% Chance
+            if (isCrit) mult *= 2;
+
+            let power = (isPremium ? actPower * 10 : actPower) * mult * 15; // Buffed reward
+            if (isPremium) power *= 1.5;
+
+            balance += power;
+            totalActs++;
+
+            if (!isPremium) energy -= 5;
+
+            // Visuals
+            spawnParticle(e.clientX, e.clientY, isCrit ? "CRIT!" : "CAPTURED!", true);
+            spawnParticle(e.clientX, e.clientY - 30, `+$${format(power)}`);
+
+            if (isCrit) haptic(50);
+            else haptic(15);
+
+            // Reset
+            resetState();
+        }
+
+        function missTarget() {
+            isScanning = false;
+            showToast("❌ SIGNAL LOST");
+            haptic(100);
+
+            // Reset Combo
+            if (combo > 0) combo = Math.floor(combo / 2);
+
+            resetState();
+        }
+
+        function resetState() {
+            elTarget.style.display = 'none';
+
+            btnMint.classList.remove('disabled');
+            btnMint.style.pointerEvents = 'all';
+
+            btnMint.innerHTML = `SEARCH<span class="sub-text">SCAN NETWORK</span>`;
             btnMint.style.borderColor = isPremium ? 'var(--gold)' : 'var(--primary)';
             btnMint.style.color = isPremium ? 'var(--gold)' : 'var(--primary)';
 
@@ -1030,15 +1040,7 @@
         const elSkillCursor = document.getElementById('skill-cursor');
         const elSkillTarget = document.getElementById('skill-target');
 
-        function loopSkill() {
-            if (!isAiming) return;
 
-            skillPos += skillSpeed * skillDir;
-            if (skillPos > 100 || skillPos < 0) skillDir *= -1;
-
-            elSkillCursor.style.left = skillPos + '%';
-            requestAnimationFrame(loopSkill);
-        }
 
         function spawnParticle(x, y, text, isCrit = false) {
             const p = document.createElement('div');
