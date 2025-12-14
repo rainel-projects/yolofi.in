@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YoloFi Quantum Query</title>
     <style>
+        /* ... (Same Styles as before) ... */
         :root {
             --glass: rgba(255, 255, 255, 0.85);
             --glass-border: rgba(255, 255, 255, 0.5);
@@ -14,7 +15,6 @@
         }
 
         body {
-            /* Animated Gradient Mesh */
             background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
             background-size: 400% 400%;
             animation: gradient 15s ease infinite;
@@ -59,7 +59,6 @@
             position: relative;
         }
 
-        /* AI AGENT OVERLAY */
         .agent-overlay {
             position: absolute;
             top: -60px;
@@ -145,7 +144,6 @@
             transform: scale(1.01);
         }
 
-        /* Chips / Suggestions */
         .chips {
             display: flex;
             flex-wrap: wrap;
@@ -176,7 +174,6 @@
             color: #e17055;
         }
 
-        /* CLARIFICATION CHOICES */
         .choice-container {
             display: none;
             gap: 10px;
@@ -184,6 +181,7 @@
             opacity: 0;
             transform: translateY(10px);
             transition: all 0.3s;
+            flex-wrap: wrap;
         }
 
         .choice-container.active {
@@ -211,7 +209,6 @@
             color: #0984e3;
             box-shadow: 0 6px 15px rgba(9, 132, 227, 0.15);
         }
-
 
         .output-area {
             height: 30px;
@@ -263,9 +260,7 @@
 </head>
 
 <body>
-
     <div class="glass-card">
-        <!-- AI Agent -->
         <div class="agent-overlay" id="agent">
             <div class="agent-bubble">
                 <div class="agent-dot"></div>
@@ -274,7 +269,7 @@
         </div>
 
         <div class="omnibar-wrapper">
-            <input type="text" class="omnibar" id="q" placeholder="Type intent..." autocomplete="off" autofocus>
+            <input type="text" class="omnibar" id="q" placeholder="Type..." autocomplete="off" autofocus>
             <button class="fab" id="go-btn" onclick="execute()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
                     stroke-linejoin="round">
@@ -284,16 +279,9 @@
             </button>
         </div>
 
-        <!-- Clarification UI replaces Chips when active -->
         <div class="choice-container" id="choices"></div>
-
-        <div class="chips" id="suggestions">
-            <!-- Dynamic Chips -->
-        </div>
-
-        <div class="output-area" id="output">
-            <!-- Nav Target -->
-        </div>
+        <div class="chips" id="suggestions"></div>
+        <div class="output-area" id="output"></div>
     </div>
 
     <script>
@@ -308,57 +296,29 @@
         let history = JSON.parse(localStorage.getItem('yolofi_history') || '[]');
         let destination = null;
 
-        // 0. AI AMBIGUITY MATRIX
-        const ambiguous = {
-            'apple': {
-                msg: "Ambiguous Entity. Clarify Context:",
-                options: [
-                    { label: "Stock (AAPL)", cmd: "price aapl" },
-                    { label: "Product (Buy)", cmd: "buy apple" },
-                    { label: "Fruit (Bio)", cmd: "wiki Apple" }
-                ]
-            },
-            'tesla': {
-                msg: "Ambiguous Entity. Clarify Context:",
-                options: [
-                    { label: "Stock (TSLA)", cmd: "price tsla" },
-                    { label: "Car (Buy)", cmd: "buy tesla" },
-                    { label: "Inventor (Bio)", cmd: "wiki Nikola_Tesla" }
-                ]
-            },
-            'rust': {
-                msg: "Language or Material?",
-                options: [
-                    { label: "Code (Lang)", cmd: "gh rust" },
-                    { label: "Game", cmd: "wiki Rust_(video_game)" },
-                    { label: "Oxidation", cmd: "wiki Rust" }
-                ]
-            },
-            'amazon': {
-                msg: "Context needed:",
-                options: [
-                    { label: "Shop", cmd: "buy amazon" },
-                    { label: "Stock (AMZN)", cmd: "price amzn" },
-                    { label: "River", cmd: "wiki Amazon_River" }
-                ]
-            },
-            'python': {
-                msg: "Clarify Species:",
-                options: [
-                    { label: "Code (Lang)", cmd: "gh python" },
-                    { label: "Snake", cmd: "wiki Python_(genus)" },
-                    { label: "Comedy", cmd: "wiki Monty_Python" }
-                ]
-            }
+        // -- UNIVERSAL INTENT ENGINE --
+        const INTENTS = {
+            COMMERCE: { keywords: ['buy', 'shop', 'store', 'price', 'cost', 'amazon', 'ebay', 'cheap', 'best'], url: "https://www.amazon.com/s?k=" },
+            VIDEO: { keywords: ['watch', 'video', 'youtube', 'trailer', 'clip', 'stream', 'movie'], url: "https://www.youtube.com/results?search_query=" },
+            AUDIO: { keywords: ['listen', 'song', 'music', 'spotify', 'album', 'audio'], url: "https://open.spotify.com/search/" },
+            CODE: { keywords: ['git', 'code', 'repo', 'npm', 'rust', 'js', 'error', 'debug', 'api', 'library'], url: "https://github.com/search?q=" },
+            MAP: { keywords: ['map', 'where', 'location', 'directions', 'place'], url: "https://www.openstreetmap.org/search?query=" },
+            KNOWLEDGE: { keywords: ['what', 'who', 'wiki', 'define', 'meaning', 'history'], url: "https://en.wikipedia.org/wiki/" }
         };
 
-        // Init UI
+        const SHORTCUTS = {
+            'google': 'google.com', 'yt': 'youtube.com', 'gh': 'github.com', 'x': 'x.com',
+            'weather': 'wttr.in', 'gpt': 'chatgpt.com', 'amazon': 'amazon.com'
+        };
+
+        // Init
         renderChips();
         input.focus();
 
         input.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter' && destination) {
-                execute();
+            if (e.key === 'Enter') {
+                if (destination) { execute(); }
+                else { forceAnalyze(input.value); } // If enter pressed without clear intent, Force Ask
             } else {
                 resolve(input.value);
             }
@@ -366,77 +326,117 @@
 
         function resolve(raw) {
             const q = raw.trim().toLowerCase();
+            resetUI();
+            if (!q) return;
 
-            // Reset UI
-            output.classList.remove('visible');
-            fab.classList.remove('visible');
-            destination = null;
-
-            if (!q) {
-                resetAgent();
-                return;
-            }
-
-            // 1. Check AI Ambiguity
-            if (ambiguous[q]) {
-                activateAI(q);
-                return;
-            } else {
-                resetAgent();
-            }
-
-            const parts = q.split(' ');
-
-            // 2. Exact Shortcuts
-            const shortcuts = {
-                'google': 'google.com', 'yt': 'youtube.com', 'gh': 'github.com',
-                'twitter': 'x.com', 'gpt': 'chatgpt.com', 'weather': 'wttr.in'
-            };
-            if (shortcuts[q]) { setDest(`https://${shortcuts[q]}`, `Fast Nav: ${shortcuts[q]}`); return; }
+            // 1. Exact Shortcuts
+            if (SHORTCUTS[q]) { setDest(`https://${SHORTCUTS[q]}`, `Fast Nav: ${SHORTCUTS[q]}`); return; }
             if (q.includes('.') && !q.includes(' ')) { setDest(`https://${q}`, `Direct Connect: ${q}`); return; }
 
-            // 3. Intents (Deterministic)
-            const cmd = parts[0];
-            const query = parts.slice(1).join(' ');
+            // 2. Heuristic Analysis
+            const analysis = analyzeIntent(q);
 
-            if (cmd === 'watch' && parts.length > 1) { setDest(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, `Stream: YouTube`); return; }
-            if (cmd === 'listen' && parts.length > 1) { setDest(`https://open.spotify.com/search/${encodeURIComponent(query)}`, `Audio: Spotify`); return; }
-            if ((cmd === 'buy' || cmd === 'shop') && parts.length > 1) { setDest(`https://www.amazon.com/s?k=${encodeURIComponent(query)}`, `Market: Amazon`); return; }
-            if ((cmd === 'map' || cmd === 'where') && parts.length > 1) { setDest(`https://www.openstreetmap.org/search?query=${encodeURIComponent(query)}`, `Geo: OpenStreetMap`); return; }
-            if (cmd === 'npm' && parts.length > 1) { setDest(`https://www.npmjs.com/search?q=${encodeURIComponent(query)}`, `Registry: NPM`); return; }
-            if (cmd === 'weather' && parts.length > 1) { setDest(`https://wttr.in/${parts.slice(1).join('+')}`, `Data Stream: Weather`); return; }
-            if (cmd === 'price' && parts.length > 1) { setDest(`https://www.coingecko.com/en/coins/${parts[1]}`, `Data Stream: Price`); return; }
-            if ((cmd === 'gh' || cmd === 'github') && parts.length > 1) { setDest(`https://github.com/${parts[1]}`, `Git Navigation`); return; }
-
-            // 4. Zero-Assumption Fallback (Wikipedia)
-            if (q.length > 1) {
-                setDest(`https://en.wikipedia.org/wiki/${parts.join('_')}`, `Knowledge Graph: ${q}`);
+            if (analysis.confidence > 0) {
+                // High Confidence -> Direct Nav
+                setDest(analysis.url(q), `Intent: ${analysis.type} (${Math.round(analysis.confidence * 100)}%)`);
+            } else {
+                // Low Confidence / Ambiguous -> Wait for Enter to Ask, OR show default
+                // We default to Knowledge Graph (Wikipedia) but we mark it as generic.
+                setDest(`https://en.wikipedia.org/wiki/${q.replace(/ /g, '_')}`, `Knowledge Graph?`);
             }
         }
 
-        function activateAI(key) {
-            const data = ambiguous[key];
-            agentMsg.innerText = `AI: ${data.msg}`;
+        function forceAnalyze(raw) {
+            const q = raw.trim().toLowerCase();
+            if (!q) return;
+
+            // "Ask Intent for EVERY Input" (if vague)
+            // Even if we have a default wikipedia fallback, we now INTERCEPT just before execution 
+            // if the intent wasn't explicitly clear (low score).
+
+            const analysis = analyzeIntent(q);
+
+            // Artificial Threshold: If users wants us to "ask intent", we do so for scores < 2 (weak matches)
+            if (analysis.score < 2) {
+                askClarification(q);
+            } else {
+                execute(); // Trust the high score
+            }
+        }
+
+        function analyzeIntent(q) {
+            let maxScore = 0;
+            let bestType = null;
+            let bestUrlFn = null;
+
+            for (const [type, data] of Object.entries(INTENTS)) {
+                let score = 0;
+                for (const word of data.keywords) {
+                    if (q.includes(word)) score += 1; // Simple weighting
+                }
+
+                // Boost for specific structures
+                if (type === 'CODE' && (q.startsWith('gh ') || q.includes('github'))) score += 5;
+                if (type === 'COMMERCE' && (q.startsWith('buy '))) score += 5;
+                if (type === 'VIDEO' && (q.startsWith('watch '))) score += 5;
+
+                if (score > maxScore) {
+                    maxScore = score;
+                    bestType = type;
+                    bestUrlFn = (term) => {
+                        // Clean term (remove keyword)
+                        const clean = term.replace(data.keywords.find(k => term.includes(k)) || '', '').trim();
+                        return data.url + encodeURIComponent(clean || term);
+                    };
+                }
+            }
+
+            // Default to knowledge if nothing found
+            if (maxScore === 0) {
+                return { type: 'KNOWLEDGE', confidence: 0, score: 0, url: (t) => INTENTS.KNOWLEDGE.url + t.replace(/ /g, '_') };
+            }
+
+            return { type: bestType, confidence: Math.min(maxScore / 2, 1), score: maxScore, url: bestUrlFn };
+        }
+
+        function askClarification(q) {
+            // Reset destination logic to prevent auto-nav
+            destination = null;
+            output.classList.remove('visible');
+            fab.classList.remove('visible');
+
+            agentMsg.innerText = `AI: What is your goal with "${q}"?`;
             agent.classList.add('active');
 
-            chipsContainer.style.display = 'none'; // Hide normal chips
+            chipsContainer.style.display = 'none';
             choiceBox.innerHTML = '';
 
-            data.options.forEach(opt => {
+            // Generic Choices
+            const choices = [
+                { label: "Learn (Wiki)", type: "KNOWLEDGE" },
+                { label: "Buy (Shop)", type: "COMMERCE" },
+                { label: "Watch (Video)", type: "VIDEO" },
+                { label: "Code (Git)", type: "CODE" }
+            ];
+
+            choices.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
                 btn.innerText = opt.label;
                 btn.onclick = () => {
-                    input.value = opt.cmd;
-                    resolve(opt.cmd);
-                    input.focus();
+                    // Force Intent
+                    const data = INTENTS[opt.type];
+                    destination = data.url + encodeURIComponent(q);
+                    execute();
                 };
                 choiceBox.appendChild(btn);
             });
             choiceBox.classList.add('active');
         }
 
-        function resetAgent() {
+        function resetUI() {
+            output.classList.remove('visible');
+            fab.classList.remove('visible');
             agent.classList.remove('active');
             choiceBox.classList.remove('active');
             choiceBox.style.display = 'none';
@@ -470,7 +470,7 @@
                 chip.onclick = () => { input.value = h; resolve(h); input.focus(); };
                 chipsContainer.appendChild(chip);
             });
-            ['weather london', 'gh rust', 'price btc'].forEach(s => {
+            ['apple store', 'rust lang', 'best headphones'].forEach(s => {
                 const chip = document.createElement('div');
                 chip.className = 'chip';
                 chip.innerText = s;
