@@ -233,13 +233,15 @@
 
         #flux-node {
             position: absolute;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: radial-gradient(circle, #fff, var(--primary));
-            box-shadow: 0 0 20px var(--primary), inset 0 0 10px #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            /* Data Block shape */
+            border: 2px solid #fff;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 15px var(--primary);
             z-index: 20;
-            cursor: crosshair;
+            cursor: pointer;
             animation: pulseFlux 1.5s infinite;
             top: 20%;
             left: 20%;
@@ -694,7 +696,7 @@
             <div class="main-stage">
                 <button id="mint-btn" onpointerdown="mint(event)">
                     QUERY
-                    <span class="sub-text">AIM TO SEARCH</span>
+                    <span class="sub-text">RESOLVE SIGNAL</span>
                     <div id="flux-node"></div>
                 </button>
                 <div class="desktop-hint">BEST EXPERIENCED ON PC 🖥️</div>
@@ -946,7 +948,7 @@
 
             // Visuals
             let label = `+$${format(power)}`;
-            if (isPrecisionHit) label = `PERFECT! +$${format(power)}`;
+            if (isPrecisionHit) label = `STRONG QUERY! +$${format(power)}`;
             if (isCrit) label = `CRIT! +$${format(power)}`;
 
             spawnParticle(e.clientX, e.clientY, label, isCrit || isPrecisionHit);
@@ -954,7 +956,7 @@
             // If Precision, move the node
             if (isPrecisionHit) {
                 moveFluxNode();
-                spawnParticle(e.clientX, e.clientY, "⚡ FREE ENERGY", true);
+                spawnParticle(e.clientX, e.clientY, "⚡ OPTIMIZED", true);
                 haptic(30);
             } else {
                 haptic(10);
