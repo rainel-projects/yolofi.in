@@ -674,13 +674,23 @@
 
         // Providers
         const providers = {
+            yolofi: {
+                name: 'YoloFi Native',
+                type: 'native'
+            },
             google: {
                 name: 'Google',
+                type: 'iframe',
                 url: 'https://www.google.com/search?q={}&igu=1'
             },
             bing: {
                 name: 'Bing',
+                type: 'iframe',
                 url: 'https://www.bing.com/search?q={}'
+            },
+            food: {
+                name: 'Food Search',
+                type: 'food'
             }
         };
 
