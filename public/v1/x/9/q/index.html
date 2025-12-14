@@ -73,35 +73,92 @@
             .glass-card {
                 /* ... previous styles ... */
                 position: absolute;
-                /* Changed from relative/flex layout dependency */
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
+
+                /* Layout */
                 min-width: 320px;
                 min-height: 400px;
+                max-height: 80vh;
+                /* Prevent overflowing screen height */
+
+                /* Styling */
+                background: rgba(255, 255, 255, 0.95);
+                /* High opacity for visibility */
+                border-radius: 24px;
+                border: 1px solid rgba(255, 255, 255, 0.8);
+                padding: 40px;
+                box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+
+                /* Flex */
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+
+                /* Interactive */
                 resize: both;
-                /* Native resize support */
-                overflow: auto;
-                /* Required for resize */
+                overflow: hidden;
+                /* Important for contents */
                 z-index: 100;
+                backdrop-filter: blur(40px);
             }
 
-            /* Drag Handle (Invisible top area) */
+            /* Game Specific Overrides */
+            .game-active {
+                padding: 20px !important;
+                background: rgba(255, 255, 255, 0.98) !important;
+                justify-content: center;
+                align-items: center;
+            }
+
+            /* Drag Handle (Top Bar) */
             .drag-handle {
                 position: absolute;
                 top: 0;
                 left: 0;
                 right: 0;
-                height: 40px;
+                height: 30px;
+                background: rgba(0, 0, 0, 0.02);
+                /* Subtle visibility */
                 cursor: move;
                 z-index: 10;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            }
+
+            .drag-handle:hover {
+                background: rgba(0, 0, 0, 0.05);
+            }
+
+            /* Close Button for Game */
+            .close-game-btn {
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                font-family: 'Outfit', sans-serif;
+                font-weight: bold;
+                cursor: pointer;
+                padding: 5px 10px;
+                color: #e17055;
+                font-size: 14px;
+                border-radius: 8px;
+                background: rgba(255, 0, 0, 0.1);
+                display: none;
+                /* Only in game */
+                z-index: 20;
+            }
+
+            .game-active .close-game-btn {
+                display: block;
             }
 
             /* Game Canvas */
             #game-canvas {
                 display: none;
-                background: rgba(0, 0, 0, 0.1);
+                background: #f0f3f5;
                 border-radius: 12px;
+                box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
                 margin: 0 auto;
             }
 
@@ -125,7 +182,8 @@
 
 <body>
     <div class="glass-card" id="app-window">
-        <div class="drag-handle" id="drag-bar"></div>
+        <div class="drag-handle" id="drag-bar" title="Drag Window"></div>
+        <div class="close-game-btn" onclick="quitGame()">✕ Exit Game</div>
         <!-- ... content ... -->
 
         <!-- Game Container -->
@@ -966,6 +1024,23 @@
             startGame(); 
         }
         
+        // Quit Game Logic (Exported for UI)
+        window.quitGame = function() { // Make global
+             const win = document.getElementById('app-window');
+             win.classList.remove('game-active');
+             if(gameInterval) clearInterval(gameInterval);
+             
+             // Reset UI Text
+             document.querySelector('.slogan').innerText = "Find exactly what you need.";
+             
+             // Reset Dimensions to default nice look
+             win.style.width = '';
+             win.style.height = ''; 
+             
+             document.removeEventListener('keydown', gameInput);
+             input.focus();
+        };
+
         function gameInput(e) {
             // Prevent scrolling with arrows
             if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
@@ -975,15 +1050,7 @@
             if(e.key === 'ArrowLeft' && dx === 0) { dx=-1; dy=0; }
             if(e.key === 'ArrowRight' && dx === 0) { dx=1; dy=0; }
             if(e.key === 'Escape') {
-                 // Quit Game Logic
-                 const win = document.getElementById('app-window');
-                 win.classList.remove('game-active');
-                 clearInterval(gameInterval);
-                 document.querySelector('.slogan').innerText = "Find exactly what you need.";
-                 win.style.width = '';
-                 win.style.height = '';
-                 document.removeEventListener('keydown', gameInput);
-                 input.focus();
+                 window.quitGame();
             }
         }
         
