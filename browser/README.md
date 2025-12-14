@@ -40,7 +40,7 @@ The browser is configured to usage a **private, local DNS authority** (`127.0.0.
 cd browser
 cargo run -p yolofi_dns_server --release
 ```
-
+yolofi.in/v1/x/9/secure/enclave/browser
 **Expected Output:**
 ```text
 Starting YoloFi Sovereign DNS Server...

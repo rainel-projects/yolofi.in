@@ -9,6 +9,7 @@ members = [
     "yolofi_layout",
     "yolofi_dns_server",
     "yolofi_paint",
+    "yolofi_query",
 ]
 
 [workspace.package]

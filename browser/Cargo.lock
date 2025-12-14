@@ -190,6 +190,7 @@ dependencies = [
  "yolofi_layout",
  "yolofi_net",
  "yolofi_paint",
+ "yolofi_query",
 ]
 
 [[package]]
@@ -249,4 +250,11 @@ dependencies = [
  "tracing",
  "yolofi_css",
  "yolofi_layout",
+]
+
+[[package]]
+name = "yolofi_query"
+version = "0.1.0"
+dependencies = [
+ "tracing",
 ]

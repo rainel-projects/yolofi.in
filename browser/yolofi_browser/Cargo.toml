@@ -10,5 +10,6 @@ yolofi_html = { path = "../yolofi_html" }
 yolofi_css = { path = "../yolofi_css" }
 yolofi_layout = { path = "../yolofi_layout" }
 yolofi_paint = { path = "../yolofi_paint" }
+yolofi_query = { path = "../yolofi_query" }
 tracing.workspace = true
 tracing-subscriber.workspace = true

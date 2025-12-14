@@ -71,6 +71,27 @@ fn main() {
             tracing::info!("Saved verified render to '{}'", output_file);
         }
 
+        // Phase 6 Verification: Query Algorithm (Direct Navigation)
+        tracing::info!("--- PHASE 6 VERIFICATION: QUERY ALGO ---");
+        
+        let user_queries = vec![
+            "weather london",
+            "price bitcoin",
+            "github rust-lang",
+            "yolofi.in"
+        ];
+        
+        for q in user_queries {
+            match yolofi_query::IntentRouter::resolve(q) {
+                yolofi_query::NavigationAction::DirectUrl(url) => {
+                     tracing::info!("Query: '{}' => NAVIGATE -> {}", q, url);
+                },
+                yolofi_query::NavigationAction::SearchFallback(_) => {
+                     tracing::warn!("Query: '{}' => Fallback (Failed intent)", q);
+                }
+            }
+        }
+
     } else {
         tracing::error!("Failed to parse HTTP response");
     }
