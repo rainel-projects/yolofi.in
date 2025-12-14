@@ -199,6 +199,101 @@
             }
         }
 
+        /* Provider Grid & Cards */
+        .provider-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            /* 2 Columns on Desktop */
+            gap: 12px;
+            width: 100%;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px 4px;
+            /* Prevent scrollbar clipping */
+            margin-top: 15px;
+        }
+
+        .provider-card {
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 12px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .provider-card:hover {
+            background: #ffffff;
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            border-color: var(--accent);
+            z-index: 2;
+        }
+
+        .p-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            color: white;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .p-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .p-info h3 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .p-info p {
+            margin: 2px 0 0 0;
+            font-size: 11px;
+            color: var(--secondary);
+            opacity: 0.9;
+            line-height: 1.3;
+        }
+
+        .p-arrow {
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.2s;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .provider-card:hover .p-arrow {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .hint-text {
+            font-size: 13px;
+            color: #b2bec3;
+            margin-top: -5px;
+            font-weight: 500;
+            min-height: 20px;
+            transition: opacity 0.3s;
+        }
+
         .chips {
             display: flex;
             flex-wrap: wrap;
@@ -653,7 +748,11 @@
             currentMatch.providers.forEach(p => {
                 const card = document.createElement('div');
                 card.className = 'provider-card';
+                // Safe Icon extraction (First letter)
+                const iconChar = p.name ? p.name[0] : '?';
+
                 card.innerHTML = `
+                    <div class="p-icon">${iconChar}</div>
                     <div class="p-info">
                         <h3>${p.name}</h3>
                         <p>${p.desc}</p>
