@@ -428,122 +428,186 @@
 
         const input = document.getElementById('q');
         const statusText = document.getElementById('status-text');
-
         const fab = document.getElementById('go-btn');
         const chipsContainer = document.getElementById('suggestions');
         let history = JSON.parse(localStorage.getItem('yolofi_history') || '[]');
-        let currentIntent = null;
+        let currentMatch = null;
+        let currentQuery = null;
 
         const SHORTCUTS = { 'google': 'google.com', 'yt': 'youtube.com', 'gh': 'github.com', 'x': 'x.com' };
 
         const NLP_Rules = {
+            TRAVEL: {
+                triggers: ['flight', 'hotel', 'book', 'travel', 'vacation', 'ticket', 'fly', 'trip', 'airbnb'],
+                label: "TRAVEL", style: "valid",
+                providers: [
+                    { name: 'Google Flights', url: 'https://www.google.com/travel/flights?q=' },
+                    { name: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=' },
+                    { name: 'Airbnb', url: 'https://www.airbnb.com/s/' },
+                    { name: 'Expedia', url: 'https://www.expedia.com/Hotel-Search?destination=' }
+                ]
+            },
             GROCERY: {
                 triggers: ['milk', 'bread', 'fruit', 'vegetable', 'banana', 'apple', 'orange', 'egg', 'organic', 'snack', 'grocery'],
-                site: "https://www.instacart.com/store/s?k=",
-                label: "GROCERY (INSTACART)", style: "fact"
+                label: "GROCERY", style: "fact",
+                providers: [
+                    { name: 'Instacart', url: 'https://www.instacart.com/store/s?k=' },
+                    { name: 'Amazon Fresh', url: 'https://www.amazon.com/s?i=grocery&k=' },
+                    { name: 'Walmart Grocery', url: 'https://www.walmart.com/search?q=' }
+                ]
             },
             FOOD_DELIVERY: {
                 triggers: ['pizza', 'burger', 'sushi', 'taco', 'pasta', 'hungry', 'delivery', 'eat', 'dinner', 'lunch'],
-                site: "https://www.ubereats.com/search?q=",
-                label: "FOOD DELIVERY", style: "fact"
+                label: "FOOD DELIVERY", style: "fact",
+                providers: [
+                    { name: 'Uber Eats', url: 'https://www.ubereats.com/search?q=' },
+                    { name: 'DoorDash', url: 'https://www.doordash.com/search/store/' },
+                    { name: 'Grubhub', url: 'https://www.grubhub.com/search?q=' }
+                ]
             },
-            COMMERCE: { triggers: ['buy', 'shop', 'price', 'cost', 'cheap', 'amazon'], site: "https://www.amazon.com/s?k=", label: "COMMERCE", style: "valid" },
-            VIDEO: { triggers: ['watch', 'video', 'movie', 'stream', 'youtube'], site: "https://www.youtube.com/results?search_query=", label: "VIDEO", style: "valid" },
-            COMPUTE: { triggers: ['solve', 'calculate', 'math', 'graph', '+', '-', '*', '/', '^'], site: "https://www.wolframalpha.com/input?i=", label: "COMPUTE", style: "tech" },
-            // Removed generic DEV, splitting into smart routing below
-            Fact: { triggers: ['what', 'who', 'when', 'meaning', 'define'], site: "https://en.wikipedia.org/wiki/", label: "FACT", style: "fact" }
+            COMMERCE: {
+                triggers: ['buy', 'shop', 'price', 'cost', 'cheap', 'amazon', 'ebay'],
+                label: "COMMERCE", style: "valid",
+                providers: [
+                    { name: 'Amazon', url: 'https://www.amazon.com/s?k=' },
+                    { name: 'eBay', url: 'https://www.ebay.com/sch/i.html?_nkw=' },
+                    { name: 'Walmart', url: 'https://www.walmart.com/search?q=' },
+                    { name: 'Target', url: 'https://www.target.com/s?searchTerm=' }
+                ]
+            },
+            VIDEO: {
+                triggers: ['watch', 'video', 'movie', 'stream', 'youtube', 'netflix'],
+                label: "VIDEO", style: "valid",
+                providers: [
+                    { name: 'YouTube', url: 'https://www.youtube.com/results?search_query=' },
+                    { name: 'Twitch', url: 'https://www.twitch.tv/search?term=' },
+                    { name: 'Vimeo', url: 'https://vimeo.com/search?q=' }
+                ]
+            },
+            COMPUTE: {
+                triggers: ['solve', 'calculate', 'math', 'graph', '+', '-', '*', '/', '^'],
+                label: "COMPUTE", style: "tech",
+                providers: [
+                    { name: 'WolframAlpha', url: 'https://www.wolframalpha.com/input?i=' },
+                    { name: 'Symbolab', url: 'https://www.symbolab.com/solver?query=' },
+                    { name: 'Google Calc', url: 'https://www.google.com/search?q=' }
+                ]
+            },
+            DEV: {
+                triggers: ['error', 'bug', 'debug', 'code', 'function', 'rust', 'js', 'api', 'compile'],
+                label: "DEV GUIDE", style: "tech",
+                providers: [
+                    { name: 'StackOverflow', url: 'https://stackoverflow.com/search?q=' },
+                    { name: 'GitHub', url: 'https://github.com/search?q=' },
+                    { name: 'Reddit (Dev)', url: 'https://www.reddit.com/search/?q=' }
+                ]
+            },
+            FACT: {
+                triggers: ['what', 'who', 'when', 'meaning', 'define'],
+                label: "FACT", style: "fact",
+                providers: [
+                    { name: 'Wikipedia', url: 'https://en.wikipedia.org/w/index.php?search=' },
+                    { name: 'Britannica', url: 'https://www.britannica.com/search?query=' },
+                    { name: 'Google Search', url: 'https://www.google.com/search?q=' }
+                ]
+            }
         };
 
-        // Tech keywords to force StackOverflow
         const TECH_TRIGGERS = ['error', 'bug', 'debug', 'code', 'function', 'rust', 'js', 'api', 'compile', 'install', 'deploy', 'react', 'css', 'html', 'python', 'java', 'git', 'terminal', 'loop', 'array', 'string', 'int', 'float'];
 
         renderChips(); input.focus();
 
         input.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') { if (currentIntent) execute(); } else analyze(input.value);
+            if (e.key === 'Enter') { if (currentMatch) execute(); } else analyze(input.value);
         });
 
         function analyze(raw) {
             const q = raw.trim().toLowerCase();
-            currentIntent = null;
+            currentMatch = null;
+            currentQuery = null;
             fab.classList.remove('valid', 'tech', 'fact', 'invalid');
             input.classList.remove('valid', 'tech', 'fact', 'invalid');
             statusText.innerText = "SYSTEM READY";
 
-            if (!q) return;
+            if (!q) { renderChips(); return; }
 
-            if (SHORTCUTS[q]) {
-                lockIntent('NAVIGATE', `https://${SHORTCUTS[q]}`, 'valid');
+            // 1. Check "How To" explicitly
+            if (q.startsWith('how to') || q.includes(' how to ')) {
+                const isTech = TECH_TRIGGERS.some(t => q.includes(t));
+                let match = isTech ? NLP_Rules.DEV : { // Custom Life Guide Rule
+                    label: "LIFE GUIDE", style: "fact",
+                    providers: [
+                        { name: 'wikiHow', url: 'https://www.wikihow.com/wikiHowTo?search=' },
+                        { name: 'YouTube', url: 'https://www.youtube.com/results?search_query=' },
+                        { name: 'Google', url: 'https://www.google.com/search?q=' }
+                    ]
+                };
+                if (isTech) { currentQuery = q.replace('how to', '').trim(); } else { currentQuery = q; }
+                lockIntent(match, q);
                 return;
             }
 
-            // 1. Check "How To" explicitly for mature branching
-            if (q.startsWith('how to') || q.includes(' how to ')) {
-                // Check if it's a TECH problem
-                const isTech = TECH_TRIGGERS.some(t => q.includes(t));
-                if (isTech) {
-                    // Route to StackOverflow
-                    const cleanQ = q.replace('how to', '').trim();
-                    lockIntent('DEV GUIDE', `https://stackoverflow.com/search?q=${encodeURIComponent(cleanQ)}`, 'tech');
-                    return;
-                } else {
-                    // Route to wikiHow (Life/General skills)
-                    lockIntent('LIFE GUIDE', `https://www.wikihow.com/wikiHowTo?search=${encodeURIComponent(q)}`, 'fact');
-                    return;
-                }
-            }
-
-            // 2. Standard NLP Loop for other intents
+            // 2. Standard NLP Loop
             let bestScore = 0, bestMatch = null;
             for (const [key, rule] of Object.entries(NLP_Rules)) {
                 let score = 0;
                 rule.triggers.forEach(t => { if (q.includes(t)) score++; });
 
-                // Context Scoring
                 if (key === 'GROCERY') {
                     if (q.includes('buy') || q.includes('shop')) score += 1;
                     if (q.includes('watch') || q.includes('mac') || q.includes('phone') || q.includes('pad')) score -= 10;
                 }
-                // Compute Context
                 if (key === 'COMPUTE' && (q.includes('=') || !isNaN(q[0]))) score += 2;
 
                 if (score > bestScore) { bestScore = score; bestMatch = rule; }
             }
 
             if (bestScore > 0) {
-                let dest = bestMatch.site + encodeURIComponent(q);
-                if (bestMatch.label === 'FACT' && !q.includes(' ')) dest = bestMatch.site + q;
-
-                lockIntent(bestMatch.label, dest, bestMatch.style);
+                currentQuery = q;
+                lockIntent(bestMatch, q);
             } else {
-                // Try loose matching for Tech triggers if no specific intent found
                 if (TECH_TRIGGERS.some(t => q.includes(t))) {
-                    lockIntent('DEV SEARCH', `https://stackoverflow.com/search?q=${encodeURIComponent(q)}`, 'tech');
+                    currentQuery = q;
+                    lockIntent(NLP_Rules.DEV, q);
                 } else {
                     statusText.innerText = "AMBIGUOUS QUERY";
                 }
             }
         }
 
-        function lockIntent(label, url, style) {
-            currentIntent = url;
-            statusText.innerText = `>> INTENT: ${label}`;
-            input.classList.add(style);
+        function lockIntent(rule, query) {
+            currentMatch = rule;
+            currentQuery = query;
+            statusText.innerText = `>> INTENT: ${rule.label}`;
+            input.classList.add(rule.style);
             fab.classList.add('visible');
-            // Fab matches input color
-            if (style === 'tech') fab.style.background = '#6c5ce7';
-            else if (style === 'fact') fab.style.background = '#e17055';
+            if (rule.style === 'tech') fab.style.background = '#6c5ce7';
+            else if (rule.style === 'fact') fab.style.background = '#e17055';
             else fab.style.background = '#00b894';
         }
 
         function execute() {
-            if (!currentIntent) return;
+            if (!currentMatch) return;
             const val = input.value.trim();
             if (val && !history.includes(val)) {
                 history.unshift(val); if (history.length > 5) history.pop();
                 localStorage.setItem('yolofi_history', JSON.stringify(history));
             }
-            window.location.href = currentIntent;
+
+            // SHOW OPTIONS UI
+            statusText.innerText = "SELECT PROVIDER";
+            chipsContainer.innerHTML = '';
+
+            currentMatch.providers.forEach(p => {
+                const btn = document.createElement('div');
+                btn.className = 'chip';
+                btn.style.borderColor = 'var(--primary)'; // Highlight
+                btn.innerText = p.name + ' ↗';
+                btn.onclick = () => {
+                    window.location.href = p.url + encodeURIComponent(currentQuery);
+                };
+                chipsContainer.appendChild(btn);
+            });
         }
 
         function renderChips() {
@@ -555,7 +619,7 @@
                 chip.onclick = () => { input.value = h; analyze(h); input.focus(); };
                 chipsContainer.appendChild(chip);
             });
-            ['solve x^2=4', 'how to rust', 'price btc'].forEach(s => {
+            ['book flight to paris', 'buy shoes', 'how to rust'].forEach(s => {
                 const c = document.createElement('div'); c.className = 'chip'; c.innerText = s;
                 c.onclick = () => { input.value = s; analyze(s); input.focus(); };
                 chipsContainer.appendChild(c);
