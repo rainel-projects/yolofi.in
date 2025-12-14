@@ -1,0 +1,8 @@
+[package]
+name = "yolofi_net"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+tracing.workspace = true
+yolofi_config = { path = "../yolofi_config" }

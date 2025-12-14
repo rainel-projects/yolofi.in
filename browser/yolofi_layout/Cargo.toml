@@ -1,0 +1,9 @@
+[package]
+name = "yolofi_layout"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+yolofi_html = { path = "../yolofi_html" }
+yolofi_css = { path = "../yolofi_css" }
+tracing.workspace = true

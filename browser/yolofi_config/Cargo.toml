@@ -1,0 +1,4 @@
+[package]
+name = "yolofi_config"
+version.workspace = true
+edition.workspace = true

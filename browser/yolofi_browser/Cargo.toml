@@ -1,0 +1,14 @@
+[package]
+name = "yolofi_browser"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+yolofi_core = { path = "../yolofi_core" }
+yolofi_net = { path = "../yolofi_net" }
+yolofi_html = { path = "../yolofi_html" }
+yolofi_css = { path = "../yolofi_css" }
+yolofi_layout = { path = "../yolofi_layout" }
+yolofi_paint = { path = "../yolofi_paint" }
+tracing.workspace = true
+tracing-subscriber.workspace = true

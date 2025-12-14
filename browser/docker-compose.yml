@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # The Sovereign Infrastructure
+  dns_enclave:
+    build:
+      context: .
+      dockerfile: Dockerfile.dns
+    ports:
+      - "5353:5353/udp"
+    restart: always
+    networks:
+      - yolofi_net
+
+  # The Browser Runtime (Headless / verification mode)
+  # In a real scenario, this would be a user client, but for server-side verification:
+  browser_verifier:
+    build:
+      context: .
+      dockerfile: Dockerfile.browser
+    depends_on:
+      - dns_enclave
+    networks:
+      - yolofi_net
+    # Keep it alive for interaction
+    command: tail -f /dev/null
+
+networks:
+  yolofi_net:
+    driver: bridge

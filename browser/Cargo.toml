@@ -1,0 +1,25 @@
+[workspace]
+resolver = "2"
+members = [
+    "yolofi_browser",
+    "yolofi_core",
+    "yolofi_net",
+    "yolofi_html",
+    "yolofi_css",
+    "yolofi_layout",
+    "yolofi_dns_server",
+    "yolofi_paint",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["YoloFi Team"]
+license = "MIT"
+
+[workspace.dependencies]
+tracing = "0.1"
+tracing-subscriber = "0.3"
+thiserror = "1.0"
+# Future dependencies
+# rustls = "0.21" 

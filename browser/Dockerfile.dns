@@ -1,0 +1,12 @@
+# Build Stage
+FROM rust:1.80 as builder
+WORKDIR /app
+COPY . .
+RUN cargo build --release -p yolofi_dns_server
+
+# Runtime Stage
+FROM debian:bookworm-slim
+WORKDIR /app
+COPY --from=builder /app/target/release/yolofi_dns_server /usr/local/bin/
+CMD ["yolofi_dns_server"]
+EXPOSE 5353/udp
