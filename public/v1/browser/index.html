@@ -528,46 +528,184 @@
             }
         });
 
+        // Smart Intent Processor
         function analyzeIntent(query) {
             const lowerQuery = query.toLowerCase();
-            let matchedCategory = null;
+            const words = query.split(' ');
 
-            // Find matching category
-            for (const [category, data] of Object.entries(INTENT_DATABASE)) {
-                if (data.patterns.some(pattern => lowerQuery.includes(pattern))) {
-                    matchedCategory = { category, ...data };
+            // STEP 1: Deep Intent Analysis
+            const intentProfile = processIntent(lowerQuery, words);
+
+            // STEP 2: Find Best Category Match
+            let matchedCategory = findBestMatch(intentProfile);
+
+            // STEP 3: Filter & Curate Alternatives
+            const curatedAlternatives = curateAlternatives(matchedCategory, intentProfile);
+
+            // STEP 4: Render Results
+            renderResults(query, matchedCategory, curatedAlternatives, intentProfile);
+        }
+
+        // Deep Intent Processing
+        function processIntent(lowerQuery, words) {
+            const profile = {
+                action: null,
+                subject: null,
+                temporal: currentTemporal,
+                specificity: 0,
+                context: []
+            };
+
+            // Detect action verbs
+            const actions = {
+                buy: ['buy', 'purchase', 'shop', 'order', 'get'],
+                find: ['find', 'search', 'look', 'locate'],
+                learn: ['learn', 'study', 'understand', 'explain', 'what', 'how', 'define'],
+                watch: ['watch', 'view', 'stream', 'see'],
+                check: ['check', 'verify', 'test', 'status'],
+                compare: ['compare', 'vs', 'versus', 'difference'],
+                track: ['track', 'monitor', 'follow'],
+                book: ['book', 'reserve', 'schedule']
+            };
+
+            for (const [action, keywords] of Object.entries(actions)) {
+                if (keywords.some(kw => lowerQuery.includes(kw))) {
+                    profile.action = action;
                     break;
                 }
             }
 
-            if (!matchedCategory) {
-                // Default fallback
-                matchedCategory = {
+            // Extract subject (remove action words)
+            const actionWords = Object.values(actions).flat();
+            profile.subject = words.filter(w => !actionWords.includes(w.toLowerCase())).join(' ');
+
+            // Detect specificity (more words = more specific)
+            profile.specificity = words.length;
+
+            // Detect context clues
+            if (lowerQuery.includes('cheap') || lowerQuery.includes('budget')) profile.context.push('budget');
+            if (lowerQuery.includes('best') || lowerQuery.includes('top')) profile.context.push('quality');
+            if (lowerQuery.includes('near') || lowerQuery.includes('local')) profile.context.push('location');
+            if (lowerQuery.includes('review') || lowerQuery.includes('rating')) profile.context.push('reviews');
+            if (lowerQuery.includes('fast') || lowerQuery.includes('quick')) profile.context.push('speed');
+
+            return profile;
+        }
+
+        // Find Best Category Match
+        function findBestMatch(intentProfile) {
+            let bestMatch = null;
+            let highestScore = 0;
+
+            for (const [category, data] of Object.entries(INTENT_DATABASE)) {
+                let score = 0;
+
+                // Pattern matching
+                if (data.patterns.some(pattern => intentProfile.subject.toLowerCase().includes(pattern))) {
+                    score += 10;
+                }
+
+                // Action alignment
+                if (data.preferredActions && data.preferredActions.includes(intentProfile.action)) {
+                    score += 5;
+                }
+
+                if (score > highestScore) {
+                    highestScore = score;
+                    bestMatch = { category, ...data };
+                }
+            }
+
+            // Fallback
+            if (!bestMatch) {
+                bestMatch = {
                     category: 'search',
                     primary: 'https://www.google.com/search?q={}',
                     alternatives: [
-                        { domain: 'Search', title: 'DuckDuckGo', url: 'https://duckduckgo.com/?q={}' },
-                        { domain: 'Search', title: 'Bing', url: 'https://www.bing.com/search?q={}' },
+                        { domain: 'Search', title: 'DuckDuckGo', url: 'https://duckduckgo.com/?q={}', relevance: 0.8 },
+                        { domain: 'Search', title: 'Bing', url: 'https://www.bing.com/search?q={}', relevance: 0.7 },
                     ]
                 };
             }
 
-            // Extract subject from query
-            const subject = query.split(' ').slice(1).join('+') || query.replace(/\s+/g, '+');
+            return bestMatch;
+        }
+
+        // Curate Alternatives (Smart Filtering)
+        function curateAlternatives(category, intentProfile) {
+            let alternatives = [...category.alternatives];
+
+            // FILTER 1: Temporal Relevance
+            alternatives = alternatives.map(alt => {
+                alt.relevanceScore = 1.0;
+
+                // Adjust based on temporal dimension
+                if (intentProfile.temporal === 'past' && alt.historical) {
+                    alt.relevanceScore += 0.3;
+                }
+                if (intentProfile.temporal === 'future' && alt.predictive) {
+                    alt.relevanceScore += 0.3;
+                }
+
+                return alt;
+            });
+
+            // FILTER 2: Context Matching
+            alternatives = alternatives.map(alt => {
+                if (intentProfile.context.includes('budget') && alt.budget) {
+                    alt.relevanceScore += 0.2;
+                }
+                if (intentProfile.context.includes('quality') && alt.premium) {
+                    alt.relevanceScore += 0.2;
+                }
+                if (intentProfile.context.includes('reviews') && alt.reviews) {
+                    alt.relevanceScore += 0.2;
+                }
+
+                return alt;
+            });
+
+            // FILTER 3: Action Alignment
+            if (intentProfile.action === 'compare') {
+                alternatives = alternatives.filter(alt =>
+                    alt.title.toLowerCase().includes('compare') ||
+                    alt.comparison === true
+                );
+            }
+
+            // SORT by relevance score
+            alternatives.sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0));
+
+            // TRIM: Show only top 3-4 most relevant
+            const trimCount = intentProfile.specificity > 3 ? 3 : 4;
+            return alternatives.slice(0, trimCount);
+        }
+
+        // Render Results
+        function renderResults(query, category, alternatives, intentProfile) {
+            // Extract subject
+            const subject = intentProfile.subject.replace(/\s+/g, '+') || query.replace(/\s+/g, '+');
 
             // Set primary result
-            currentPrimaryUrl = matchedCategory.primary.replace('{}', subject);
+            currentPrimaryUrl = category.primary.replace('{}', subject);
             primaryUrl.textContent = currentPrimaryUrl;
-            primaryDesc.textContent = `${currentTemporal.charAt(0).toUpperCase() + currentTemporal.slice(1)} intent detected for "${query}"`;
 
-            // Set alternatives
+            // Enhanced description with intent details
+            const actionText = intentProfile.action ? `${intentProfile.action.toUpperCase()} ` : '';
+            primaryDesc.textContent = `${actionText}intent detected for "${query}" (${currentTemporal} context)`;
+
+            // Render curated alternatives
             alternativesGrid.innerHTML = '';
-            matchedCategory.alternatives.forEach(alt => {
+            alternatives.forEach(alt => {
                 const card = document.createElement('div');
                 card.className = 'alternative-card';
                 card.onclick = () => window.open(alt.url.replace('{}', subject), '_blank');
+
+                // Show relevance indicator
+                const relevancePercent = Math.round((alt.relevanceScore || 1.0) * 100);
+
                 card.innerHTML = `
-                    <div class="alt-domain">${alt.domain}</div>
+                    <div class="alt-domain">${alt.domain} • ${relevancePercent}% match</div>
                     <div class="alt-title">${alt.title}</div>
                     <div class="alt-url">${alt.url.replace('{}', subject).substring(0, 40)}...</div>
                 `;
@@ -575,9 +713,9 @@
             });
 
             // Update stats
-            domainCount.textContent = matchedCategory.category.toUpperCase();
-            actionCount.textContent = currentTemporal.toUpperCase();
-            altCount.textContent = matchedCategory.alternatives.length;
+            domainCount.textContent = category.category.toUpperCase();
+            actionCount.textContent = (intentProfile.action || 'FIND').toUpperCase();
+            altCount.textContent = alternatives.length;
 
             // Show analysis
             intentAnalysis.classList.add('show');
