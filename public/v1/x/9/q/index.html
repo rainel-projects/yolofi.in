@@ -6,14 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YoloFi Quantum Query</title>
     <style>
-        /* ... Styles ... */
+        /* ... (Same Styles as before) ... */
         :root {
             --glass: rgba(255, 255, 255, 0.95);
             --glass-border: rgba(255, 255, 255, 0.5);
             --primary: #2d3436;
             --accent: #0984e3;
-            --warn: #e17055;
+            --warn: #d63031;
             --success: #00b894;
+            --tech: #6c5ce7;
+            --wiki: #fdcb6e;
         }
 
         body {
@@ -80,9 +82,16 @@
             box-sizing: border-box;
         }
 
-        /* Dynamic Border Color based on Intent State */
         .omnibar.valid {
             border-color: var(--success);
+        }
+
+        .omnibar.tech {
+            border-color: var(--tech);
+        }
+
+        .omnibar.fact {
+            border-color: var(--wiki);
         }
 
         .omnibar.invalid {
@@ -144,6 +153,10 @@
             color: var(--success);
         }
 
+        .status-area.tech {
+            color: var(--tech);
+        }
+
         .status-dot {
             width: 8px;
             height: 8px;
@@ -198,12 +211,11 @@
     <div class="glass-card">
         <div class="status-area" id="status">
             <div class="status-dot" style="opacity: 0"></div>
-            <span id="status-text">Ready for NLP Input</span>
+            <span id="status-text">Ready for Input</span>
         </div>
 
         <div class="omnibar-wrapper">
-            <input type="text" class="omnibar" id="q" placeholder="Describe intent (e.g., 'buy shoes')"
-                autocomplete="off" autofocus>
+            <input type="text" class="omnibar" id="q" placeholder="Ask or Command..." autocomplete="off" autofocus>
             <button class="fab" id="go-btn" onclick="execute()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
                     stroke-linejoin="round">
@@ -213,7 +225,7 @@
             </button>
         </div>
 
-        <div class="hint-text" id="hint">Type naturally to clarify intent.</div>
+        <div class="hint-text" id="hint">Try: "how to rust", "solve x+y=2", "price btc"</div>
 
         <div class="chips" id="suggestions"></div>
     </div>
@@ -229,46 +241,59 @@
         let history = JSON.parse(localStorage.getItem('yolofi_history') || '[]');
         let currentIntent = null;
 
-        // NLP ENGINE CONFIG
+        // -- Q&A INTENT ENGINE --
         const NLP_Rules = {
+            // 1. High-Priority specialized intents
             COMMERCE: {
                 triggers: ['buy', 'shop', 'price', 'cost', 'cheap', 'best', 'amazon', 'store'],
                 site: "https://www.amazon.com/s?k=",
-                label: "COMMERCE"
+                label: "COMMERCE", style: "valid"
             },
             VIDEO: {
                 triggers: ['watch', 'video', 'movie', 'clip', 'trailer', 'stream', 'youtube'],
                 site: "https://www.youtube.com/results?search_query=",
-                label: "VIDEO"
+                label: "VIDEO", style: "valid"
             },
-            CODE: {
-                triggers: ['git', 'code', 'repo', 'rust', 'js', 'python', 'error', 'debug', 'npm', 'api'],
-                site: "https://github.com/search?q=",
-                label: "CODE"
+
+            // 2. Q&A LOGIC
+            COMPUTE: {
+                triggers: ['solve', 'calculate', 'math', 'graph', 'convert', 'integrate', 'derive', '+', '-', '*', '/'],
+                site: "https://www.wolframalpha.com/input?i=",
+                label: "COMPUTE (Wolfram)", style: "tech"
             },
+            DEV_ANSWER: {
+                triggers: ['error', 'bug', 'exception', 'stack', 'debug', 'code', 'function', 'api', 'compile', 'rust', 'js', 'css', 'react'],
+                site: "https://stackoverflow.com/search?q=",
+                label: "DEV ANSWER (StackOverflow)", style: "tech"
+            },
+            GUIDE: {
+                triggers: ['how to', 'recipe', 'cook', 'fix', 'make', 'install', 'build'],
+                site: "https://www.wikihow.com/wikiHowTo?search=",
+                label: "GUIDE (wikiHow)", style: "fact"
+            },
+            FACT: {
+                triggers: ['what', 'who', 'when', 'why', 'meaning', 'definition', 'define', 'history', 'population'],
+                site: "https://en.wikipedia.org/wiki/",
+                label: "FACT (Wiki)", style: "fact"
+            },
+
+            // 3. Fallbacks
             MAP: {
                 triggers: ['map', 'where', 'location', 'directions'],
                 site: "https://www.openstreetmap.org/search?query=",
-                label: "MAP"
+                label: "MAP", style: "valid"
             },
             AUDIO: {
                 triggers: ['listen', 'music', 'song', 'spotify'],
                 site: "https://open.spotify.com/search/",
-                label: "AUDIO"
-            },
-            KNOWLEDGE: {
-                triggers: ['what', 'who', 'wiki', 'define', 'meaning', 'history', 'learn'],
-                site: "https://en.wikipedia.org/wiki/",
-                label: "KNOWLEDGE"
+                label: "AUDIO", style: "valid"
             }
         };
 
-        // Exact Fast Matches
         const SHORTCUTS = {
             'google': 'google.com', 'yt': 'youtube.com', 'gh': 'github.com', 'x': 'x.com'
         };
 
-        // Render History
         renderChips();
         input.focus();
 
@@ -286,31 +311,34 @@
             // Reset
             currentIntent = null;
             fab.classList.remove('visible');
-            input.classList.remove('valid', 'invalid');
-            statusArea.classList.remove('success', 'error');
+            input.classList.remove('valid', 'invalid', 'tech', 'fact');
+            statusArea.classList.remove('success', 'error', 'tech');
 
             if (!q) {
-                statusText.innerText = "Ready for NLP Input";
-                hint.innerText = "Type naturally to clarify intent.";
+                statusText.innerText = "Ready for Input";
+                hint.innerText = "Type naturally...";
                 return;
             }
 
-            // 1. Shortcut Check
             if (SHORTCUTS[q]) {
-                lockIntent(`FAST NAV: ${SHORTCUTS[q]}`, `https://${SHORTCUTS[q]}`);
+                lockIntent(`FAST NAV: ${SHORTCUTS[q]}`, `https://${SHORTCUTS[q]}`, 'valid');
                 return;
             }
 
-            // 2. NLP Scoring
+            // NLP SCORING
             let bestScore = 0;
             let bestMatch = null;
 
             for (const [key, rule] of Object.entries(NLP_Rules)) {
                 let score = 0;
-                // Keyword matching
                 for (const t of rule.triggers) {
                     if (q.includes(t)) score += 1;
                 }
+
+                // Context Boosts
+                // "how to rust" -> prefers DEV_ANSWER (rust) over GUIDE (how to)
+                if (key === 'DEV_ANSWER' && score > 0 && q.includes('how to')) score += 2;
+                if (key === 'COMPUTE' && (q.includes('+') || q.includes('='))) score += 5;
 
                 if (score > bestScore) {
                     bestScore = score;
@@ -318,43 +346,46 @@
                 }
             }
 
-            // 3. Decision Gate
             if (bestScore > 0) {
-                // Determine clean Query (remove triggers optionally, or keep full context)
-                // For Amazon/YouTube keeping full context "buy red shoes" is usually fine.
-                // For GitHub "gh rust" -> "rust".
+                // Formatting destination
                 let dest = bestMatch.site + encodeURIComponent(q);
 
-                // Specific cleaner for GitHub/Wiki to make searches better
-                if (bestMatch.label === 'CODE') {
-                    dest = bestMatch.site + encodeURIComponent(q.replace(/gh |git /g, ''));
+                // Smart Formatting
+                if (bestMatch.label.includes('Wiki')) {
+                    // Wiki expects underscores for direct hit, or search
+                    // We'll trust the search/redirect of main wiki or use direct if simple
+                    if (!q.includes(' ')) dest = bestMatch.site + q;
+                    else dest = "https://en.wikipedia.org/w/index.php?search=" + encodeURIComponent(q);
                 }
-                if (bestMatch.label === 'KNOWLEDGE') {
-                    dest = bestMatch.site + q.replace(/ /g, '_');
+                if (bestMatch.label.includes('StackOverflow')) {
+                    // Remove 'how to' for better SO search
+                    dest = bestMatch.site + encodeURIComponent(q.replace('how to', ''));
                 }
 
-                lockIntent(bestMatch.label, dest);
+                lockIntent(bestMatch.label, dest, bestMatch.style);
 
             } else {
-                // Ambiguous / No Intent Detected
                 rejectIntent();
             }
         }
 
-        function lockIntent(label, url) {
+        function lockIntent(label, url, style) {
             currentIntent = url;
-            statusText.innerText = `>> INTENT DETECTED: ${label}`;
-            statusArea.classList.add('success');
-            input.classList.add('valid');
+            statusText.innerText = `>> ${label}`;
+            statusArea.classList.add(style === 'tech' ? 'tech' : 'success');
+            input.classList.add(style);
             fab.classList.add('visible');
-            hint.innerText = "Press Enter to execute.";
+            hint.innerText = "Hit Enter to solve.";
+            // Change FAB color dynamically if needed
+            fab.style.background = style === 'tech' ? '#6c5ce7' : (style === 'fact' ? '#fdcb6e' : '#00b894');
         }
 
         function rejectIntent() {
-            statusText.innerText = "AMBIGUOUS QUERY";
+            statusText.innerText = "AMBIGUOUS / UNKNOWN";
             statusArea.classList.add('error');
             input.classList.add('invalid');
-            hint.innerText = "Add context: 'buy', 'watch', 'code', 'learn'...";
+            hint.innerText = "Clarify: 'who is...', 'how to...', 'buy...'";
+            fab.style.background = '#00b894';
         }
 
         function execute() {
@@ -377,8 +408,7 @@
                 chip.onclick = () => { input.value = h; analyze(h); input.focus(); };
                 chipsContainer.appendChild(chip);
             });
-            // Examples
-            ['buy shoes', 'watch batman', 'learn rust'].forEach(s => {
+            ['how to center div', 'solve x^2=4', 'who is turing'].forEach(s => {
                 const chip = document.createElement('div');
                 chip.className = 'chip';
                 chip.innerText = s;
