@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YoloFi Food Search</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e4e4e7;
+            min-height: 100vh;
+            font-weight: 300;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .slogan {
+            font-size: 14px;
+            font-weight: 400;
+            color: #a1a1aa;
+            font-style: italic;
+        }
+
+        /* Search Section */
+        .search-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+
+        .search-wrapper {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 18px 24px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 300;
+            color: #f4f4f5;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: #71717a;
+        }
+
+        .search-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Food Image Card */
+        .food-image-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .confirmation-text {
+            font-size: 18px;
+            font-weight: 500;
+            color: #feca57;
+            margin-bottom: 20px;
+        }
+
+        .food-image-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .food-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .loading-image {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 12px;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        .food-name {
+            font-size: 24px;
+            font-weight: 500;
+            color: #f4f4f5;
+            margin-bottom: 8px;
+        }
+
+        /* Recipe Card */
+        .recipe-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+        }
+
+        .recipe-header {
+            margin-bottom: 24px;
+        }
+
+        .recipe-title {
+            font-size: 22px;
+            font-weight: 500;
+            color: #f4f4f5;
+            margin-bottom: 12px;
+        }
+
+        .recipe-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #a1a1aa;
+        }
+
+        .meta-icon {
+            width: 16px;
+            height: 16px;
+            color: #ff6b6b;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #feca57;
+            margin-bottom: 16px;
+            margin-top: 24px;
+        }
+
+        .ingredients-list {
+            list-style: none;
+            margin-bottom: 24px;
+        }
+
+        .ingredient-item {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid #ff6b6b;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 300;
+            color: #d4d4d8;
+        }
+
+        .instructions-list {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+
+        .instruction-item {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 300;
+            color: #d4d4d8;
+            line-height: 1.6;
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 56px;
+        }
+
+        .instruction-item::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 16px;
+            top: 16px;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 13px;
+            color: white;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #71717a;
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 24px;
+            }
+
+            .search-section {
+                padding: 24px;
+            }
+
+            .food-image-card,
+            .recipe-card {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🍽️ YoloFi Food Search</div>
+            <div class="slogan">Search for existing food, don't cook new in my feed</div>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-wrapper">
+                <input type="text" class="search-input" id="foodInput"
+                    placeholder="Search for any food on earth... (e.g., pizza, sushi, biryani)" autocomplete="off">
+            </div>
+            <button class="search-btn" onclick="searchFood()">Search Food</button>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+            <!-- Food Image Card -->
+            <div class="food-image-card">
+                <div class="confirmation-text">Is this the food you're looking for?</div>
+                <div class="food-image-container" id="imageContainer">
+                    <div class="loading-image"></div>
+                </div>
+                <div class="food-name" id="foodName"></div>
+            </div>
+
+            <!-- Recipe Card -->
+            <div class="recipe-card" id="recipeCard">
+                <div class="recipe-header">
+                    <div class="recipe-title">How to Cook</div>
+                    <div class="recipe-meta" id="recipeMeta"></div>
+                </div>
+
+                <div class="section-title">Ingredients</div>
+                <ul class="ingredients-list" id="ingredientsList"></ul>
+
+                <div class="section-title">Instructions</div>
+                <ol class="instructions-list" id="instructionsList"></ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const foodInput = document.getElementById('foodInput');
+        const resultsSection = document.getElementById('resultsSection');
+        const imageContainer = document.getElementById('imageContainer');
+        const foodName = document.getElementById('foodName');
+        const recipeMeta = document.getElementById('recipeMeta');
+        const ingredientsList = document.getElementById('ingredientsList');
+        const instructionsList = document.getElementById('instructionsList');
+
+        // Search on Enter
+        foodInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchFood();
+            }
+        });
+
+        async function searchFood() {
+            const query = foodInput.value.trim();
+            if (!query) return;
+
+            // Show results section
+            resultsSection.classList.add('active');
+
+            // Show loading state
+            imageContainer.innerHTML = '<div class="loading-image"></div>';
+            foodName.textContent = 'Generating image...';
+
+            try {
+                // Generate food image
+                await generateFoodImage(query);
+
+                // Fetch recipe
+                await fetchRecipe(query);
+            } catch (error) {
+                console.error('Error:', error);
+                imageContainer.innerHTML = '<div class="no-results">Unable to generate image</div>';
+            }
+        }
+
+        async function generateFoodImage(foodName) {
+            // Simulate image generation (in production, use actual AI image generation API)
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    // For demo, we'll use a placeholder with the food name
+                    // In production, integrate with DALL-E, Stable Diffusion, or similar
+                    const imageUrl = `https://source.unsplash.com/800x600/?${encodeURIComponent(foodName)},food,dish`;
+
+                    imageContainer.innerHTML = `<img src="${imageUrl}" alt="${foodName}" class="food-image" onerror="handleImageError()">`;
+                    document.getElementById('foodName').textContent = foodName.charAt(0).toUpperCase() + foodName.slice(1);
+
+                    resolve();
+                }, 1500);
+            });
+        }
+
+        function handleImageError() {
+            imageContainer.innerHTML = `
+                <div style="padding: 60px 20px; background: rgba(255,255,255,0.05); border-radius: 12px;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">🍽️</div>
+                    <div style="color: #a1a1aa;">Image not available</div>
+                </div>
+            `;
+        }
+
+        async function fetchRecipe(foodName) {
+            try {
+                // Use TheMealDB API (free)
+                const response = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(foodName)}`);
+                const data = await response.json();
+
+                if (data.meals && data.meals.length > 0) {
+                    displayRecipe(data.meals[0]);
+                } else {
+                    displayFallbackRecipe(foodName);
+                }
+            } catch (error) {
+                displayFallbackRecipe(foodName);
+            }
+        }
+
+        function displayRecipe(meal) {
+            // Meta information
+            recipeMeta.innerHTML = `
+                <div class="meta-item">
+                    <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    ${meal.strMeasure1 || '30-45 min'}
+                </div>
+                <div class="meta-item">
+                    <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    ${meal.strCategory || 'Medium'}
+                </div>
+                <div class="meta-item">
+                    <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    ${meal.strArea || 'International'}
+                </div>
+            `;
+
+            // Ingredients
+            const ingredients = [];
+            for (let i = 1; i <= 20; i++) {
+                const ingredient = meal[`strIngredient${i}`];
+                const measure = meal[`strMeasure${i}`];
+                if (ingredient && ingredient.trim()) {
+                    ingredients.push(`${measure} ${ingredient}`);
+                }
+            }
+
+            ingredientsList.innerHTML = ingredients
+                .map(ing => `<li class="ingredient-item">${ing}</li>`)
+                .join('');
+
+            // Instructions
+            const instructions = meal.strInstructions
+                .split(/\r?\n/)
+                .filter(step => step.trim().length > 10);
+
+            instructionsList.innerHTML = instructions
+                .map(step => `<li class="instruction-item">${step}</li>`)
+                .join('');
+        }
+
+        function displayFallbackRecipe(foodName) {
+            recipeMeta.innerHTML = `
+                <div class="meta-item">
+                    <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    Varies
+                </div>
+            `;
+
+            ingredientsList.innerHTML = `
+                <li class="ingredient-item">Recipe details not available for "${foodName}"</li>
+                <li class="ingredient-item">Try searching for a more specific dish name</li>
+                <li class="ingredient-item">Or try: pizza, pasta, sushi, burger, curry</li>
+            `;
+
+            instructionsList.innerHTML = `
+                <li class="instruction-item">Search for a specific dish to get detailed cooking instructions</li>
+            `;
+        }
+    </script>
+</body>
+
+</html>
