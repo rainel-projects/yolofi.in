@@ -204,7 +204,8 @@
             align-items: center;
             text-transform: uppercase;
             touch-action: none;
-            /* Critical: Disables browser zoom/scroll on button */
+            cursor: crosshair;
+            /* Shooter feel */
         }
 
         #mint-btn:active {
@@ -636,6 +637,18 @@
             text-shadow: 0 2px 4px #000;
             letter-spacing: 1px;
         }
+
+        /* --- DESKTOP HINT --- */
+        .desktop-hint {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            color: #444;
+            pointer-events: none;
+            opacity: 0.7;
+        }
     </style>
 </head>
 
@@ -680,10 +693,12 @@
 
             <div class="main-stage">
                 <button id="mint-btn" onpointerdown="mint(event)">
-                    MINT
-                    <span class="sub-text">TAP TO MINE</span>
+                    QUERY
+                    <span class="sub-text">AIM TO SEARCH</span>
                     <div id="flux-node"></div>
                 </button>
+                <div class="desktop-hint">BEST EXPERIENCED ON PC 🖥️</div>
+                <div class="desktop-hint">BEST EXPERIENCED ON PC 🖥️</div>
 
                 <!-- Skill Check UI -->
                 <div id="skill-container" style="display:none; position:absolute; z-index: 70;">
@@ -744,9 +759,6 @@
                 <button class="btn-gold"
                     style="background: #ff0055; color: #fff; box-shadow: 0 5px 15px rgba(255,0,85, 0.4);"
                     onclick="payCoffee()">BUY COFFEE</button>
-                <button class="btn-gold"
-                    style="background: #333; color: #fff; border: 1px solid #555; box-shadow: none;"
-                    onclick="enablePremium()">DEMO VIP</button>
             </div>
             <button
                 style="background:none; border:none; color: #444; margin-top: 10px; cursor: pointer; text-decoration: underline;"
