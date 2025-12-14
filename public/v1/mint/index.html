@@ -73,6 +73,8 @@
             box-sizing: border-box;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            /* Disable double-tap zoom globally */
         }
 
         body {
@@ -201,6 +203,8 @@
             justify-content: center;
             align-items: center;
             text-transform: uppercase;
+            touch-action: none;
+            /* Critical: Disables browser zoom/scroll on button */
         }
 
         #mint-btn:active {
@@ -549,6 +553,56 @@
             z-index: 100;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
+
+        /* --- SKILL CHECK --- */
+        .skill-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 40px;
+            background: #000;
+            border: 2px solid #555;
+            border-radius: 20px;
+            z-index: 60;
+            display: none;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+
+        .skill-zone {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            background: var(--primary);
+            opacity: 0.3;
+            width: 40px;
+            /* Difficulty width */
+            left: 50%;
+        }
+
+        .skill-cursor {
+            position: absolute;
+            top: -5px;
+            bottom: -5px;
+            width: 4px;
+            background: #fff;
+            left: 0%;
+            box-shadow: 0 0 10px #fff;
+        }
+
+        .skill-message {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: -30px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 2px 4px #000;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 
@@ -592,10 +646,19 @@
             </div>
 
             <div class="main-stage">
-                <button id="mint-btn" onmousedown="mint(event)">
+                <button id="mint-btn" onpointerdown="mint(event)">
                     MINT
                     <span class="sub-text">TAP TO MINE</span>
                 </button>
+
+                <!-- Skill Check UI -->
+                <div id="skill-container" style="display:none; position:absolute; z-index: 70;">
+                    <div class="skill-message">TAP IN THE ZONE TO REBOOT</div>
+                    <div class="skill-overlay" id="skill-bar">
+                        <div class="skill-zone" id="skill-target"></div>
+                        <div class="skill-cursor" id="skill-cursor"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -771,14 +834,34 @@
 
         // --- INTERACTION ---
         // --- INTERACTION ---
+
+        // Skill State
+        let isRecharging = false;
+        let skillReqThisFrame = false;
+        let skillPos = 0;
+        let skillDir = 1;
+        let skillSpeed = 2;
+        let skillTarget = 50;
+        let skillWidth = 15; // as %
+
         function mint(e) {
+            // Prevent Browser Zoom/Scroll on rapid taps
+            if (e.preventDefault) e.preventDefault();
+
             const now = Date.now();
+
+            // IF RECHARGING (Skill Mode)
+            if (isRecharging) {
+                resolveSkillCheck();
+                return;
+            }
 
             // Check Energy
             if (!isPremium) {
                 if (energy < 5) {
                     haptic(50);
-                    openCoffee('forced');
+                    // TRIGGER SKILL CHECK INSTEAD OF UPSELL IMMEDIATELY
+                    startSkillCheck();
                     return;
                 }
                 energy -= 5;
@@ -794,8 +877,8 @@
             lastClickTime = now;
 
             // CRITICAL HIT & MULTIPLIERS
-            let mult = 1 + (Math.floor(combo / 5) * 0.5); // +0.5x every 5 combo
-            let isCrit = Math.random() < 0.05; // 5% Crit chance
+            let mult = 1 + (Math.floor(combo / 5) * 0.5);
+            let isCrit = Math.random() < 0.05;
             if (isCrit) mult *= 5;
 
             let power = (isPremium ? clickPower * 10 : clickPower) * mult;
@@ -808,7 +891,7 @@
             else if (combo > 5) label += ` (x${mult.toFixed(1)})`;
 
             spawnParticle(e.clientX, e.clientY, label, isCrit);
-            spawnDebris(e.clientX, e.clientY, isCrit ? 15 : 6);
+            spawnDebris(e.clientX, e.clientY, isCrit ? 15 : 6); // More Debris
 
             haptic(isCrit ? 50 : 10);
 
@@ -824,6 +907,66 @@
             btnMint.style.transform = `scale(${scale}) rotate(${Math.random() * 8 - 4}deg)`;
             setTimeout(() => btnMint.style.transform = 'none', 50);
 
+            updateUI();
+        }
+
+        // --- SKILL REBOOT SYSTEM ---
+        const elSkillContainer = document.getElementById('skill-container');
+        const elSkillCursor = document.getElementById('skill-cursor');
+        const elSkillTarget = document.getElementById('skill-target');
+
+        function startSkillCheck() {
+            isRecharging = true;
+            btnMint.style.opacity = 0; // Hide button, show skill
+            elSkillContainer.style.display = 'block';
+
+            // Randomize Target
+            skillTarget = 20 + Math.random() * 60; // 20% to 80% range
+            skillWidth = 10 + Math.random() * 10; // Harder or easier
+            skillSpeed = 1 + Math.random() * 2; // Random speed
+
+            elSkillTarget.style.left = (skillTarget - skillWidth / 2) + '%';
+            elSkillTarget.style.width = skillWidth + '%';
+
+            showToast("⚠️ SYSTEM FAILURE: MANUAL REBOOT REQUIRED");
+
+            requestAnimationFrame(loopSkill);
+        }
+
+        function loopSkill() {
+            if (!isRecharging) return;
+
+            skillPos += skillSpeed * skillDir;
+            if (skillPos > 100 || skillPos < 0) skillDir *= -1;
+
+            elSkillCursor.style.left = skillPos + '%';
+            requestAnimationFrame(loopSkill);
+        }
+
+        function resolveSkillCheck() {
+            isRecharging = false;
+
+            // HIT DETECTION
+            // Target range is [skillTarget - w/2, skillTarget + w/2]
+            let min = skillTarget - skillWidth / 2;
+            let max = skillTarget + skillWidth / 2;
+
+            if (skillPos >= min && skillPos <= max) {
+                // SUCCESS
+                energy = 100;
+                spawnParticle(window.innerWidth / 2, window.innerHeight / 2, "SYSTEM REBOOTED", true);
+                showToast("✅ ENERGY RESTORED");
+                haptic(100);
+            } else {
+                // FAIL
+                openCoffee('forced'); // Punishment: Show ads/upsell
+                showToast("❌ REBOOT FAILED");
+                haptic(200);
+            }
+
+            // Reset UI
+            elSkillContainer.style.display = 'none';
+            btnMint.style.opacity = 1;
             updateUI();
         }
 
