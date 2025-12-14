@@ -285,6 +285,72 @@
             width: 24px;
             height: 24px;
             stroke-width: 2.5;
+            font-weight: 500;
+            min-height: 20px;
+        }
+
+        /* --- MOBILE LAYOUT (Responsive App Mode) --- */
+        @media (max-width: 768px) {
+            body {
+                align-items: flex-start;
+                /* Top align on mobile */
+            }
+
+            .glass-card {
+                width: 100%;
+                height: 100vh;
+                /* Full screen */
+                max-width: none;
+                border-radius: 0;
+                border: none;
+                box-shadow: none;
+                /* Flat app feel */
+                padding: 100px 25px 40px 25px;
+                /* More top padding */
+                justify-content: flex-start;
+                /* Align content to top */
+                background: rgba(255, 255, 255, 0.6);
+                /* More translucent on mobile */
+            }
+
+            .slogan {
+                font-size: 42px;
+                /* Readable on small screens */
+                margin-bottom: 5px;
+            }
+
+            .sub-slogan {
+                font-size: 11px;
+                letter-spacing: 2px;
+                margin-bottom: 30px;
+            }
+
+            .omnibar {
+                padding: 22px 24px;
+                padding-right: 60px;
+                font-size: 18px;
+            }
+
+            .fab {
+                width: 42px;
+                height: 42px;
+                right: 15px;
+            }
+
+            .status-area {
+                top: 20px;
+                right: 20px;
+                font-size: 10px;
+            }
+
+            .chips {
+                gap: 8px;
+            }
+
+            .chip {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
         }
 
         .hint-text {
