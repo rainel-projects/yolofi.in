@@ -351,14 +351,56 @@
                 padding: 8px 16px;
                 font-size: 12px;
             }
-        }
 
-        .hint-text {
-            font-size: 13px;
-            color: #b2bec3;
-            margin-top: -15px;
-            font-weight: 500;
-            min-height: 20px;
+            /* Provider Card Design */
+            .provider-list {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                width: 100%;
+                max-height: 400px;
+                overflow-y: auto;
+                padding: 10px;
+                margin-top: 10px;
+            }
+
+            .provider-card {
+                background: rgba(255, 255, 255, 0.6);
+                border: 1px solid rgba(255, 255, 255, 0.4);
+                padding: 15px 20px;
+                border-radius: 16px;
+                cursor: pointer;
+                transition: all 0.2s;
+                text-align: left;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .provider-card:hover {
+                background: #ffffff;
+                transform: scale(1.02);
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            }
+
+            .p-info h3 {
+                margin: 0;
+                font-size: 16px;
+                font-weight: 600;
+                color: var(--primary);
+            }
+
+            .p-info p {
+                margin: 4px 0 0 0;
+                font-size: 12px;
+                color: var(--secondary);
+                opacity: 0.9;
+            }
+
+            .p-arrow {
+                opacity: 0.3;
+                font-weight: bold;
+            }
         }
     </style>
     <link
@@ -438,77 +480,86 @@
 
         const NLP_Rules = {
             TRAVEL: {
-                triggers: ['flight', 'hotel', 'book', 'travel', 'vacation', 'ticket', 'fly', 'trip', 'airbnb'],
+                triggers: ['flight', 'hotel', 'book', 'travel', 'vacation', 'ticket', 'fly', 'trip', 'airbnb', 'tour'],
                 label: "TRAVEL", style: "valid",
                 providers: [
-                    { name: 'Google Flights', url: 'https://www.google.com/travel/flights?q=' },
-                    { name: 'Booking.com', url: 'https://www.booking.com/searchresults.html?ss=' },
-                    { name: 'Airbnb', url: 'https://www.airbnb.com/s/' },
-                    { name: 'Expedia', url: 'https://www.expedia.com/Hotel-Search?destination=' }
+                    { name: 'Google Flights', desc: 'Compare all airlines & prices instantly.', url: 'https://www.google.com/travel/flights?q=' },
+                    { name: 'Booking.com', desc: 'Best for hotels & heavy discounts.', url: 'https://www.booking.com/searchresults.html?ss=' },
+                    { name: 'Airbnb', desc: 'Unique stays, homes & experiences.', url: 'https://www.airbnb.com/s/' },
+                    { name: 'Expedia', desc: 'Bundle flights + hotels for deals.', url: 'https://www.expedia.com/Hotel-Search?destination=' },
+                    { name: 'Skyscanner', desc: 'Find the absolute cheapest days to fly.', url: 'https://www.skyscanner.com/transport/flights/everywhere?q=' },
+                    { name: 'TripAdvisor', desc: 'Traveler reviews & hidden gems.', url: 'https://www.tripadvisor.com/Search?q=' }
                 ]
             },
             GROCERY: {
                 triggers: ['milk', 'bread', 'fruit', 'vegetable', 'banana', 'apple', 'orange', 'egg', 'organic', 'snack', 'grocery'],
                 label: "GROCERY", style: "fact",
                 providers: [
-                    { name: 'Instacart', url: 'https://www.instacart.com/store/s?k=' },
-                    { name: 'Amazon Fresh', url: 'https://www.amazon.com/s?i=grocery&k=' },
-                    { name: 'Walmart Grocery', url: 'https://www.walmart.com/search?q=' }
+                    { name: 'Instacart', desc: 'Same-day delivery from local stores.', url: 'https://www.instacart.com/store/s?k=' },
+                    { name: 'Amazon Fresh', desc: 'Prime delivery & Whole Foods.', url: 'https://www.amazon.com/s?i=grocery&k=' },
+                    { name: 'Walmart Grocery', desc: 'Low prices, pickup & delivery.', url: 'https://www.walmart.com/search?q=' },
+                    { name: 'Thrive Market', desc: 'Healthy & organic goods (Membership).', url: 'https://thrivemarket.com/search?q=' }
                 ]
             },
-            FOOD_DELIVERY: {
+            FOOD: {
                 triggers: ['pizza', 'burger', 'sushi', 'taco', 'pasta', 'hungry', 'delivery', 'eat', 'dinner', 'lunch'],
                 label: "FOOD DELIVERY", style: "fact",
                 providers: [
-                    { name: 'Uber Eats', url: 'https://www.ubereats.com/search?q=' },
-                    { name: 'DoorDash', url: 'https://www.doordash.com/search/store/' },
-                    { name: 'Grubhub', url: 'https://www.grubhub.com/search?q=' }
+                    { name: 'Uber Eats', desc: 'Fastest local restaurant delivery.', url: 'https://www.ubereats.com/search?q=' },
+                    { name: 'DoorDash', desc: 'Widest selection of local eateries.', url: 'https://www.doordash.com/search/store/' },
+                    { name: 'Grubhub', desc: 'Great for deals and rewards.', url: 'https://www.grubhub.com/search?q=' },
+                    { name: 'Yelp', desc: 'Read reviews before you order.', url: 'https://www.yelp.com/search?find_desc=' }
                 ]
             },
             COMMERCE: {
-                triggers: ['buy', 'shop', 'price', 'cost', 'cheap', 'amazon', 'ebay'],
+                triggers: ['buy', 'shop', 'price', 'cost', 'cheap', 'amazon', 'ebay', 'craigslist', 'etsy'],
                 label: "COMMERCE", style: "valid",
                 providers: [
-                    { name: 'Amazon', url: 'https://www.amazon.com/s?k=' },
-                    { name: 'eBay', url: 'https://www.ebay.com/sch/i.html?_nkw=' },
-                    { name: 'Walmart', url: 'https://www.walmart.com/search?q=' },
-                    { name: 'Target', url: 'https://www.target.com/s?searchTerm=' }
+                    { name: 'Amazon', desc: 'The everything store. Fast shipping.', url: 'https://www.amazon.com/s?k=' },
+                    { name: 'eBay', desc: 'Used, vintage, & competitive auctions.', url: 'https://www.ebay.com/sch/i.html?_nkw=' },
+                    { name: 'Google Shopping', desc: 'Compare prices across the web.', url: 'https://www.google.com/search?tbm=shop&q=' },
+                    { name: 'Etsy', desc: 'Handmade, custom & unique gifts.', url: 'https://www.etsy.com/search?q=' },
+                    { name: 'AliExpress', desc: 'Direct from factory (Lowest Price).', url: 'https://www.aliexpress.com/wholesale?SearchText=' },
+                    { name: 'Craigslist', desc: 'Local classifieds & used items.', url: 'https://www.craigslist.org/search/sss?query=' }
                 ]
             },
             VIDEO: {
-                triggers: ['watch', 'video', 'movie', 'stream', 'youtube', 'netflix'],
+                triggers: ['watch', 'video', 'movie', 'stream', 'youtube', 'netflix', 'hulu'],
                 label: "VIDEO", style: "valid",
                 providers: [
-                    { name: 'YouTube', url: 'https://www.youtube.com/results?search_query=' },
-                    { name: 'Twitch', url: 'https://www.twitch.tv/search?term=' },
-                    { name: 'Vimeo', url: 'https://vimeo.com/search?q=' }
+                    { name: 'YouTube', desc: 'User content, clips & tutorials.', url: 'https://www.youtube.com/results?search_query=' },
+                    { name: 'Netflix', desc: 'Premium movies & series.', url: 'https://www.netflix.com/search?q=' },
+                    { name: 'Prime Video', desc: 'Amazon originals & rentals.', url: 'https://www.amazon.com/s?i=instant-video&k=' },
+                    { name: 'Twitch', desc: 'Live gaming & creative streams.', url: 'https://www.twitch.tv/search?term=' },
+                    { name: 'Vimeo', desc: 'High-quality artistic films.', url: 'https://vimeo.com/search?q=' }
                 ]
             },
             COMPUTE: {
                 triggers: ['solve', 'calculate', 'math', 'graph', '+', '-', '*', '/', '^'],
                 label: "COMPUTE", style: "tech",
                 providers: [
-                    { name: 'WolframAlpha', url: 'https://www.wolframalpha.com/input?i=' },
-                    { name: 'Symbolab', url: 'https://www.symbolab.com/solver?query=' },
-                    { name: 'Google Calc', url: 'https://www.google.com/search?q=' }
+                    { name: 'WolframAlpha', desc: 'Computational knowledge engine.', url: 'https://www.wolframalpha.com/input?i=' },
+                    { name: 'Symbolab', desc: 'Step-by-step math solver.', url: 'https://www.symbolab.com/solver?query=' },
+                    { name: 'Desmos', desc: 'Graphing calculator.', url: 'https://www.desmos.com/calculator' }
                 ]
             },
             DEV: {
                 triggers: ['error', 'bug', 'debug', 'code', 'function', 'rust', 'js', 'api', 'compile'],
                 label: "DEV GUIDE", style: "tech",
                 providers: [
-                    { name: 'StackOverflow', url: 'https://stackoverflow.com/search?q=' },
-                    { name: 'GitHub', url: 'https://github.com/search?q=' },
-                    { name: 'Reddit (Dev)', url: 'https://www.reddit.com/search/?q=' }
+                    { name: 'StackOverflow', desc: 'Community Q&A for errors.', url: 'https://stackoverflow.com/search?q=' },
+                    { name: 'GitHub', desc: 'Open source repositories.', url: 'https://github.com/search?q=' },
+                    { name: 'MDN Web Docs', desc: 'Best for JS/CSS documentation.', url: 'https://developer.mozilla.org/search?q=' },
+                    { name: 'Dev.to', desc: 'Articles & tutorials by devs.', url: 'https://dev.to/search?q=' }
                 ]
             },
             FACT: {
                 triggers: ['what', 'who', 'when', 'meaning', 'define'],
                 label: "FACT", style: "fact",
                 providers: [
-                    { name: 'Wikipedia', url: 'https://en.wikipedia.org/w/index.php?search=' },
-                    { name: 'Britannica', url: 'https://www.britannica.com/search?query=' },
-                    { name: 'Google Search', url: 'https://www.google.com/search?q=' }
+                    { name: 'Wikipedia', desc: ' The free encyclopedia.', url: 'https://en.wikipedia.org/w/index.php?search=' },
+                    { name: 'Britannica', desc: 'Verified, scholarly articles.', url: 'https://www.britannica.com/search?query=' },
+                    { name: 'Google Scholar', desc: 'Academic papers & case law.', url: 'https://scholar.google.com/scholar?q=' }
                 ]
             }
         };
@@ -594,19 +645,25 @@
                 localStorage.setItem('yolofi_history', JSON.stringify(history));
             }
 
-            // SHOW OPTIONS UI
-            statusText.innerText = "SELECT PROVIDER";
-            chipsContainer.innerHTML = '';
+            // SHOW DECISION UI
+            statusText.innerText = "CHOOSE YOUR PATH";
+            chipsContainer.innerHTML = '<div class="provider-list"></div>';
+            const list = chipsContainer.querySelector('.provider-list');
 
             currentMatch.providers.forEach(p => {
-                const btn = document.createElement('div');
-                btn.className = 'chip';
-                btn.style.borderColor = 'var(--primary)'; // Highlight
-                btn.innerText = p.name + ' ↗';
-                btn.onclick = () => {
+                const card = document.createElement('div');
+                card.className = 'provider-card';
+                card.innerHTML = `
+                    <div class="p-info">
+                        <h3>${p.name}</h3>
+                        <p>${p.desc}</p>
+                    </div>
+                    <div class="p-arrow">➔</div>
+                `;
+                card.onclick = () => {
                     window.location.href = p.url + encodeURIComponent(currentQuery);
                 };
-                chipsContainer.appendChild(btn);
+                list.appendChild(card);
             });
         }
 
