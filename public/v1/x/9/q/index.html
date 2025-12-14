@@ -4,39 +4,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- INFINITE SCALE ARCHITECTURE: Client-Side Logic Only. 100% CDN Cacheable. -->
+    <!-- INFINITE SCALE ARCHITECTURE -->
     <meta http-equiv="Cache-Control" content="public, max-age=31536000, immutable">
 
-    <!-- SEO & CRAWLERS -->
+    <!-- SEO -->
     <meta name="robots" content="index, follow">
     <meta name="description"
-        content="YoloFi Quantum Query: A deterministic, sovereign, and privacy-focused intent engine. Navigate the web with purpose.">
+        content="YoloFi Quantum Query: A deterministic, sovereign, and privacy-focused intent engine.">
     <meta name="application-name" content="YoloFi">
 
-    <!-- CUSTOM YOLOFI ICON (SVG Data URI) -->
+    <!-- ICON -->
     <link rel="icon" type="image/svg+xml"
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%230984e3'/%3E%3Cstop offset='100%25' style='stop-color:%2300b894'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='50' fill='url(%23g)'/%3E%3Cpath d='M30 30 L50 60 L70 30 M50 60 L50 85' stroke='white' stroke-width='8' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
 
     <title>YoloFi Quantum Query</title>
     <style>
         :root {
-            --glass: rgba(255, 255, 255, 0.9);
-            --glass-border: rgba(255, 255, 255, 0.6);
+            /* Premium Glass Variables */
+            --glass: rgba(255, 255, 255, 0.85);
+            /* More transparent */
+            --glass-border: rgba(255, 255, 255, 0.4);
             --primary: #2d3436;
+            --secondary: #636e72;
             --accent: #6c5ce7;
-            --warn: #ff7675;
-            --success: #00cec9;
-            --tech: #a29bfe;
-            --wiki: #ffeaa7;
+
+            /* Professional Pastel Palette */
+            --success: #00b894;
+            /* Mint */
+            --tech: #6c5ce7;
+            /* Purple */
+            --fact: #e17055;
+            /* Terracotta */
         }
 
         body {
-            /* PASTEL DISCO BACKGROUND */
+            /* PROFESSIONAL PASTEL GRADIENT */
+            /* Slower, smoother transition for 'Flow' rather than 'Disco' */
+            background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            /* Fallback */
             background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fbc2eb, #a18cd1, #8fd3f4, #84fab0);
-            background-size: 600% 600%;
-            animation: disco 8s ease infinite;
+            background-size: 400% 400%;
+            animation: ambientFlow 25s ease infinite;
+            /* Slowed down for professionalism */
+
             color: var(--primary);
             font-family: 'Outfit', sans-serif;
+            /* Geometric Modern Sans */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -45,7 +58,7 @@
             overflow: hidden;
         }
 
-        @keyframes disco {
+        @keyframes ambientFlow {
             0% {
                 background-position: 0% 50%;
             }
@@ -61,47 +74,49 @@
 
         .glass-card {
             background: var(--glass);
-            border-radius: 30px;
+            border-radius: 24px;
             border: 1px solid var(--glass-border);
-            padding: 60px 40px;
+            padding: 70px 50px;
             width: 90%;
-            max-width: 760px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            max-width: 800px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
             text-align: center;
             display: flex;
             flex-direction: column;
-            gap: 25px;
+            gap: 30px;
             position: relative;
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
+            /* Stronger blur */
+            transition: transform 0.4s ease;
         }
 
+        /* Typography: Elevated Professionalism */
         .slogan {
-            font-family: 'Fredoka', cursive;
-            /* BUBBLE FONT */
-            font-weight: 700;
-            font-size: 52px;
-            /* Gradient for Text matching background */
-            background: linear-gradient(to right, #6c5ce7, #ff7675);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            /* Extra Bold */
+            font-size: 56px;
+            letter-spacing: -1.5px;
+            line-height: 1.05;
+
+            /* Sophisticated Gradient Mask */
+            background: linear-gradient(135deg, #2d3436 0%, #0984e3 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin: 0;
-            margin-bottom: 5px;
-            letter-spacing: -0.5px;
-            line-height: 1.1;
-            /* subtle shadow to pop */
-            filter: drop-shadow(0px 2px 0px rgba(0, 0, 0, 0.1));
+            margin-bottom: 8px;
         }
 
         .sub-slogan {
-            font-size: 13px;
-            color: #636e72;
-            font-weight: 700;
-            letter-spacing: 2px;
+            font-size: 14px;
+            color: var(--secondary);
+            font-weight: 600;
+            letter-spacing: 3px;
+            /* Wide tracking for elegance */
             text-transform: uppercase;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             opacity: 0.8;
-            font-family: 'Fredoka', cursive;
-            /* Matching bubble font */
+            font-family: 'Outfit', sans-serif;
         }
 
         .omnibar-wrapper {
@@ -111,42 +126,52 @@
 
         .omnibar {
             width: 100%;
-            padding: 24px 30px;
-            padding-right: 70px;
+            padding: 28px 32px;
+            padding-right: 80px;
             font-size: 24px;
-            font-weight: 600;
-            border: 3px solid transparent;
-            border-radius: 25px;
-            /* More rounded */
+            font-weight: 500;
+            border: 2px solid transparent;
+            border-radius: 20px;
             outline: none;
             background: #ffffff;
             color: var(--primary);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            /* Softer shadow */
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
             box-sizing: border-box;
             font-family: 'Outfit', sans-serif;
         }
 
+        .omnibar::placeholder {
+            color: #b2bec3;
+            font-weight: 400;
+        }
+
+        .omnibar:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            border-color: rgba(9, 132, 227, 0.2);
+        }
+
+        /* Semantic Borders */
         .omnibar.valid {
             border-color: var(--success);
+            background: #f0fdf4;
         }
 
         .omnibar.tech {
             border-color: var(--tech);
+            background: #fbfbfe;
         }
 
         .omnibar.fact {
-            border-color: var(--wiki);
+            border-color: var(--fact);
+            background: #fffbf0;
         }
 
         .omnibar.invalid {
             border-color: var(--warn);
             animation: shake 0.4s;
-        }
-
-        .omnibar:focus {
-            transform: scale(1.02);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
         }
 
         @keyframes shake {
@@ -168,29 +193,30 @@
         .chips {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
             justify-content: center;
-            margin-top: 15px;
+            margin-top: 10px;
         }
 
         .chip {
             padding: 10px 20px;
-            background: rgba(0, 0, 0, 0.04);
-            border-radius: 50px;
-            font-size: 14px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+            /* Modern Pill */
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            border: 1px solid transparent;
-            color: #636e72;
-            font-family: 'Fredoka', cursive;
-            /* Fun font for chips */
+            color: var(--secondary);
+            font-family: 'Outfit', sans-serif;
         }
 
         .chip:hover {
-            background: #dfe6e9;
+            background: #ffffff;
             transform: translateY(-2px);
-            color: #2d3436;
+            color: var(--primary);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
 
         .chip.history {
@@ -200,48 +226,36 @@
         }
 
         .status-area {
-            height: 20px;
-            font-family: 'Fredoka', cursive;
-            /* Friendly status */
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            /* Corner status */
+            font-family: 'JetBrains Mono', monospace;
             font-weight: 600;
-            font-size: 14px;
-            letter-spacing: 1px;
-            transition: color 0.3s;
+            font-size: 12px;
+            opacity: 0.6;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 8px;
-            text-transform: uppercase;
-        }
-
-        .status-area.error {
-            color: var(--warn);
-        }
-
-        .status-area.success {
-            color: var(--success);
-        }
-
-        .status-area.tech {
-            color: var(--tech);
         }
 
         .status-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background: currentColor;
+            background: #00b894;
+            box-shadow: 0 0 10px #00b894;
         }
 
         .fab {
             position: absolute;
-            right: 20px;
+            right: 25px;
             top: 50%;
-            transform: translateY(-50%) scale(0.5);
-            width: 56px;
-            height: 56px;
-            background: var(--success);
-            border-radius: 20px;
+            transform: translateY(-50%) scale(0.8);
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            border-radius: 14px;
             border: none;
             cursor: pointer;
             opacity: 0;
@@ -250,7 +264,6 @@
             color: white;
             display: grid;
             place-items: center;
-            box-shadow: 0 8px 20px rgba(0, 206, 201, 0.4);
         }
 
         .fab.visible {
@@ -260,38 +273,38 @@
         }
 
         .fab svg {
-            width: 28px;
-            height: 28px;
-            stroke-width: 3;
+            width: 24px;
+            height: 24px;
+            stroke-width: 2.5;
         }
 
         .hint-text {
-            font-size: 14px;
+            font-size: 13px;
             color: #b2bec3;
             margin-top: -15px;
-            transition: opacity 0.3s;
-            font-weight: 600;
-            font-family: 'Fredoka', cursive;
+            font-weight: 500;
+            min-height: 20px;
         }
     </style>
-    <!-- IMPORT FREDOKA FONT -->
     <link
-        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
         rel="stylesheet">
 </head>
 
 <body>
     <div class="glass-card">
-        <h1 class="slogan">Find exactly what you need!</h1>
-        <div class="sub-slogan">Fast • Private • Yours Forever</div>
-
         <div class="status-area" id="status">
-            <div class="status-dot" style="opacity: 0"></div>
-            <span id="status-text">Ready for Input</span>
+            <div class="status-dot"></div>
+            <span id="status-text">SYSTEM READY</span>
+        </div>
+
+        <div>
+            <h1 class="slogan">Find exactly what you need.</h1>
+            <div class="sub-slogan">Fast • Private • Sovereign</div>
         </div>
 
         <div class="omnibar-wrapper">
-            <input type="text" class="omnibar" id="q" placeholder="Type intent..." autocomplete="off" autofocus>
+            <input type="text" class="omnibar" id="q" placeholder="Type your intent..." autocomplete="off" autofocus>
             <button class="fab" id="go-btn" onclick="execute()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
                     stroke-linejoin="round">
@@ -301,126 +314,76 @@
             </button>
         </div>
 
-        <div class="hint-text" id="hint">Try: "how to rust", "solve x^2=4", "buy shoes"</div>
-
+        <div class="hint-text" id="hint">Try: "solve x^2=4" · "book flight" · "how to rust"</div>
         <div class="chips" id="suggestions"></div>
     </div>
 
     <script>
         const input = document.getElementById('q');
         const statusText = document.getElementById('status-text');
-        const statusArea = document.getElementById('status');
-        const hint = document.getElementById('hint');
         const fab = document.getElementById('go-btn');
         const chipsContainer = document.getElementById('suggestions');
-
         let history = JSON.parse(localStorage.getItem('yolofi_history') || '[]');
         let currentIntent = null;
 
-        // Matches
         const SHORTCUTS = { 'google': 'google.com', 'yt': 'youtube.com', 'gh': 'github.com', 'x': 'x.com' };
 
-        // NLP
         const NLP_Rules = {
-            COMMERCE: {
-                triggers: ['buy', 'shop', 'price', 'cost', 'cheap', 'best', 'amazon', 'store'],
-                site: "https://www.amazon.com/s?k=",
-                label: "COMMERCE", style: "valid", color: "#00cec9"
-            },
-            VIDEO: {
-                triggers: ['watch', 'video', 'movie', 'clip', 'trailer', 'stream', 'youtube'],
-                site: "https://www.youtube.com/results?search_query=",
-                label: "VIDEO", style: "valid", color: "#00cec9"
-            },
-            COMPUTE: {
-                triggers: ['solve', 'calculate', 'math', 'graph', 'convert', 'integrate', 'derive', '+', '-', '*', '/', '^'],
-                site: "https://www.wolframalpha.com/input?i=",
-                label: "COMPUTE", style: "tech", color: "#a29bfe"
-            },
-            DEV_ANSWER: {
-                triggers: ['error', 'bug', 'exception', 'stack', 'debug', 'code', 'function', 'api', 'compile', 'rust', 'js', 'css', 'react', 'html'],
-                site: "https://stackoverflow.com/search?q=",
-                label: "DEV ANSWER", style: "tech", color: "#a29bfe"
-            },
-            GUIDE: {
-                triggers: ['how to', 'recipe', 'cook', 'fix', 'make', 'install', 'build'],
-                site: "https://www.wikihow.com/wikiHowTo?search=",
-                label: "GUIDE", style: "fact", color: "#ffeaa7"
-            },
-            FACT: {
-                triggers: ['what', 'who', 'when', 'why', 'meaning', 'definition', 'define', 'history', 'population'],
-                site: "https://en.wikipedia.org/wiki/",
-                label: "FACT", style: "fact", color: "#ffeaa7"
-            },
-            // Fallbacks (Pastel Colors)
-            MAP: { triggers: ['map', 'where', 'location', 'directions'], site: "https://www.openstreetmap.org/search?query=", label: "MAP", style: "valid", color: "#00cec9" },
-            AUDIO: { triggers: ['listen', 'music', 'song', 'spotify'], site: "https://open.spotify.com/search/", label: "AUDIO", style: "valid", color: "#00cec9" }
+            COMMERCE: { triggers: ['buy', 'shop', 'price', 'cost', 'cheap', 'amazon'], site: "https://www.amazon.com/s?k=", label: "COMMERCE", style: "valid" },
+            VIDEO: { triggers: ['watch', 'video', 'movie', 'stream', 'youtube'], site: "https://www.youtube.com/results?search_query=", label: "VIDEO", style: "valid" },
+            COMPUTE: { triggers: ['solve', 'calculate', 'math', 'graph', '+', '-', '*', '/', '^'], site: "https://www.wolframalpha.com/input?i=", label: "COMPUTE", style: "tech" },
+            DEV: { triggers: ['error', 'bug', 'debug', 'code', 'function', 'rust', 'js', 'api'], site: "https://stackoverflow.com/search?q=", label: "DEV", style: "tech" },
+            Fact: { triggers: ['what', 'who', 'when', 'meaning', 'define'], site: "https://en.wikipedia.org/wiki/", label: "FACT", style: "fact" }
         };
 
-        renderChips();
-        input.focus();
+        renderChips(); input.focus();
 
         input.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') { if (currentIntent) execute(); }
-            else { analyze(input.value); }
+            if (e.key === 'Enter') { if (currentIntent) execute(); } else analyze(input.value);
         });
 
         function analyze(raw) {
             const q = raw.trim().toLowerCase();
             currentIntent = null;
             fab.classList.remove('visible');
-            input.classList.remove('valid', 'invalid', 'tech', 'fact');
-            statusArea.classList.remove('success', 'error', 'tech');
+            input.classList.remove('valid', 'tech', 'fact', 'invalid');
+            statusText.innerText = "SYSTEM READY";
 
-            if (!q) {
-                statusText.innerText = "Ready for Input";
-                hint.innerText = "Type naturally...";
-                return;
-            }
+            if (!q) return;
 
             if (SHORTCUTS[q]) {
-                lockIntent(`FAST NAV: ${SHORTCUTS[q]}`, `https://${SHORTCUTS[q]}`, 'valid', '#81ecec');
+                lockIntent('NAVIGATE', `https://${SHORTCUTS[q]}`, 'valid');
                 return;
             }
 
-            let bestScore = 0; let bestMatch = null;
+            let bestScore = 0, bestMatch = null;
             for (const [key, rule] of Object.entries(NLP_Rules)) {
                 let score = 0;
-                for (const t of rule.triggers) { if (q.includes(t)) score += 1; }
-                if (key === 'DEV_ANSWER' && score > 0 && q.includes('how to')) score += 2;
-                if (key === 'COMPUTE' && (q.includes('+') || q.includes('=') || q.includes('^'))) score += 5;
+                rule.triggers.forEach(t => { if (q.includes(t)) score++; });
                 if (score > bestScore) { bestScore = score; bestMatch = rule; }
             }
 
             if (bestScore > 0) {
                 let dest = bestMatch.site + encodeURIComponent(q);
-                if (bestMatch.label === 'FACT') {
-                    if (!q.includes(' ')) dest = bestMatch.site + q;
-                    else dest = "https://en.wikipedia.org/w/index.php?search=" + encodeURIComponent(q);
-                }
-                if (bestMatch.label === 'DEV ANSWER') dest = bestMatch.site + encodeURIComponent(q.replace('how to', ''));
+                // Smart Routing logic (same as before)
+                if (bestMatch.label === 'FACT' && !q.includes(' ')) dest = bestMatch.site + q;
+                if (bestMatch.label === 'DEV') dest = bestMatch.site + encodeURIComponent(q.replace('how to', ''));
 
-                lockIntent(bestMatch.label, dest, bestMatch.style, bestMatch.color);
+                lockIntent(bestMatch.label, dest, bestMatch.style);
             } else {
-                rejectIntent();
+                statusText.innerText = "AMBIGUOUS QUERY";
             }
         }
 
-        function lockIntent(label, url, style, color) {
+        function lockIntent(label, url, style) {
             currentIntent = url;
-            statusText.innerText = `>> ${label}`;
-            statusArea.classList.add(style === 'tech' ? 'tech' : 'success');
+            statusText.innerText = `>> INTENT: ${label}`;
             input.classList.add(style);
             fab.classList.add('visible');
-            fab.style.background = color;
-            hint.innerText = "Hit Enter to solve.";
-        }
-
-        function rejectIntent() {
-            statusText.innerText = "AMBIGUOUS";
-            statusArea.classList.add('error');
-            input.classList.add('invalid');
-            hint.innerText = "Clarify: 'how to...', 'buy...', 'solve...'";
+            // Fab matches input color
+            if (style === 'tech') fab.style.background = '#6c5ce7';
+            else if (style === 'fact') fab.style.background = '#e17055';
+            else fab.style.background = '#00b894';
         }
 
         function execute() {
@@ -442,12 +405,10 @@
                 chip.onclick = () => { input.value = h; analyze(h); input.focus(); };
                 chipsContainer.appendChild(chip);
             });
-            ['how to center div', 'solve x^2=4', 'who is turing'].forEach(s => {
-                const chip = document.createElement('div');
-                chip.className = 'chip';
-                chip.innerText = s;
-                chip.onclick = () => { input.value = s; analyze(s); input.focus(); };
-                chipsContainer.appendChild(chip);
+            ['solve x^2=4', 'how to rust', 'price btc'].forEach(s => {
+                const c = document.createElement('div'); c.className = 'chip'; c.innerText = s;
+                c.onclick = () => { input.value = s; analyze(s); input.focus(); };
+                chipsContainer.appendChild(c);
             });
         }
     </script>
