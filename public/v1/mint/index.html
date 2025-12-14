@@ -711,10 +711,10 @@
             </div>
 
             <div class="main-stage">
-                <button id="mint-btn" onpointerdown="mint(event)">
-                    QUERY
-                    <span class="sub-text">RESOLVE SIGNAL</span>
-                    <div id="flux-node"></div>
+                <button id="mint-btn" onpointerdown="act(event)">
+                    ACT
+                    <span class="sub-text">INITIATE SIGNAL</span>
+                    <!-- Flux Node Removed -->
                 </button>
                 <div class="desktop-hint">
                     BEST EXPERIENCED ON PC
@@ -726,7 +726,7 @@
 
                 <!-- Skill Check UI -->
                 <div id="skill-container" style="display:none; position:absolute; z-index: 70;">
-                    <div class="skill-message">TAP IN THE ZONE TO REBOOT</div>
+                    <div class="skill-message">ALIGN SIGNAL TO REBOOT</div>
                     <div class="skill-overlay" id="skill-bar">
                         <div class="skill-zone" id="skill-target"></div>
                         <div class="skill-cursor" id="skill-cursor"></div>
@@ -794,13 +794,13 @@
         // --- GAME STATE ---
         let balance = 0.00;
         let mps = 0.00; // Money Per Second
-        let clickPower = 1.00;
-        let totalClicks = 0;
+        let actPower = 1.00;
+        let totalActs = 0;
         let isPremium = false;
 
         // Combo System
         let combo = 0;
-        let lastClickTime = 0;
+        let lastActTime = 0;
         let maxCombo = 50;
 
         // Energy System
@@ -882,7 +882,7 @@
             }
 
             // Random Crate Logic
-            if (Math.random() < 0.005 && totalClicks > 20 && elCrate.style.display !== 'grid') {
+            if (Math.random() < 0.005 && totalActs > 20 && elCrate.style.display !== 'grid') {
                 if (isPremium) {
                     const val = (mps * 60) + (Math.random() * 500);
                     balance += val;
@@ -897,8 +897,8 @@
         // Auto-Clicker Loop for VIP
         setInterval(() => {
             if (isPremium) {
-                balance += clickPower;
-                totalClicks++;
+                balance += actPower;
+                totalActs++;
             }
         }, 200);
 
@@ -906,7 +906,7 @@
         // --- INTERACTION ---
 
         // Skill State
-        let isRecharging = false;
+        let isAiming = false;
         let skillReqThisFrame = false;
         let skillPos = 0;
         let skillDir = 1;
@@ -914,164 +914,130 @@
         let skillTarget = 50;
         let skillWidth = 15; // as %
 
-        function mint(e) {
+        function act(e) {
             // Prevent Browser Zoom/Scroll on rapid taps
             if (e.preventDefault) e.preventDefault();
 
-            const now = Date.now();
-
-            // SKILL REBOOT MODE
-            if (isRecharging) {
-                resolveSkillCheck();
+            // STATE 1: AIMING (SHOOT)
+            if (isAiming) {
+                resolveQuery();
                 return;
             }
 
-            // PRECISION CHECK (The "Playable Skill")
-            // Check if user hit the Flux Node (or close enough)
-            let isPrecisionHit = false;
-            if (e.target.id === 'flux-node') {
-                isPrecisionHit = true;
+            // STATE 0: IDLE (ACT)
+            // Start the skill check
+            initiateQuery();
+        }
+
+        function initiateQuery() {
+            // Check Energy
+            if (!isPremium && energy < 5) {
+                showToast("⚠️ OVERHEATED - WAIT FOR COOLDOWN");
+                haptic(50);
+                return;
             }
 
-            // Energy Logic
-            if (!isPremium) {
-                // If Precision Hit -> 0 Energy Cost! (Skill Reward)
-                // If Normal Hit -> 5 Energy Cost
-                if (!isPrecisionHit) {
-                    if (energy < 5) {
-                        haptic(50);
-                        startSkillCheck();
-                        return;
-                    }
-                    energy -= 5;
+            isAiming = true;
+            btnMint.innerHTML = `SHOOT<span class="sub-text">LOCK SIGNAL</span>`;
+            btnMint.style.borderColor = "#fff";
+            btnMint.style.color = "#fff";
+
+            elSkillContainer.style.display = 'block';
+
+            // Randomize Target
+            skillTarget = 20 + Math.random() * 60; // 20% to 80% range
+            skillWidth = 12 + Math.random() * 8; // Difficulty
+            skillSpeed = 1.5 + Math.random() * 2.5; // Speed
+
+            elSkillTarget.style.left = (skillTarget - skillWidth / 2) + '%';
+            elSkillTarget.style.width = skillWidth + '%';
+
+            showToast("SIGNAL DETECTED - LOCK IT IN!");
+
+            // Start Loop
+            requestAnimationFrame(loopSkill);
+        }
+
+        function resolveQuery() {
+            isAiming = false;
+
+            // HIT DETECTION
+            let min = skillTarget - skillWidth / 2;
+            let max = skillTarget + skillWidth / 2;
+
+            const isHit = skillPos >= min && skillPos <= max;
+
+            if (isHit) {
+                // SUCCESS
+                const now = Date.now();
+
+                // Combo Logic
+                if (now - lastActTime < 2000) { // More lenient for skill
+                    combo++;
+                    if (combo > maxCombo) combo = maxCombo;
+                } else {
+                    combo = 0;
                 }
-            }
+                lastActTime = now;
 
-            // COMBO LOGIC
-            if (now - lastClickTime < 400) {
-                combo++;
-                if (combo > maxCombo) combo = maxCombo;
+                // Precision Bonus (Dead Center)
+                const center = skillTarget;
+                const dist = Math.abs(skillPos - center);
+                const isCrit = dist < (skillWidth * 0.2); // Top 20% accuracy
+
+                // Calculate Rewards
+                let mult = 1 + (Math.floor(combo / 5) * 0.5);
+                if (isCrit) mult *= 2;
+
+                let power = (isPremium ? actPower * 10 : actPower) * mult * 10; // Higher base reward for skill
+                if (isPremium) power *= 1.5;
+
+                balance += power;
+                totalActs++;
+
+                if (!isPremium) energy -= 5;
+
+                // Visuals
+                spawnParticle(window.innerWidth / 2, window.innerHeight / 2, isCrit ? "PERFECT LOCK!" : "SIGNAL LOCKED", true);
+                spawnParticle(window.innerWidth / 2, window.innerHeight / 2 + 30, `+$${format(power)}`);
+                haptic(isCrit ? 50 : 20);
+
+                // Animation
+                btnMint.style.transform = `scale(1.1)`;
+                setTimeout(() => btnMint.style.transform = 'none', 100);
+
             } else {
-                combo = 0;
-            }
-            lastClickTime = now;
-
-            // MULTIPLIERS
-            let mult = 1 + (Math.floor(combo / 5) * 0.5);
-            // Precision Hit grants instant 3x multiplier STACKING with Combo
-            if (isPrecisionHit) mult *= 3;
-
-            let isCrit = Math.random() < 0.05;
-            if (isCrit) mult *= 5;
-
-            let power = (isPremium ? clickPower * 10 : clickPower) * mult;
-            balance += power;
-            totalClicks++;
-
-            // Visuals
-            let label = `+$${format(power)}`;
-            if (isPrecisionHit) label = `STRONG QUERY! +$${format(power)}`;
-            if (isCrit) label = `CRIT! +$${format(power)}`;
-
-            spawnParticle(e.clientX, e.clientY, label, isCrit || isPrecisionHit);
-
-            // If Precision, move the node
-            if (isPrecisionHit) {
-                moveFluxNode();
-                spawnParticle(e.clientX, e.clientY, "⚡ OPTIMIZED", true);
-                haptic(30);
-            } else {
-                haptic(10);
+                // FAIL
+                showToast("❌ SIGNAL LOST");
+                haptic(100);
+                combo = 0; // Reset combo on miss? Maybe too harsh. Let's keep it partial.
+                if (combo > 0) combo = Math.floor(combo / 2);
             }
 
-            // Debris on every hit
-            spawnDebris(e.clientX, e.clientY, isCrit ? 15 : 6);
-
-            // Update UI
-            // ... (Intensity logic same as before)
-            let intensity = Math.min(combo, 20);
-            if (intensity > 0) {
-                document.body.style.transform = `translate(${Math.random() * intensity - intensity / 2}px, ${Math.random() * intensity - intensity / 2}px)`;
-                setTimeout(() => document.body.style.transform = 'none', 50);
-            }
-
-            let scale = (isCrit || isPrecisionHit) ? 1.1 : 0.95;
-            btnMint.style.transform = `scale(${scale}) rotate(${Math.random() * 8 - 4}deg)`;
-            setTimeout(() => btnMint.style.transform = 'none', 50);
+            // RESET STATE
+            elSkillContainer.style.display = 'none';
+            btnMint.innerHTML = `ACT<span class="sub-text">INITIATE SIGNAL</span>`;
+            btnMint.style.borderColor = isPremium ? 'var(--gold)' : 'var(--primary)';
+            btnMint.style.color = isPremium ? 'var(--gold)' : 'var(--primary)';
 
             updateUI();
         }
 
-        // --- FLUX NODE SYSTEM ---
-        const elFlux = document.getElementById('flux-node');
-        function moveFluxNode() {
-            // Random pos within 20% to 80% of button container
-            // Button is 240px or 300px.
-            // Let's use % to be safe.
-            const x = 15 + Math.random() * 70;
-            const y = 15 + Math.random() * 70;
-            elFlux.style.left = x + '%';
-            elFlux.style.top = y + '%';
-        }
+        // --- FLUX NODE REMOVED ---
 
         // --- SKILL REBOOT SYSTEM ---
         const elSkillContainer = document.getElementById('skill-container');
         const elSkillCursor = document.getElementById('skill-cursor');
         const elSkillTarget = document.getElementById('skill-target');
 
-        function startSkillCheck() {
-            isRecharging = true;
-            btnMint.style.opacity = 0; // Hide button, show skill
-            elSkillContainer.style.display = 'block';
-
-            // Randomize Target
-            skillTarget = 20 + Math.random() * 60; // 20% to 80% range
-            skillWidth = 10 + Math.random() * 10; // Harder or easier
-            skillSpeed = 1 + Math.random() * 2; // Random speed
-
-            elSkillTarget.style.left = (skillTarget - skillWidth / 2) + '%';
-            elSkillTarget.style.width = skillWidth + '%';
-
-            showToast("⚠️ SYSTEM FAILURE: MANUAL REBOOT REQUIRED");
-
-            requestAnimationFrame(loopSkill);
-        }
-
         function loopSkill() {
-            if (!isRecharging) return;
+            if (!isAiming) return;
 
             skillPos += skillSpeed * skillDir;
             if (skillPos > 100 || skillPos < 0) skillDir *= -1;
 
             elSkillCursor.style.left = skillPos + '%';
             requestAnimationFrame(loopSkill);
-        }
-
-        function resolveSkillCheck() {
-            isRecharging = false;
-
-            // HIT DETECTION
-            // Target range is [skillTarget - w/2, skillTarget + w/2]
-            let min = skillTarget - skillWidth / 2;
-            let max = skillTarget + skillWidth / 2;
-
-            if (skillPos >= min && skillPos <= max) {
-                // SUCCESS
-                energy = 100;
-                spawnParticle(window.innerWidth / 2, window.innerHeight / 2, "SYSTEM REBOOTED", true);
-                showToast("✅ ENERGY RESTORED");
-                haptic(100);
-            } else {
-                // FAIL
-                openCoffee('forced'); // Punishment: Show ads/upsell
-                showToast("❌ REBOOT FAILED");
-                haptic(200);
-            }
-
-            // Reset UI
-            elSkillContainer.style.display = 'none';
-            btnMint.style.opacity = 1;
-            updateUI();
         }
 
         function spawnParticle(x, y, text, isCrit = false) {
