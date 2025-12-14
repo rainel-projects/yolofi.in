@@ -6,23 +6,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- INFINITE SCALE ARCHITECTURE: Client-Side Logic Only. 100% CDN Cacheable. -->
     <meta http-equiv="Cache-Control" content="public, max-age=31536000, immutable">
+
+    <!-- SEO & CRAWLERS -->
+    <meta name="robots" content="index, follow">
+    <meta name="description"
+        content="YoloFi Quantum Query: A deterministic, sovereign, and privacy-focused intent engine. Navigate the web with purpose.">
+    <meta name="application-name" content="YoloFi">
+
+    <!-- CUSTOM YOLOFI ICON (SVG Data URI) -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%230984e3'/%3E%3Cstop offset='100%25' style='stop-color:%2300b894'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='50' fill='url(%23g)'/%3E%3Cpath d='M30 30 L50 60 L70 30 M50 60 L50 85' stroke='white' stroke-width='8' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
+
     <title>YoloFi Quantum Query</title>
     <style>
         :root {
-            --glass: rgba(255, 255, 255, 0.95);
-            --glass-border: rgba(255, 255, 255, 0.5);
+            --glass: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(255, 255, 255, 0.6);
             --primary: #2d3436;
-            --accent: #0984e3;
-            --warn: #d63031;
-            --success: #00b894;
-            --tech: #6c5ce7;
-            --wiki: #fdcb6e;
+            --accent: #6c5ce7;
+            --warn: #ff7675;
+            --success: #00cec9;
+            --tech: #a29bfe;
+            --wiki: #ffeaa7;
         }
 
         body {
-            background: linear-gradient(-45deg, #a8c0ff, #3f2b96);
-            background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
+            /* PASTEL DISCO BACKGROUND */
+            background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fbc2eb, #a18cd1, #8fd3f4, #84fab0);
+            background-size: 600% 600%;
+            animation: disco 8s ease infinite;
             color: var(--primary);
             font-family: 'Outfit', sans-serif;
             display: flex;
@@ -33,7 +45,7 @@
             overflow: hidden;
         }
 
-        @keyframes gradient {
+        @keyframes disco {
             0% {
                 background-position: 0% 50%;
             }
@@ -49,40 +61,47 @@
 
         .glass-card {
             background: var(--glass);
-            border-radius: 24px;
+            border-radius: 30px;
             border: 1px solid var(--glass-border);
             padding: 60px 40px;
             width: 90%;
             max-width: 760px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
             text-align: center;
             display: flex;
             flex-direction: column;
             gap: 25px;
             position: relative;
+            backdrop-filter: blur(20px);
         }
 
         .slogan {
-            font-family: 'Fredoka', sans-serif;
+            font-family: 'Fredoka', cursive;
+            /* BUBBLE FONT */
             font-weight: 700;
-            font-size: 48px;
-            background: linear-gradient(to right, #2d3436, #0984e3);
+            font-size: 52px;
+            /* Gradient for Text matching background */
+            background: linear-gradient(to right, #6c5ce7, #ff7675);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin: 0;
             margin-bottom: 5px;
-            letter-spacing: -1.5px;
+            letter-spacing: -0.5px;
             line-height: 1.1;
+            /* subtle shadow to pop */
+            filter: drop-shadow(0px 2px 0px rgba(0, 0, 0, 0.1));
         }
 
         .sub-slogan {
             font-size: 13px;
             color: #636e72;
-            font-weight: 600;
+            font-weight: 700;
             letter-spacing: 2px;
             text-transform: uppercase;
             margin-bottom: 30px;
             opacity: 0.8;
+            font-family: 'Fredoka', cursive;
+            /* Matching bubble font */
         }
 
         .omnibar-wrapper {
@@ -97,13 +116,15 @@
             font-size: 24px;
             font-weight: 600;
             border: 3px solid transparent;
-            border-radius: 20px;
+            border-radius: 25px;
+            /* More rounded */
             outline: none;
             background: #ffffff;
             color: var(--primary);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
         }
 
         .omnibar.valid {
@@ -153,7 +174,7 @@
         }
 
         .chip {
-            padding: 10px 18px;
+            padding: 10px 20px;
             background: rgba(0, 0, 0, 0.04);
             border-radius: 50px;
             font-size: 14px;
@@ -162,6 +183,8 @@
             transition: all 0.2s;
             border: 1px solid transparent;
             color: #636e72;
+            font-family: 'Fredoka', cursive;
+            /* Fun font for chips */
         }
 
         .chip:hover {
@@ -178,9 +201,10 @@
 
         .status-area {
             height: 20px;
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
-            font-size: 13px;
+            font-family: 'Fredoka', cursive;
+            /* Friendly status */
+            font-weight: 600;
+            font-size: 14px;
             letter-spacing: 1px;
             transition: color 0.3s;
             display: flex;
@@ -203,8 +227,8 @@
         }
 
         .status-dot {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: currentColor;
         }
@@ -217,7 +241,7 @@
             width: 56px;
             height: 56px;
             background: var(--success);
-            border-radius: 16px;
+            border-radius: 20px;
             border: none;
             cursor: pointer;
             opacity: 0;
@@ -226,7 +250,7 @@
             color: white;
             display: grid;
             place-items: center;
-            box-shadow: 0 8px 20px rgba(0, 184, 148, 0.3);
+            box-shadow: 0 8px 20px rgba(0, 206, 201, 0.4);
         }
 
         .fab.visible {
@@ -246,11 +270,13 @@
             color: #b2bec3;
             margin-top: -15px;
             transition: opacity 0.3s;
-            font-weight: 500;
+            font-weight: 600;
+            font-family: 'Fredoka', cursive;
         }
     </style>
+    <!-- IMPORT FREDOKA FONT -->
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
 </head>
 
@@ -291,45 +317,45 @@
         let history = JSON.parse(localStorage.getItem('yolofi_history') || '[]');
         let currentIntent = null;
 
-        // -- Q&A INTENT ENGINE --
+        // Matches
+        const SHORTCUTS = { 'google': 'google.com', 'yt': 'youtube.com', 'gh': 'github.com', 'x': 'x.com' };
+
+        // NLP
         const NLP_Rules = {
             COMMERCE: {
                 triggers: ['buy', 'shop', 'price', 'cost', 'cheap', 'best', 'amazon', 'store'],
                 site: "https://www.amazon.com/s?k=",
-                label: "COMMERCE", style: "valid", color: "#00b894"
+                label: "COMMERCE", style: "valid", color: "#00cec9"
             },
             VIDEO: {
                 triggers: ['watch', 'video', 'movie', 'clip', 'trailer', 'stream', 'youtube'],
                 site: "https://www.youtube.com/results?search_query=",
-                label: "VIDEO", style: "valid", color: "#00b894"
+                label: "VIDEO", style: "valid", color: "#00cec9"
             },
             COMPUTE: {
                 triggers: ['solve', 'calculate', 'math', 'graph', 'convert', 'integrate', 'derive', '+', '-', '*', '/', '^'],
                 site: "https://www.wolframalpha.com/input?i=",
-                label: "COMPUTE", style: "tech", color: "#6c5ce7"
+                label: "COMPUTE", style: "tech", color: "#a29bfe"
             },
             DEV_ANSWER: {
                 triggers: ['error', 'bug', 'exception', 'stack', 'debug', 'code', 'function', 'api', 'compile', 'rust', 'js', 'css', 'react', 'html'],
                 site: "https://stackoverflow.com/search?q=",
-                label: "DEV ANSWER", style: "tech", color: "#6c5ce7"
+                label: "DEV ANSWER", style: "tech", color: "#a29bfe"
             },
             GUIDE: {
                 triggers: ['how to', 'recipe', 'cook', 'fix', 'make', 'install', 'build'],
                 site: "https://www.wikihow.com/wikiHowTo?search=",
-                label: "GUIDE", style: "fact", color: "#fdcb6e"
+                label: "GUIDE", style: "fact", color: "#ffeaa7"
             },
             FACT: {
                 triggers: ['what', 'who', 'when', 'why', 'meaning', 'definition', 'define', 'history', 'population'],
                 site: "https://en.wikipedia.org/wiki/",
-                label: "FACT", style: "fact", color: "#fdcb6e"
+                label: "FACT", style: "fact", color: "#ffeaa7"
             },
-
-            // Fallbacks
-            MAP: { triggers: ['map', 'where', 'location', 'directions'], site: "https://www.openstreetmap.org/search?query=", label: "MAP", style: "valid", color: "#00b894" },
-            AUDIO: { triggers: ['listen', 'music', 'song', 'spotify'], site: "https://open.spotify.com/search/", label: "AUDIO", style: "valid", color: "#00b894" }
+            // Fallbacks (Pastel Colors)
+            MAP: { triggers: ['map', 'where', 'location', 'directions'], site: "https://www.openstreetmap.org/search?query=", label: "MAP", style: "valid", color: "#00cec9" },
+            AUDIO: { triggers: ['listen', 'music', 'song', 'spotify'], site: "https://open.spotify.com/search/", label: "AUDIO", style: "valid", color: "#00cec9" }
         };
-
-        const SHORTCUTS = { 'google': 'google.com', 'yt': 'youtube.com', 'gh': 'github.com', 'x': 'x.com' };
 
         renderChips();
         input.focus();
@@ -353,7 +379,7 @@
             }
 
             if (SHORTCUTS[q]) {
-                lockIntent(`FAST NAV: ${SHORTCUTS[q]}`, `https://${SHORTCUTS[q]}`, 'valid', '#00cec9');
+                lockIntent(`FAST NAV: ${SHORTCUTS[q]}`, `https://${SHORTCUTS[q]}`, 'valid', '#81ecec');
                 return;
             }
 
