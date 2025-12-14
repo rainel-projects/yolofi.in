@@ -320,8 +320,37 @@
     </div>
 
     <script>
+        // --- YOLOFI SECURITY ENCLAVE ---
+        // RESTRICTED ACCESS: Anti-Tamper & Anti-Inspect Protocol
+        (function () {
+            // 1. Disable Right Click
+            document.addEventListener('contextmenu', event => event.preventDefault());
+
+            // 2. Block DevTools Shortcuts (F12, Ctrl+Shift+I/J/U/C)
+            document.onkeydown = function (e) {
+                if (e.keyCode == 123) return false; // F12
+                if (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) return false;
+                if (e.ctrlKey && (e.keyCode == 'U'.charCodeAt(0))) return false; // Ctrl+U
+            };
+
+            // 3. Debugger Trap (Freezes DevTools if opened)
+            setInterval(function () {
+                const start = new Date();
+                debugger; // TRAP: If DevTools is open, execution pauses here.
+                if (new Date() - start > 100) {
+                    document.body.innerHTML = '<div style="color:red;font-size:30px;text-align:center;margin-top:20%">SECURITY ALERT<br>Inspection Detected & Blocked.</div>';
+                }
+            }, 1000);
+
+            // 4. Console Lock
+            console.log("%c STOP! ", "color: red; font-size: 50px; font-weight: bold;");
+            console.log("%c This is a sovereign browser engine. Access to source code is restricted.", "font-size: 16px;");
+        })();
+
         const input = document.getElementById('q');
         const statusText = document.getElementById('status-text');
+        // ... (rest of the script)
+
         const fab = document.getElementById('go-btn');
         const chipsContainer = document.getElementById('suggestions');
         let history = JSON.parse(localStorage.getItem('yolofi_history') || '[]');
