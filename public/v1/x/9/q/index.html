@@ -69,361 +69,522 @@
                 background-position: 0% 50%;
             }
 
-            50% {
-                background-position: 100% 50%;
+            /* Resizable & Draggable Styles */
+            .glass-card {
+                /* ... previous styles ... */
+                position: absolute;
+                /* Changed from relative/flex layout dependency */
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                min-width: 320px;
+                min-height: 400px;
+                resize: both;
+                /* Native resize support */
+                overflow: auto;
+                /* Required for resize */
+                z-index: 100;
             }
 
-            100% {
-                background-position: 0% 50%;
+            /* Drag Handle (Invisible top area) */
+            .drag-handle {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 40px;
+                cursor: move;
+                z-index: 10;
+            }
+
+            /* Game Canvas */
+            #game-canvas {
+                display: none;
+                background: rgba(0, 0, 0, 0.1);
+                border-radius: 12px;
+                margin: 0 auto;
+            }
+
+            .game-ui {
+                display: none;
+                text-align: center;
+            }
+
+            .game-active .game-ui {
+                display: block;
+            }
+
+            .game-active .omnibar-wrapper,
+            .game-active .chips,
+            .game-active .hint-text {
+                display: none;
+            }
+    </style>
+    <!-- ... -->
+</head>
+
+<body>
+    <div class="glass-card" id="app-window">
+        <div class="drag-handle" id="drag-bar"></div>
+        <!-- ... content ... -->
+
+        <!-- Game Container -->
+        <div class="game-ui" id="game-ui">
+            <h2 style="margin:0 0 10px 0">SNAKE</h2>
+            <canvas id="game-canvas" width="400" height="400"></canvas>
+            <p>Arrows to Move • Space to Pause • Esc to Quit</p>
+        </div>
+    </div>
+
+    <script>
+        // ... Security ...
+
+        // --- WINDOW MANAGEMENT (Drag & Resize) ---
+        const win = document.getElementById('app-window');
+        const handle = document.getElementById('drag-bar');
+
+        let isDragging = false;
+        let startX, startY, initialLeft, initialTop;
+
+        handle.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            // Get current computed position
+            const rect = win.getBoundingClientRect();
+            // We need to switch from transform centering to absolute top/left explicitly if not done
+            // But let's just use offset logic
+            initialLeft = rect.left;
+            initialTop = rect.top;
+            startX = e.clientX;
+            startY = e.clientY;
+
+            // Disable transform centering to allow free drag
+            win.style.transform = 'none';
+            win.style.left = initialLeft + 'px';
+            win.style.top = initialTop + 'px';
+            win.style.bottom = 'auto';
+            win.style.right = 'auto';
+
+            document.body.style.userSelect = 'none'; // Prevent text selection
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            win.style.left = (initialLeft + dx) + 'px';
+            win.style.top = (initialTop + dy) + 'px';
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            document.body.style.userSelect = '';
+        });
+
+        // ... NLP Rules Update ...
+        // Add GAME Intent
+
+        // Inside render or analyze:
+        // if (q === 'play snake') launchSnake();
+
+        // ... Snake Game Logic ...
+        let gameInterval;
+        let snake = [{ x: 10, y: 10 }];
+        let food = { x: 15, y: 15 };
+        let dx = 0, dy = 0;
+        const gridSize = 20;
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function launchSnake() {
+            win.classList.add('game-active');
+            canvas.style.display = 'block';
+            document.querySelector('.slogan').innerText = "Game Mode";
+            document.addEventListener('keydown', gameInput);
+            startGame();
+        }
+
+        function startGame() {
+            dx = 1; dy = 0; snake = [{ x: 10, y: 10 }];
+            gameInterval = setInterval(gameLoop, 100);
+        }
+
+        function gameLoop() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head);
+
+            if (head.x === food.x && head.y === food.y) {
+                food = { x: Math.floor(Math.random() * 20), y: Math.floor(Math.random() * 20) };
+            } else {
+                snake.pop();
+            }
+
+            // Death checks
+            if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20) return resetGame();
+
+            drawGame();
+        }
+
+        function drawGame() {
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.fillRect(0, 0, 400, 400);
+
+            ctx.fillStyle = '#00b894';
+            snake.forEach(part => ctx.fillRect(part.x * 20, part.y * 20, 18, 18));
+
+            ctx.fillStyle = '#e17055';
+            ctx.fillRect(food.x * 20, food.y * 20, 18, 18);
+        }
+
+        function resetGame() {
+            clearInterval(gameInterval);
+            alert("Game Over!");
+            startGame();
+        }
+
+        function gameInput(e) {
+            if (e.key === 'ArrowUp') { dx = 0; dy = -1; }
+            if (e.key === 'ArrowDown') { dx = 0; dy = 1; }
+            if (e.key === 'ArrowLeft') { dx = -1; dy = 0; }
+            if (e.key === 'ArrowRight') { dx = 1; dy = 0; }
+            if (e.key === 'Escape') {
+                win.classList.remove('game-active');
+                clearInterval(gameInterval);
+                document.querySelector('.slogan').innerText = "Find exactly what you need.";
             }
         }
 
-        .glass-card {
-            background: var(--glass);
-            border-radius: 24px;
-            border: 1px solid var(--glass-border);
-            padding: 70px 50px;
-            width: 90%;
-            max-width: 800px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-            position: relative;
-            backdrop-filter: blur(25px);
-            /* Stronger blur */
-            transition: transform 0.4s ease;
-        }
+        // Hook into analyze function
+        // if (q === 'play snake') { launchSnake(); return; }
+
 
         /* Typography: Elevated Professionalism */
         .slogan {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 200;
+            font - family: 'Outfit', sans - serif;
+            font - weight: 200;
             /* THIN */
-            font-size: 64px;
-            letter-spacing: -1px;
-            line-height: 1.1;
+            font - size: 64px;
+            letter - spacing: -1px;
+            line - height: 1.1;
 
             /* Sophisticated Gradient Mask */
-            background: linear-gradient(135deg, #2d3436 0%, #0984e3 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
+            background: linear - gradient(135deg, #2d3436 0 %, #0984e3 100 %);
+            -webkit - background - clip: text;
+            background - clip: text;
             /* Standard Property */
-            -webkit-text-fill-color: transparent;
+            -webkit - text - fill - color: transparent;
             margin: 0;
-            margin-bottom: 8px;
+            margin - bottom: 8px;
         }
 
-        .sub-slogan {
-            font-size: 14px;
+        .sub - slogan {
+            font - size: 14px;
             color: var(--secondary);
-            font-weight: 400;
+            font - weight: 400;
             /* Regular */
-            letter-spacing: 4px;
+            letter - spacing: 4px;
             /* Wider tracking */
-            text-transform: uppercase;
-            margin-bottom: 40px;
+            text - transform: uppercase;
+            margin - bottom: 40px;
             opacity: 0.8;
-            font-family: 'Outfit', sans-serif;
+            font - family: 'Outfit', sans - serif;
         }
 
-        .omnibar-wrapper {
+        .omnibar - wrapper {
             position: relative;
-            width: 100%;
+            width: 100 %;
         }
 
         .omnibar {
-            width: 100%;
+            width: 100 %;
             padding: 28px 32px;
-            padding-right: 80px;
-            font-size: 24px;
-            font-weight: 500;
+            padding - right: 80px;
+            font - size: 24px;
+            font - weight: 500;
             border: 2px solid transparent;
-            border-radius: 20px;
+            border - radius: 20px;
             outline: none;
             background: #ffffff;
             color: var(--primary);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            box - shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
             /* Softer shadow */
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-            box-sizing: border-box;
-            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s cubic - bezier(0.2, 0.8, 0.2, 1);
+            box - sizing: border - box;
+            font - family: 'Outfit', sans - serif;
         }
 
         .omnibar::placeholder {
             color: #b2bec3;
-            font-weight: 400;
+            font - weight: 400;
         }
 
         .omnibar:focus {
             transform: translateY(-2px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-            border-color: rgba(9, 132, 227, 0.2);
+            box - shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            border - color: rgba(9, 132, 227, 0.2);
         }
 
         /* Semantic Borders */
         .omnibar.valid {
-            border-color: var(--success);
+            border - color: var(--success);
             background: #f0fdf4;
         }
 
         .omnibar.tech {
-            border-color: var(--tech);
+            border - color: var(--tech);
             background: #fbfbfe;
         }
 
         .omnibar.fact {
-            border-color: var(--fact);
+            border - color: var(--fact);
             background: #fffbf0;
         }
 
         .omnibar.invalid {
-            border-color: var(--warn);
+            border - color: var(--warn);
             animation: shake 0.4s;
         }
 
         @keyframes shake {
 
-            0%,
-            100% {
-                transform: translateX(0);
-            }
+            0 %,
+                100 % {
+                    transform: translateX(0);
+                }
 
-            25% {
+            25 % {
                 transform: translateX(-5px);
             }
 
-            75% {
+            75 % {
                 transform: translateX(5px);
             }
         }
 
         /* Provider Grid & Cards */
-        .provider-list {
+        .provider - list {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid - template - columns: 1fr 1fr;
             /* 2 Columns on Desktop */
             gap: 12px;
-            width: 100%;
-            max-height: 400px;
-            overflow-y: auto;
+            width: 100 %;
+            max - height: 400px;
+            overflow - y: auto;
             padding: 10px 4px;
             /* Prevent scrollbar clipping */
-            margin-top: 15px;
+            margin - top: 15px;
         }
 
-        .provider-card {
+        .provider - card {
             background: rgba(255, 255, 255, 0.65);
             border: 1px solid rgba(255, 255, 255, 0.5);
             padding: 12px 16px;
-            border-radius: 16px;
+            border - radius: 16px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-            text-align: left;
+            transition: all 0.2s cubic - bezier(0.2, 0.8, 0.2, 1);
+            text - align: left;
             display: flex;
-            align-items: center;
+            align - items: center;
             gap: 12px;
             position: relative;
             overflow: hidden;
         }
 
-        .provider-card:hover {
+        .provider - card:hover {
             background: #ffffff;
             transform: translateY(-2px) scale(1.01);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-            border-color: var(--accent);
-            z-index: 2;
+            box - shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            border - color: var(--accent);
+            z - index: 2;
         }
 
-        .p-icon {
+        .p - icon {
             width: 36px;
             height: 36px;
             background: var(--primary);
             color: white;
-            border-radius: 10px;
+            border - radius: 10px;
             display: grid;
-            place-items: center;
-            font-weight: 700;
-            font-size: 16px;
-            flex-shrink: 0;
+            place - items: center;
+            font - weight: 700;
+            font - size: 16px;
+            flex - shrink: 0;
         }
 
-        .p-info {
+        .p - info {
             flex: 1;
-            min-width: 0;
+            min - width: 0;
         }
 
-        .p-info h3 {
+        .p - info h3 {
             margin: 0;
-            font-size: 15px;
-            font-weight: 600;
+            font - size: 15px;
+            font - weight: 600;
             color: var(--primary);
-            white-space: nowrap;
+            white - space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;
+            text - overflow: ellipsis;
         }
 
-        .p-info p {
+        .p - info p {
             margin: 2px 0 0 0;
-            font-size: 11px;
+            font - size: 11px;
             color: var(--secondary);
             opacity: 0.9;
-            line-height: 1.3;
+            line - height: 1.3;
         }
 
-        .p-arrow {
+        .p - arrow {
             opacity: 0;
             transform: translateX(-10px);
             transition: all 0.2s;
             color: var(--accent);
-            font-weight: bold;
+            font - weight: bold;
         }
 
-        .provider-card:hover .p-arrow {
+        .provider - card: hover.p - arrow {
             opacity: 1;
             transform: translateX(0);
         }
 
-        .hint-text {
-            font-size: 13px;
+        .hint - text {
+            font - size: 13px;
             color: #b2bec3;
-            margin-top: -5px;
-            font-weight: 500;
-            min-height: 20px;
+            margin - top: -5px;
+            font - weight: 500;
+            min - height: 20px;
             transition: opacity 0.3s;
         }
 
         .chips {
             display: flex;
-            flex-wrap: wrap;
+            flex - wrap: wrap;
             gap: 12px;
-            justify-content: center;
-            margin-top: 10px;
+            justify - content: center;
+            margin - top: 10px;
         }
 
         .chip {
             padding: 10px 20px;
             background: rgba(255, 255, 255, 0.5);
             border: 1px solid rgba(0, 0, 0, 0.05);
-            border-radius: 12px;
+            border - radius: 12px;
             /* Modern Pill */
-            font-size: 13px;
-            font-weight: 600;
+            font - size: 13px;
+            font - weight: 600;
             cursor: pointer;
             transition: all 0.2s;
             color: var(--secondary);
-            font-family: 'Outfit', sans-serif;
+            font - family: 'Outfit', sans - serif;
         }
 
         .chip:hover {
             background: #ffffff;
             transform: translateY(-2px);
             color: var(--primary);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            box - shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
 
         .chip.history {
-            border-color: #fab1a0;
+            border - color: #fab1a0;
             color: #e17055;
             background: #fff5f0;
         }
 
-        .status-area {
+        .status - area {
             position: absolute;
             top: 30px;
             right: 40px;
             /* Corner status */
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 600;
-            font-size: 12px;
+            font - family: 'JetBrains Mono', monospace;
+            font - weight: 600;
+            font - size: 12px;
             opacity: 0.6;
             display: flex;
-            align-items: center;
+            align - items: center;
             gap: 8px;
         }
 
-        .status-dot {
+        .status - dot {
             width: 8px;
             height: 8px;
-            border-radius: 50%;
+            border - radius: 50 %;
             background: #00b894;
-            box-shadow: 0 0 10px #00b894;
+            box - shadow: 0 0 10px #00b894;
         }
 
         .fab {
             position: absolute;
             right: 25px;
-            top: 50%;
-            transform: translateY(-50%) scale(0.8);
+            top: 50 %;
+            transform: translateY(-50 %) scale(0.8);
             width: 50px;
             height: 50px;
             background: var(--primary);
-            border-radius: 14px;
+            border - radius: 14px;
             border: none;
             cursor: pointer;
             opacity: 0;
-            pointer-events: none;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer - events: none;
+            transition: all 0.4s cubic - bezier(0.175, 0.885, 0.32, 1.275);
             color: white;
             display: grid;
-            place-items: center;
+            place - items: center;
         }
 
         .fab.visible {
             opacity: 1;
-            transform: translateY(-50%) scale(1);
-            pointer-events: auto;
+            transform: translateY(-50 %) scale(1);
+            pointer - events: auto;
         }
 
         .fab svg {
             width: 24px;
             height: 24px;
-            stroke-width: 2.5;
-            font-weight: 500;
-            min-height: 20px;
+            stroke - width: 2.5;
+            font - weight: 500;
+            min - height: 20px;
         }
 
         /* --- MOBILE LAYOUT (Responsive App Mode) --- */
-        @media (max-width: 768px) {
+        @media(max - width: 768px) {
             body {
-                align-items: flex-start;
+                align - items: flex - start;
                 /* Top align on mobile */
             }
 
-            .glass-card {
-                width: 100%;
+            .glass - card {
+                width: 100 %;
                 height: 100vh;
                 /* Full screen */
-                max-width: none;
-                border-radius: 0;
+                max - width: none;
+                border - radius: 0;
                 border: none;
-                box-shadow: none;
+                box - shadow: none;
                 /* Flat app feel */
                 padding: 100px 25px 40px 25px;
                 /* More top padding */
-                justify-content: flex-start;
+                justify - content: flex - start;
                 /* Align content to top */
                 background: rgba(255, 255, 255, 0.6);
                 /* More translucent on mobile */
             }
 
             .slogan {
-                font-size: 42px;
+                font - size: 42px;
                 /* Readable on small screens */
-                margin-bottom: 5px;
+                margin - bottom: 5px;
             }
 
-            .sub-slogan {
-                font-size: 11px;
-                letter-spacing: 2px;
-                margin-bottom: 30px;
+            .sub - slogan {
+                font - size: 11px;
+                letter - spacing: 2px;
+                margin - bottom: 30px;
             }
 
             .omnibar {
                 padding: 22px 24px;
-                padding-right: 60px;
-                font-size: 18px;
+                padding - right: 60px;
+                font - size: 18px;
             }
 
             .fab {
@@ -432,10 +593,10 @@
                 right: 15px;
             }
 
-            .status-area {
+            .status - area {
                 top: 20px;
                 right: 20px;
-                font-size: 10px;
+                font - size: 10px;
             }
 
             .chips {
@@ -444,60 +605,60 @@
 
             .chip {
                 padding: 8px 16px;
-                font-size: 12px;
+                font - size: 12px;
             }
 
             /* Provider Card Design */
-            .provider-list {
+            .provider - list {
                 display: flex;
-                flex-direction: column;
+                flex - direction: column;
                 gap: 12px;
-                width: 100%;
-                max-height: 400px;
-                overflow-y: auto;
+                width: 100 %;
+                max - height: 400px;
+                overflow - y: auto;
                 padding: 10px;
-                margin-top: 10px;
+                margin - top: 10px;
             }
 
-            .provider-card {
+            .provider - card {
                 background: rgba(255, 255, 255, 0.6);
                 border: 1px solid rgba(255, 255, 255, 0.4);
                 padding: 15px 20px;
-                border-radius: 16px;
+                border - radius: 16px;
                 cursor: pointer;
                 transition: all 0.2s;
-                text-align: left;
+                text - align: left;
                 display: flex;
-                justify-content: space-between;
-                align-items: center;
+                justify - content: space - between;
+                align - items: center;
             }
 
-            .provider-card:hover {
+            .provider - card:hover {
                 background: #ffffff;
                 transform: scale(1.02);
-                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+                box - shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
             }
 
-            .p-info h3 {
+            .p - info h3 {
                 margin: 0;
-                font-size: 16px;
-                font-weight: 600;
+                font - size: 16px;
+                font - weight: 600;
                 color: var(--primary);
             }
 
-            .p-info p {
+            .p - info p {
                 margin: 4px 0 0 0;
-                font-size: 12px;
+                font - size: 12px;
                 color: var(--secondary);
                 opacity: 0.9;
             }
 
-            .p-arrow {
+            .p - arrow {
                 opacity: 0.3;
-                font-weight: bold;
+                font - weight: bold;
             }
         }
-    </style>
+    </style >
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
         rel="stylesheet">
@@ -690,6 +851,12 @@
                 };
                 if (isTech) { currentQuery = q.replace('how to', '').trim(); } else { currentQuery = q; }
                 lockIntent(match, q);
+                return;
+            }
+            
+            // GAME MODE INTERCEPT
+            if (q === 'play snake' || q === 'game') {
+                launchSnake();
                 return;
             }
 
