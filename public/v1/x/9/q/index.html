@@ -4,19 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YoloFi Query Intent</title>
+    <title>YoloFi Quantum Query</title>
     <style>
         :root {
-            --primary: #2c3e50;
-            --accent: #3498db;
-            --success: #27ae60;
-            --bg: #ffffff;
+            --glass: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --primary: #2d3436;
+            --accent: #0984e3;
         }
 
         body {
-            background-color: var(--bg);
+            /* Animated Gradient Mesh */
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
             color: var(--primary);
-            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            font-family: 'Outfit', sans-serif;
+            /* Modern, friendly font */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -25,15 +29,37 @@
             overflow: hidden;
         }
 
-        .container {
-            width: 100%;
-            max-width: 680px;
-            padding: 0 20px;
-            position: relative;
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
-        /* The Omnibar */
-        .input-wrapper {
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            padding: 40px;
+            width: 100%;
+            max-width: 720px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .omnibar-wrapper {
             position: relative;
             width: 100%;
         }
@@ -41,116 +67,111 @@
         .omnibar {
             width: 100%;
             padding: 24px 30px;
-            padding-right: 80px;
-            /* Space for FAB */
-            font-size: 22px;
-            font-weight: 500;
-            border: none;
+            padding-right: 70px;
+            font-size: 24px;
+            font-weight: 600;
+            border: 2px solid transparent;
             border-radius: 16px;
             outline: none;
-            background: #f8f9fa;
+            background: #ffffff;
             color: var(--primary);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
             box-sizing: border-box;
         }
 
         .omnibar:focus {
-            background: #ffffff;
-            box-shadow: 0 8px 30px rgba(52, 152, 219, 0.15);
-            transform: translateY(-2px);
+            border-color: var(--accent);
+            box-shadow: 0 8px 30px rgba(9, 132, 227, 0.2);
+            transform: scale(1.01);
         }
 
-        .omnibar::placeholder {
-            color: #bdc3c7;
-            font-weight: 400;
+        /* Chips / Suggestions */
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
         }
 
-        /* Nav Indicator */
-        .nav-indicator {
-            margin-top: 20px;
-            height: 24px;
+        .chip {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
             font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .chip:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chip.history {
+            border-color: #fab1a0;
+            color: #e17055;
+        }
+
+        /* Output & Floating Action */
+        .output-area {
+            height: 30px;
             font-family: 'JetBrains Mono', monospace;
             color: var(--accent);
-            text-align: left;
-            padding-left: 30px;
+            font-weight: 600;
             opacity: 0;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
+            transition: opacity 0.3s;
         }
 
-        .nav-indicator.visible {
+        .output-area.visible {
             opacity: 1;
-            transform: translateY(0);
         }
 
-        /* Floating Action Button (FAB) */
         .fab {
             position: absolute;
-            right: 12px;
+            right: 15px;
             top: 50%;
-            transform: translateY(-50%) scale(0.9);
+            transform: translateY(-50%) scale(0.8);
             width: 50px;
             height: 50px;
-            background-color: var(--accent);
+            background: var(--accent);
             border-radius: 12px;
             border: none;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
             opacity: 0;
             pointer-events: none;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            color: white;
+            display: grid;
+            place-items: center;
+            box-shadow: 0 4px 15px rgba(9, 132, 227, 0.4);
         }
 
-        .fab.ready {
+        .fab.visible {
             opacity: 1;
-            pointer-events: auto;
             transform: translateY(-50%) scale(1);
-        }
-
-        .fab:hover {
-            transform: translateY(-50%) scale(1.05);
-            background-color: #2980b9;
+            pointer-events: auto;
         }
 
         .fab svg {
             width: 24px;
             height: 24px;
-            stroke-width: 2.5;
-        }
-
-        /* Enter Hint */
-        .enter-hint {
-            position: absolute;
-            right: 70px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 12px;
-            color: #95a5a6;
-            font-weight: 600;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-
-        .fab.ready~.enter-hint {
-            opacity: 0.6;
+            stroke-width: 3;
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap"
+    <!-- Modern Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=JetBrains+Mono&display=swap"
         rel="stylesheet">
 </head>
 
 <body>
-    <div class="container">
-        <div class="input-wrapper">
-            <input type="text" class="omnibar" id="q" placeholder="Navigate to..." autocomplete="off" autofocus>
-
+    <div class="glass-card">
+        <div class="omnibar-wrapper">
+            <input type="text" class="omnibar" id="q" placeholder="Type intent..." autocomplete="off" autofocus>
             <button class="fab" id="go-btn" onclick="execute()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
                     stroke-linejoin="round">
@@ -158,17 +179,30 @@
                     <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
             </button>
-            <div class="enter-hint">Hit Enter ↵</div>
         </div>
 
-        <div class="nav-indicator" id="output"></div>
+        <div class="chips" id="suggestions">
+            <!-- Dynamic Chips -->
+        </div>
+
+        <div class="output-area" id="output">
+            <!-- Nav Target -->
+        </div>
     </div>
 
     <script>
         const input = document.getElementById('q');
         const output = document.getElementById('output');
         const fab = document.getElementById('go-btn');
+        const chipsContainer = document.getElementById('suggestions');
+
+        // "Trillion Times" means it remembers. Load History.
+        let history = JSON.parse(localStorage.getItem('yolofi_history') || '[]');
         let destination = null;
+
+        // Init UI
+        renderChips();
+        input.focus();
 
         input.addEventListener('keyup', (e) => {
             if (e.key === 'Enter' && destination) {
@@ -178,49 +212,39 @@
             }
         });
 
-        // Enhanced Heuristics
         function resolve(raw) {
             const q = raw.trim().toLowerCase();
+            output.classList.remove('visible');
+            fab.classList.remove('visible');
+            destination = null;
 
-            if (!q) {
-                reset();
+            if (!q) return;
+
+            // Logic (Should match Rust backend ideally)
+            const parts = q.split(' ');
+            let label = "";
+
+            // Fast Maps
+            const shortcuts = {
+                'google': 'google.com', 'yt': 'youtube.com', 'gh': 'github.com',
+                'twitter': 'x.com', 'gpt': 'chatgpt.com', 'weather': 'wttr.in'
+            };
+
+            if (shortcuts[q]) {
+                setDest(`https://${shortcuts[q]}`, `Fast Nav: ${shortcuts[q]}`);
+                return;
+            }
+            if (q.includes('.') && !q.includes(' ')) {
+                setDest(`https://${q}`, `Direct Connect: ${q}`);
                 return;
             }
 
-            const parts = q.split(' ');
-
-            // 1. Direct Domains (improved)
-            // If it looks like "google" or "yolofi", assume .com/.in if ambiguous
-            if (parts.length === 1 && q.length > 2) {
-                if (q.includes('.')) {
-                    setDest(`https://${q}`, `Direct Connect: ${q}`);
-                    return;
-                }
-                // Common Top Sites Shortcut
-                const shortcuts = {
-                    'google': 'google.com',
-                    'youtube': 'youtube.com',
-                    'yt': 'youtube.com',
-                    'gh': 'github.com',
-                    'github': 'github.com',
-                    'twitter': 'x.com',
-                    'x': 'x.com',
-                    'yolofi': 'yolofi.in',
-                    'gpt': 'chatgpt.com',
-                    'openai': 'openai.com'
-                };
-                if (shortcuts[q]) {
-                    setDest(`https://${shortcuts[q]}`, `Fast Nav: ${shortcuts[q]}`);
-                    return;
-                }
-            }
-
-            // 2. Intent Commands
+            // Intents
             if (parts[0] === 'weather' && parts.length > 1) {
                 setDest(`https://wttr.in/${parts.slice(1).join('+')}`, `Data Stream: Weather`);
                 return;
             }
-            if ((parts[0] === 'price' || parts[0] === 'value') && parts.length > 1) {
+            if (parts[0] === 'price' && parts.length > 1) {
                 setDest(`https://www.coingecko.com/en/coins/${parts[1]}`, `Data Stream: Price`);
                 return;
             }
@@ -228,39 +252,49 @@
                 setDest(`https://en.wikipedia.org/wiki/${parts.slice(1).join('_')}`, `Knowledge: Wikipedia`);
                 return;
             }
-
-            // 3. Fallback: DDG (Privacy Search) - But only as last resort
-            // If user typed random words "best pizza nyc"
-            if (parts.length > 1) {
-                setDest(`https://duckduckgo.com/?q=${encodeURIComponent(q)}`, `Search Intent`);
-                return;
-            }
-
-            reset();
         }
 
         function setDest(url, label) {
             destination = url;
             output.innerText = `>> ${label}`;
             output.classList.add('visible');
-            fab.classList.add('ready');
-        }
-
-        function reset() {
-            destination = null;
-            output.classList.remove('visible');
-            fab.classList.remove('ready');
+            fab.classList.add('visible');
         }
 
         function execute() {
             if (!destination) return;
 
-            // Visual Feedback
-            output.innerText = `>> TELEPORTING...`;
-            document.body.style.opacity = '0.5';
+            // Save to History (The "Trillion Times" reliability)
+            const val = input.value.trim();
+            if (val && !history.includes(val)) {
+                history.unshift(val);
+                if (history.length > 5) history.pop();
+                localStorage.setItem('yolofi_history', JSON.stringify(history));
+            }
 
-            // Go there
             window.location.href = destination;
+        }
+
+        function renderChips() {
+            chipsContainer.innerHTML = '';
+
+            // 1. History (Orange)
+            history.slice(0, 3).forEach(h => {
+                const chip = document.createElement('div');
+                chip.className = 'chip history';
+                chip.innerText = '↺ ' + h;
+                chip.onclick = () => { input.value = h; resolve(h); input.focus(); };
+                chipsContainer.appendChild(chip);
+            });
+
+            // 2. Suggestions (Default)
+            ['weather london', 'gh rust', 'price btc', 'wiki quantum'].forEach(s => {
+                const chip = document.createElement('div');
+                chip.className = 'chip';
+                chip.innerText = s;
+                chip.onclick = () => { input.value = s; resolve(s); input.focus(); };
+                chipsContainer.appendChild(chip);
+            });
         }
     </script>
 </body>
