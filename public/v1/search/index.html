@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YoloFi Search</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fafbfc;
+            overflow: hidden;
+        }
+
+        .yolofi-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1000;
+        }
+
+        .yolofi-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+
+        .yolofi-logo {
+            font-size: 20px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-bar-wrapper {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 24px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 24px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-bar:focus {
+            outline: none;
+            background: white;
+        }
+
+        .provider-switcher {
+            display: flex;
+            gap: 8px;
+        }
+
+        .provider-btn {
+            padding: 8px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .provider-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .provider-btn.active {
+            background: white;
+            color: #667eea;
+            border-color: white;
+        }
+
+        .results-container {
+            height: calc(100vh - 120px);
+            position: relative;
+            background: white;
+        }
+
+        .results-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .credits-bar {
+            background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid #dee2e6;
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        .credits-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .credits-logo {
+            height: 20px;
+            opacity: 0.7;
+        }
+
+        .credits-text {
+            font-weight: 500;
+        }
+
+        .powered-by {
+            font-size: 12px;
+            color: #adb5bd;
+        }
+
+        .powered-by strong {
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            .yolofi-header {
+                flex-direction: column;
+                gap: 12px;
+                padding: 12px 16px;
+            }
+
+            .search-bar-wrapper {
+                margin: 0;
+                width: 100%;
+            }
+
+            .provider-switcher {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .results-container {
+                height: calc(100vh - 180px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="yolofi-header">
+        <div class="yolofi-brand">
+            <div class="yolofi-logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M2 12h20"></path>
+                    <path
+                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                    </path>
+                </svg>
+                YoloFi Search
+            </div>
+        </div>
+
+        <div class="search-bar-wrapper">
+            <input type="text" class="search-bar" id="searchInput" placeholder="Search the web..." autocomplete="off">
+        </div>
+
+        <div class="provider-switcher">
+            <button class="provider-btn active" data-provider="google">Google</button>
+            <button class="provider-btn" data-provider="duckduckgo">DuckDuckGo</button>
+            <button class="provider-btn" data-provider="bing">Bing</button>
+        </div>
+    </div>
+
+    <div class="results-container">
+        <iframe id="resultsFrame" class="results-frame"
+            sandbox="allow-same-origin allow-scripts allow-popups allow-forms" src="about:blank"></iframe>
+    </div>
+
+    <div class="credits-bar">
+        <div class="credits-left">
+            <span class="credits-text">Search results provided by</span>
+            <strong id="providerName">Google</strong>
+        </div>
+        <div class="powered-by">
+            Powered by <strong>YoloFi Meta Browser</strong>
+        </div>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const resultsFrame = document.getElementById('resultsFrame');
+        const providerName = document.getElementById('providerName');
+        const providerBtns = document.querySelectorAll('.provider-btn');
+
+        let currentProvider = 'google';
+        let currentQuery = '';
+
+        // Get query from URL if present
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialQuery = urlParams.get('q');
+        if (initialQuery) {
+            searchInput.value = initialQuery;
+            performSearch(initialQuery);
+        }
+
+        // Search providers
+        const providers = {
+            google: {
+                name: 'Google',
+                url: 'https://www.google.com/search?q={}&igu=1'
+            },
+            duckduckgo: {
+                name: 'DuckDuckGo',
+                url: 'https://duckduckgo.com/?q={}'
+            },
+            bing: {
+                name: 'Bing',
+                url: 'https://www.bing.com/search?q={}'
+            }
+        };
+
+        // Provider switcher
+        providerBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                providerBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentProvider = btn.dataset.provider;
+                providerName.textContent = providers[currentProvider].name;
+
+                if (currentQuery) {
+                    performSearch(currentQuery);
+                }
+            });
+        });
+
+        // Search input
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = searchInput.value.trim();
+                if (query) {
+                    performSearch(query);
+                }
+            }
+        });
+
+        function performSearch(query) {
+            currentQuery = query;
+            const provider = providers[currentProvider];
+            const searchUrl = provider.url.replace('{}', encodeURIComponent(query));
+
+            // Update URL without reload
+            const newUrl = `${window.location.pathname}?q=${encodeURIComponent(query)}`;
+            window.history.pushState({}, '', newUrl);
+
+            // Load results
+            resultsFrame.src = searchUrl;
+            providerName.textContent = provider.name;
+        }
+
+        // Handle frame load errors
+        resultsFrame.addEventListener('error', () => {
+            resultsFrame.srcdoc = `
+                <html>
+                    <body style="font-family: 'Inter', sans-serif; padding: 40px; text-align: center; background: #f8f9fa;">
+                        <h2 style="color: #6c757d;">Unable to load search results</h2>
+                        <p style="color: #adb5bd;">The search provider may have blocked embedding. Try opening in a new tab.</p>
+                        <a href="${resultsFrame.src}" target="_blank" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                            Open in New Tab →
+                        </a>
+                    </body>
+                </html>
+            `;
+        });
+    </script>
+</body>
+
+</html>
