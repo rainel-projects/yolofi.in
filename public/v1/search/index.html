@@ -435,22 +435,128 @@
             margin: 0 auto 16px;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .food-search-container { padding: 24px; display: none; }
-        .food-search-container.active { display: block; }
-        .food-slogan { text-align: center; font-size: 12px; color: #a1a1aa; font-style: italic; margin-bottom: 20px; }
-        .food-image-card { background: #1e1e2e; border: 1px solid #27272a; border-radius: 8px; padding: 20px; margin-bottom: 16px; text-align: center; }
-        .food-confirmation { font-size: 14px; font-weight: 500; color: #feca57; margin-bottom: 12px; }
-        .food-image-wrapper { width: 100%; max-width: 400px; margin: 0 auto 12px; border-radius: 8px; overflow: hidden; border: 2px solid rgba(255, 107, 107, 0.2); }
-        .food-image-wrapper img { width: 100%; height: auto; display: block; }
-        .food-name-display { font-size: 16px; font-weight: 500; color: #f4f4f5; }
-        .food-recipe-card { background: #1e1e2e; border: 1px solid #27272a; border-radius: 8px; padding: 20px; }
-        .food-recipe-title { font-size: 14px; font-weight: 500; color: #feca57; margin-bottom: 12px; }
-        .food-ingredients { list-style: none; margin-bottom: 16px; }
-        .food-ingredient { padding: 8px 12px; background: rgba(255, 255, 255, 0.03); border-left: 2px solid #ff6b6b; margin-bottom: 6px; border-radius: 4px; font-size: 12px; color: #d4d4d8; }
-        .food-instructions { list-style: none; counter-reset: step; }
-        .food-instruction { padding: 10px 10px 10px 38px; background: rgba(255, 255, 255, 0.03); border-radius: 6px; margin-bottom: 6px; font-size: 12px; color: #d4d4d8; line-height: 1.5; counter-increment: step; position: relative; }
-        .food-instruction::before { content: counter(step); position: absolute; left: 10px; top: 10px; width: 20px; height: 20px; background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%); border-radius: 50%; font-weight: 600; font-size: 10px; color: white; display: flex; align-items: center; justify-content: center; }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .food-search-container {
+            padding: 24px;
+            display: none;
+        }
+
+        .food-search-container.active {
+            display: block;
+        }
+
+        .food-slogan {
+            text-align: center;
+            font-size: 12px;
+            color: #a1a1aa;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        .food-image-card {
+            background: #1e1e2e;
+            border: 1px solid #27272a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .food-confirmation {
+            font-size: 14px;
+            font-weight: 500;
+            color: #feca57;
+            margin-bottom: 12px;
+        }
+
+        .food-image-wrapper {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto 12px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 107, 107, 0.2);
+        }
+
+        .food-image-wrapper img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .food-name-display {
+            font-size: 16px;
+            font-weight: 500;
+            color: #f4f4f5;
+        }
+
+        .food-recipe-card {
+            background: #1e1e2e;
+            border: 1px solid #27272a;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .food-recipe-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #feca57;
+            margin-bottom: 12px;
+        }
+
+        .food-ingredients {
+            list-style: none;
+            margin-bottom: 16px;
+        }
+
+        .food-ingredient {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 2px solid #ff6b6b;
+            margin-bottom: 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #d4d4d8;
+        }
+
+        .food-instructions {
+            list-style: none;
+            counter-reset: step;
+        }
+
+        .food-instruction {
+            padding: 10px 10px 10px 38px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: #d4d4d8;
+            line-height: 1.5;
+            counter-increment: step;
+            position: relative;
+        }
+
+        .food-instruction::before {
+            content: counter(step);
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            border-radius: 50%;
+            font-weight: 600;
+            font-size: 10px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
         /* Footer */
         .classified-footer {
@@ -550,12 +656,6 @@
                             <use href="#icon-globe"></use>
                         </svg>
                         Bing
-                    </button>
-                    <button class="provider-item" data-provider="food">
-                        <svg>
-                            <use href="#icon-food"></use>
-                        </svg>
-                        Food Search
                     </button>
                 </div>
             </div>
@@ -698,10 +798,6 @@
                 name: 'Bing',
                 type: 'iframe',
                 url: 'https://www.bing.com/search?q={}'
-            },
-            food: {
-                name: 'Food Search',
-                type: 'food'
             }
         };
 
