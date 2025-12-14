@@ -8,42 +8,250 @@
     <meta http-equiv="Cache-Control" content="public, max-age=31536000, immutable">
     <title>YoloFi Quantum Query</title>
     <style>
-        /* ... (Same Styles as before) ... */
         :root {
             --glass: rgba(255, 255, 255, 0.95);
-            /* ... */
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --primary: #2d3436;
+            --accent: #0984e3;
+            --warn: #d63031;
+            --success: #00b894;
+            --tech: #6c5ce7;
+            --wiki: #fdcb6e;
         }
 
-        /* ... */
-
-        .slogan {
+        body {
+            background: linear-gradient(-45deg, #a8c0ff, #3f2b96);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            color: var(--primary);
             font-family: 'Outfit', sans-serif;
-            font-weight: 700;
-            font-size: 42px;
-            background: linear-gradient(to right, #2d3436, #0984e3);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 30px;
-            text-align: center;
-            letter-spacing: -1px;
-            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
         }
 
-        .sub-slogan {
-            font-size: 14px;
-            color: #636e72;
-            font-weight: 500;
-            margin-top: -20px;
-            margin-bottom: 25px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         .glass-card {
-            padding: 60px 50px;
+            background: var(--glass);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            padding: 60px 40px;
+            width: 90%;
+            max-width: 760px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            position: relative;
+        }
+
+        .slogan {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 48px;
+            background: linear-gradient(to right, #2d3436, #0984e3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+            margin-bottom: 5px;
+            letter-spacing: -1.5px;
+            line-height: 1.1;
+        }
+
+        .sub-slogan {
+            font-size: 13px;
+            color: #636e72;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        .omnibar-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .omnibar {
+            width: 100%;
+            padding: 24px 30px;
+            padding-right: 70px;
+            font-size: 24px;
+            font-weight: 600;
+            border: 3px solid transparent;
+            border-radius: 20px;
+            outline: none;
+            background: #ffffff;
+            color: var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-sizing: border-box;
+        }
+
+        .omnibar.valid {
+            border-color: var(--success);
+        }
+
+        .omnibar.tech {
+            border-color: var(--tech);
+        }
+
+        .omnibar.fact {
+            border-color: var(--wiki);
+        }
+
+        .omnibar.invalid {
+            border-color: var(--warn);
+            animation: shake 0.4s;
+        }
+
+        .omnibar:focus {
+            transform: scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .chip {
+            padding: 10px 18px;
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            color: #636e72;
+        }
+
+        .chip:hover {
+            background: #dfe6e9;
+            transform: translateY(-2px);
+            color: #2d3436;
+        }
+
+        .chip.history {
+            border-color: #fab1a0;
+            color: #e17055;
+            background: #fff5f0;
+        }
+
+        .status-area {
+            height: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-transform: uppercase;
+        }
+
+        .status-area.error {
+            color: var(--warn);
+        }
+
+        .status-area.success {
+            color: var(--success);
+        }
+
+        .status-area.tech {
+            color: var(--tech);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .fab {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%) scale(0.5);
+            width: 56px;
+            height: 56px;
+            background: var(--success);
+            border-radius: 16px;
+            border: none;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: white;
+            display: grid;
+            place-items: center;
+            box-shadow: 0 8px 20px rgba(0, 184, 148, 0.3);
+        }
+
+        .fab.visible {
+            opacity: 1;
+            transform: translateY(-50%) scale(1);
+            pointer-events: auto;
+        }
+
+        .fab svg {
+            width: 28px;
+            height: 28px;
+            stroke-width: 3;
+        }
+
+        .hint-text {
+            font-size: 14px;
+            color: #b2bec3;
+            margin-top: -15px;
+            transition: opacity 0.3s;
+            font-weight: 500;
         }
     </style>
-    <!-- ... -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap"
+        rel="stylesheet">
 </head>
 
 <body>
@@ -57,7 +265,7 @@
         </div>
 
         <div class="omnibar-wrapper">
-            <input type="text" class="omnibar" id="q" placeholder="Ask or Command..." autocomplete="off" autofocus>
+            <input type="text" class="omnibar" id="q" placeholder="Type intent..." autocomplete="off" autofocus>
             <button class="fab" id="go-btn" onclick="execute()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
                     stroke-linejoin="round">
@@ -67,7 +275,7 @@
             </button>
         </div>
 
-        <div class="hint-text" id="hint">Try: "how to rust", "solve x+y=2", "price btc"</div>
+        <div class="hint-text" id="hint">Try: "how to rust", "solve x^2=4", "buy shoes"</div>
 
         <div class="chips" id="suggestions"></div>
     </div>
@@ -85,72 +293,54 @@
 
         // -- Q&A INTENT ENGINE --
         const NLP_Rules = {
-            // 1. High-Priority specialized intents
             COMMERCE: {
                 triggers: ['buy', 'shop', 'price', 'cost', 'cheap', 'best', 'amazon', 'store'],
                 site: "https://www.amazon.com/s?k=",
-                label: "COMMERCE", style: "valid"
+                label: "COMMERCE", style: "valid", color: "#00b894"
             },
             VIDEO: {
                 triggers: ['watch', 'video', 'movie', 'clip', 'trailer', 'stream', 'youtube'],
                 site: "https://www.youtube.com/results?search_query=",
-                label: "VIDEO", style: "valid"
+                label: "VIDEO", style: "valid", color: "#00b894"
             },
-
-            // 2. Q&A LOGIC
             COMPUTE: {
-                triggers: ['solve', 'calculate', 'math', 'graph', 'convert', 'integrate', 'derive', '+', '-', '*', '/'],
+                triggers: ['solve', 'calculate', 'math', 'graph', 'convert', 'integrate', 'derive', '+', '-', '*', '/', '^'],
                 site: "https://www.wolframalpha.com/input?i=",
-                label: "COMPUTE (Wolfram)", style: "tech"
+                label: "COMPUTE", style: "tech", color: "#6c5ce7"
             },
             DEV_ANSWER: {
-                triggers: ['error', 'bug', 'exception', 'stack', 'debug', 'code', 'function', 'api', 'compile', 'rust', 'js', 'css', 'react'],
+                triggers: ['error', 'bug', 'exception', 'stack', 'debug', 'code', 'function', 'api', 'compile', 'rust', 'js', 'css', 'react', 'html'],
                 site: "https://stackoverflow.com/search?q=",
-                label: "DEV ANSWER (StackOverflow)", style: "tech"
+                label: "DEV ANSWER", style: "tech", color: "#6c5ce7"
             },
             GUIDE: {
                 triggers: ['how to', 'recipe', 'cook', 'fix', 'make', 'install', 'build'],
                 site: "https://www.wikihow.com/wikiHowTo?search=",
-                label: "GUIDE (wikiHow)", style: "fact"
+                label: "GUIDE", style: "fact", color: "#fdcb6e"
             },
             FACT: {
                 triggers: ['what', 'who', 'when', 'why', 'meaning', 'definition', 'define', 'history', 'population'],
                 site: "https://en.wikipedia.org/wiki/",
-                label: "FACT (Wiki)", style: "fact"
+                label: "FACT", style: "fact", color: "#fdcb6e"
             },
 
-            // 3. Fallbacks
-            MAP: {
-                triggers: ['map', 'where', 'location', 'directions'],
-                site: "https://www.openstreetmap.org/search?query=",
-                label: "MAP", style: "valid"
-            },
-            AUDIO: {
-                triggers: ['listen', 'music', 'song', 'spotify'],
-                site: "https://open.spotify.com/search/",
-                label: "AUDIO", style: "valid"
-            }
+            // Fallbacks
+            MAP: { triggers: ['map', 'where', 'location', 'directions'], site: "https://www.openstreetmap.org/search?query=", label: "MAP", style: "valid", color: "#00b894" },
+            AUDIO: { triggers: ['listen', 'music', 'song', 'spotify'], site: "https://open.spotify.com/search/", label: "AUDIO", style: "valid", color: "#00b894" }
         };
 
-        const SHORTCUTS = {
-            'google': 'google.com', 'yt': 'youtube.com', 'gh': 'github.com', 'x': 'x.com'
-        };
+        const SHORTCUTS = { 'google': 'google.com', 'yt': 'youtube.com', 'gh': 'github.com', 'x': 'x.com' };
 
         renderChips();
         input.focus();
 
         input.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') {
-                if (currentIntent) execute();
-            } else {
-                analyze(input.value);
-            }
+            if (e.key === 'Enter') { if (currentIntent) execute(); }
+            else { analyze(input.value); }
         });
 
         function analyze(raw) {
             const q = raw.trim().toLowerCase();
-
-            // Reset
             currentIntent = null;
             fab.classList.remove('visible');
             input.classList.remove('valid', 'invalid', 'tech', 'fact');
@@ -163,79 +353,55 @@
             }
 
             if (SHORTCUTS[q]) {
-                lockIntent(`FAST NAV: ${SHORTCUTS[q]}`, `https://${SHORTCUTS[q]}`, 'valid');
+                lockIntent(`FAST NAV: ${SHORTCUTS[q]}`, `https://${SHORTCUTS[q]}`, 'valid', '#00cec9');
                 return;
             }
 
-            // NLP SCORING
-            let bestScore = 0;
-            let bestMatch = null;
-
+            let bestScore = 0; let bestMatch = null;
             for (const [key, rule] of Object.entries(NLP_Rules)) {
                 let score = 0;
-                for (const t of rule.triggers) {
-                    if (q.includes(t)) score += 1;
-                }
-
-                // Context Boosts
-                // "how to rust" -> prefers DEV_ANSWER (rust) over GUIDE (how to)
+                for (const t of rule.triggers) { if (q.includes(t)) score += 1; }
                 if (key === 'DEV_ANSWER' && score > 0 && q.includes('how to')) score += 2;
-                if (key === 'COMPUTE' && (q.includes('+') || q.includes('='))) score += 5;
-
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestMatch = rule;
-                }
+                if (key === 'COMPUTE' && (q.includes('+') || q.includes('=') || q.includes('^'))) score += 5;
+                if (score > bestScore) { bestScore = score; bestMatch = rule; }
             }
 
             if (bestScore > 0) {
-                // Formatting destination
                 let dest = bestMatch.site + encodeURIComponent(q);
-
-                // Smart Formatting
-                if (bestMatch.label.includes('Wiki')) {
-                    // Wiki expects underscores for direct hit, or search
-                    // We'll trust the search/redirect of main wiki or use direct if simple
+                if (bestMatch.label === 'FACT') {
                     if (!q.includes(' ')) dest = bestMatch.site + q;
                     else dest = "https://en.wikipedia.org/w/index.php?search=" + encodeURIComponent(q);
                 }
-                if (bestMatch.label.includes('StackOverflow')) {
-                    // Remove 'how to' for better SO search
-                    dest = bestMatch.site + encodeURIComponent(q.replace('how to', ''));
-                }
+                if (bestMatch.label === 'DEV ANSWER') dest = bestMatch.site + encodeURIComponent(q.replace('how to', ''));
 
-                lockIntent(bestMatch.label, dest, bestMatch.style);
-
+                lockIntent(bestMatch.label, dest, bestMatch.style, bestMatch.color);
             } else {
                 rejectIntent();
             }
         }
 
-        function lockIntent(label, url, style) {
+        function lockIntent(label, url, style, color) {
             currentIntent = url;
             statusText.innerText = `>> ${label}`;
             statusArea.classList.add(style === 'tech' ? 'tech' : 'success');
             input.classList.add(style);
             fab.classList.add('visible');
+            fab.style.background = color;
             hint.innerText = "Hit Enter to solve.";
-            // Change FAB color dynamically if needed
-            fab.style.background = style === 'tech' ? '#6c5ce7' : (style === 'fact' ? '#fdcb6e' : '#00b894');
         }
 
         function rejectIntent() {
-            statusText.innerText = "AMBIGUOUS / UNKNOWN";
+            statusText.innerText = "AMBIGUOUS";
             statusArea.classList.add('error');
             input.classList.add('invalid');
-            hint.innerText = "Clarify: 'who is...', 'how to...', 'buy...'";
-            fab.style.background = '#00b894';
+            hint.innerText = "Clarify: 'how to...', 'buy...', 'solve...'";
         }
 
         function execute() {
             if (!currentIntent) return;
             const val = input.value.trim();
             if (val && !history.includes(val)) {
-                history.unshift(val);
-                if (history.length > 5) history.pop();
+                history.unshift(val); if (history.length > 5) history.pop();
                 localStorage.setItem('yolofi_history', JSON.stringify(history));
             }
             window.location.href = currentIntent;
