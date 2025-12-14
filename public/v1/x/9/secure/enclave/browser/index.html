@@ -7,73 +7,109 @@
     <title>YoloFi Secure Enclave</title>
     <style>
         body {
-            background-color: #0a0a0a;
-            color: #3498db;
-            font-family: 'Courier New', Courier, monospace;
+            background-color: #ffffff;
+            /* Light Theme */
+            color: #2c3e50;
+            /* Dark Navy Text */
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             align-items: center;
-            justify_content: center;
+            justify-content: center;
             height: 100vh;
             margin: 0;
-            overflow: hidden;
             text-align: center;
         }
 
         .container {
-            border: 1px solid #3498db;
-            padding: 40px;
-            box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
-            max-width: 600px;
+            /* Clean, minimal card */
+            padding: 60px;
+            max-width: 500px;
         }
 
         h1 {
             font-size: 24px;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            border-bottom: 1px solid #3498db;
-            padding-bottom: 20px;
-            margin-bottom: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #000000;
+            margin-bottom: 15px;
+        }
+
+        .accent-bar {
+            width: 40px;
+            height: 4px;
+            background-color: #3498db;
+            /* YoloFi Blue */
+            margin: 0 auto 30px auto;
+            border-radius: 2px;
         }
 
         p {
-            font-size: 14px;
-            color: #ecf0f1;
+            font-size: 15px;
+            color: #555555;
             line-height: 1.6;
+            margin-bottom: 10px;
         }
 
-        .status {
-            margin-top: 30px;
+        .meta {
+            margin-top: 40px;
             font-size: 12px;
-            color: #2ecc71;
+            color: #95a5a6;
+            font-family: monospace;
         }
 
-        .blink {
-            animation: blinker 1s linear infinite;
+        .status-badge {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 6px 12px;
+            background-color: #f0f9eb;
+            color: #27ae60;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 4px;
+            border: 1px solid #dcdcdc;
         }
 
-        @keyframes blinker {
-            50% {
-                opacity: 0;
-            }
+        /* CSS-only Lock Icon (Abstract) */
+        .icon-box {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #2c3e50;
+            border-radius: 4px;
+            margin: 0 auto 20px auto;
+            position: relative;
         }
 
-        .lock-icon {
-            font-size: 40px;
-            margin-bottom: 20px;
+        .icon-box::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 4px;
+            width: 12px;
+            height: 10px;
+            border: 2px solid #2c3e50;
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
         }
     </style>
+    <!-- Preload clean font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
     <div class="container">
-        <div class="lock-icon">🔒</div>
+        <div class="icon-box"></div>
         <h1>Secure Enclave</h1>
-        <p>You have reached the sovereign endpoint.</p>
-        <p>Identity Verification: <strong>YoloFi Browser Engine</strong></p>
-        <p style="color: #95a5a6; font-size: 11px;">Path: /v1/x/9/secure/enclave/browser</p>
+        <div class="accent-bar"></div>
 
-        <div class="status">
-            SYSTEM STATUS: <span class="blink">ONLINE</span>
+        <p>Sovereign Endpoint Reached.</p>
+        <p>Identity Verification: <strong>YoloFi Browser Engine</strong></p>
+
+        <div class="status-badge">SYSTEM ONLINE</div>
+
+        <div class="meta">
+            Path: /v1/x/9/secure/enclave/browser
         </div>
     </div>
 </body>
