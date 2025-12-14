@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reaction Test | YoloFi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #f5f7fa;
+            --surface: #ffffff;
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--surface);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--text);
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 16px;
+            margin-bottom: 32px;
+        }
+
+        .game-area {
+            background: var(--bg);
+            border-radius: 16px;
+            padding: 60px 20px;
+            margin-bottom: 24px;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .game-area.waiting {
+            background: #fef3c7;
+            border: 3px dashed var(--warning);
+        }
+
+        .game-area.ready {
+            background: #d1fae5;
+            border: 3px solid var(--success);
+            animation: pulse 0.5s infinite;
+        }
+
+        .game-area.too-early {
+            background: #fee2e2;
+            border: 3px solid var(--danger);
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        .message {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .message.large {
+            font-size: 48px;
+            color: var(--success);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            color: var(--text);
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .stat-value.highlight {
+            color: var(--primary);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .history {
+            margin-top: 32px;
+            text-align: left;
+        }
+
+        .history-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 16px;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .history-item {
+            background: var(--bg);
+            padding: 12px 16px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .history-time {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge.excellent {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge.good {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge.average {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .game-area {
+                padding: 40px 20px;
+                min-height: 250px;
+            }
+
+            .message {
+                font-size: 18px;
+            }
+
+            .message.large {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>⚡ Reaction Test</h1>
+        <p class="subtitle">Test your reflexes! Click as fast as you can when the screen turns green.</p>
+
+        <div class="game-area" id="gameArea">
+            <div class="message" id="message">Click START to begin</div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Last Time</div>
+                <div class="stat-value" id="lastTime">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Best Time</div>
+                <div class="stat-value highlight" id="bestTime">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Average</div>
+                <div class="stat-value" id="avgTime">—</div>
+            </div>
+        </div>
+
+        <button class="btn" id="startBtn">START TEST</button>
+
+        <div class="history" id="historySection" style="display: none;">
+            <div class="history-title">Recent Attempts</div>
+            <div class="history-list" id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let state = 'idle'; // idle, waiting, ready, result
+        let startTime = 0;
+        let timeout = null;
+        let attempts = [];
+
+        // DOM Elements
+        const gameArea = document.getElementById('gameArea');
+        const message = document.getElementById('message');
+        const startBtn = document.getElementById('startBtn');
+        const lastTimeEl = document.getElementById('lastTime');
+        const bestTimeEl = document.getElementById('bestTime');
+        const avgTimeEl = document.getElementById('avgTime');
+        const historySection = document.getElementById('historySection');
+        const historyList = document.getElementById('historyList');
+
+        // Event Listeners
+        startBtn.addEventListener('click', startTest);
+        gameArea.addEventListener('click', handleClick);
+
+        function startTest() {
+            if (state !== 'idle') return;
+
+            state = 'waiting';
+            gameArea.className = 'game-area waiting';
+            message.className = 'message';
+            message.textContent = 'Wait for green...';
+            startBtn.disabled = true;
+
+            // Random delay between 2-5 seconds
+            const delay = 2000 + Math.random() * 3000;
+
+            timeout = setTimeout(() => {
+                state = 'ready';
+                gameArea.className = 'game-area ready';
+                message.textContent = 'CLICK NOW!';
+                startTime = Date.now();
+            }, delay);
+        }
+
+        function handleClick() {
+            if (state === 'waiting') {
+                // Too early!
+                clearTimeout(timeout);
+                state = 'idle';
+                gameArea.className = 'game-area too-early';
+                message.className = 'message';
+                message.textContent = 'Too early! Wait for green.';
+                startBtn.disabled = false;
+
+                // Haptic feedback
+                if (navigator.vibrate) navigator.vibrate(200);
+
+            } else if (state === 'ready') {
+                // Calculate reaction time
+                const reactionTime = Date.now() - startTime;
+                recordAttempt(reactionTime);
+
+                state = 'idle';
+                gameArea.className = 'game-area';
+                message.className = 'message large';
+                message.textContent = `${reactionTime}ms`;
+                startBtn.disabled = false;
+                startBtn.textContent = 'TRY AGAIN';
+
+                // Haptic feedback
+                if (navigator.vibrate) navigator.vibrate(50);
+            }
+        }
+
+        function recordAttempt(time) {
+            attempts.push(time);
+
+            // Update stats
+            lastTimeEl.textContent = `${time}ms`;
+
+            const best = Math.min(...attempts);
+            bestTimeEl.textContent = `${best}ms`;
+
+            const avg = Math.round(attempts.reduce((a, b) => a + b, 0) / attempts.length);
+            avgTimeEl.textContent = `${avg}ms`;
+
+            // Update history
+            updateHistory(time);
+        }
+
+        function updateHistory(time) {
+            historySection.style.display = 'block';
+
+            const item = document.createElement('div');
+            item.className = 'history-item';
+
+            const attemptNum = document.createElement('span');
+            attemptNum.textContent = `Attempt #${attempts.length}`;
+
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'history-time';
+            timeSpan.textContent = `${time}ms`;
+
+            const badge = document.createElement('span');
+            badge.className = 'badge';
+
+            if (time < 200) {
+                badge.classList.add('excellent');
+                badge.textContent = 'Excellent';
+            } else if (time < 300) {
+                badge.classList.add('good');
+                badge.textContent = 'Good';
+            } else {
+                badge.classList.add('average');
+                badge.textContent = 'Average';
+            }
+
+            item.appendChild(attemptNum);
+            item.appendChild(timeSpan);
+            item.appendChild(badge);
+
+            historyList.insertBefore(item, historyList.firstChild);
+
+            // Keep only last 5
+            while (historyList.children.length > 5) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        }
+
+        // Prevent accidental clicks during waiting
+        document.addEventListener('contextmenu', e => e.preventDefault());
+    </script>
+</body>
+
+</html>
