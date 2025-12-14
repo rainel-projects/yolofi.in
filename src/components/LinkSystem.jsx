@@ -15,9 +15,9 @@ const LinkSystem = () => {
     useEffect(() => {
         // Global Swarm Listeners
         const updatePeers = (peers) => {
-            // Filter: If I am GUEST, I want HOSTS. If I am HOST, I want GUESTS (maybe).
-            // Actually, usually Guest finds Host.
-            setPeerList(peers);
+            // Filter duplicates based on ID
+            const uniquePeers = Array.from(new Map(peers.map(peer => [peer.id || peer.trysteroId, peer])).values());
+            setPeerList(uniquePeers);
         };
 
         const handleOpen = (peerId) => {

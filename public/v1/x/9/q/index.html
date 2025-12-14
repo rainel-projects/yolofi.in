@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- INFINITE SCALE ARCHITECTURE -->
-    <meta http-equiv="Cache-Control" content="public, max-age=31536000, immutable">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 
     <!-- SEO -->
     <meta name="robots" content="index, follow">
@@ -116,16 +116,7 @@
                 /* Subtle visibility */
                 cursor: move;
                 z-index: 10;
-
-                .game-active .game-ui {
-                    display: block;
-                }
-
-                .game-active .omnibar-wrapper,
-                .game-active .chips,
-                .game-active .hint-text {
-                    display: none;
-                }
+            }
     </style>
     <!-- ... -->
 </head>
@@ -133,15 +124,7 @@
 <body>
     <div class="glass-card" id="app-window">
         <div class="drag-handle" id="drag-bar" title="Drag Window"></div>
-        <div class="close-game-btn" onclick="quitGame()">✕ Exit Game</div>
-        <!-- ... content ... -->
 
-        <!-- Game Container -->
-        <div class="game-ui" id="game-ui">
-            <h2 style="margin:0 0 10px 0">SNAKE</h2>
-            <canvas id="game-canvas" width="400" height="400"></canvas>
-            <p>Arrows to Move • Space to Pause • Esc to Quit</p>
-        </div>
     </div>
 
     <script>
@@ -195,71 +178,7 @@
         // if (q === 'play snake') launchSnake();
 
         // ... Snake Game Logic ...
-        let gameInterval;
-        let snake = [{ x: 10, y: 10 }];
-        let food = { x: 15, y: 15 };
-        let dx = 0, dy = 0;
-        const gridSize = 20;
-        const canvas = document.getElementById('game-canvas');
-        const ctx = canvas.getContext('2d');
 
-        function launchSnake() {
-            win.classList.add('game-active');
-            canvas.style.display = 'block';
-            document.querySelector('.slogan').innerText = "Game Mode";
-            document.addEventListener('keydown', gameInput);
-            startGame();
-        }
-
-        function startGame() {
-            dx = 1; dy = 0; snake = [{ x: 10, y: 10 }];
-            gameInterval = setInterval(gameLoop, 100);
-        }
-
-        function gameLoop() {
-            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
-            snake.unshift(head);
-
-            if (head.x === food.x && head.y === food.y) {
-                food = { x: Math.floor(Math.random() * 20), y: Math.floor(Math.random() * 20) };
-            } else {
-                snake.pop();
-            }
-
-            // Death checks
-            if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20) return resetGame();
-
-            drawGame();
-        }
-
-        function drawGame() {
-            ctx.fillStyle = 'rgba(255,255,255,0.5)';
-            ctx.fillRect(0, 0, 400, 400);
-
-            ctx.fillStyle = '#00b894';
-            snake.forEach(part => ctx.fillRect(part.x * 20, part.y * 20, 18, 18));
-
-            ctx.fillStyle = '#e17055';
-            ctx.fillRect(food.x * 20, food.y * 20, 18, 18);
-        }
-
-        function resetGame() {
-            clearInterval(gameInterval);
-            alert("Game Over!");
-            startGame();
-        }
-
-        function gameInput(e) {
-            if (e.key === 'ArrowUp') { dx = 0; dy = -1; }
-            if (e.key === 'ArrowDown') { dx = 0; dy = 1; }
-            if (e.key === 'ArrowLeft') { dx = -1; dy = 0; }
-            if (e.key === 'ArrowRight') { dx = 1; dy = 0; }
-            if (e.key === 'Escape') {
-                win.classList.remove('game-active');
-                clearInterval(gameInterval);
-                document.querySelector('.slogan').innerText = "Find exactly what you need.";
-            }
-        }
 
         // Hook into analyze function
         // if (q === 'play snake') { launchSnake(); return; }

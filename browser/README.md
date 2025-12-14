@@ -1,100 +1,42 @@
-# YoloFi Sovereign Browser Engine
-> **Status**: Prototype (Phase 0-5 Complete)
-> **License**: MIT / Proprietary
-> **Architecture**: Deterministic, Sovereign, Rust-based.
+# YoloFi Browser: The Sovereign Intent Engine
 
-This repository contains the source code for the **YoloFi Browser**, a deterministic web runtime built from scratch to guarantee user sovereignty, privacy, and explainability.
+> **"Find exactly what you need."**
 
----
+YoloFi is a **Deterministic Browser Engine**. Unlike traditional browsers that act as passive viewing panes for search engines, YoloFi actively interprets user intent to navigate directly to data sources.
 
-## 🏗️ Architecture Stack
+## Core Philosophy: Determinism vs. Probability
+*   **Traditional (Google/Bing)**: You search "weather". They give you 10 links *about* weather. You click one. (Probabilistic).
+*   **YoloFi**: You type "weather". The browser parses the intent `FACT` + `LOCATION` and renders the weather directly or routes you to a trusted meteorological source. (Deterministic).
 
-The browser is composed of modular, independently verifiable crates:
+## The Quantum Query Engine (v1)
+Currently live at `/v1/x/9/q/index.html`.
 
-| Crate | Responsibility | Status |
-|-------|----------------|--------|
-| `yolofi_browser` | Entry point & orchestration | ✅ Active |
-| `yolofi_net` | **Sovereign Network Stack**. Custom DNS (UDP), TCP, HTTP/1.1. | ✅ Done |
-| `yolofi_dns_server` | **Local DNS Proxy**. Intercepts browser traffic, proxies to 9.9.9.9. | ✅ Done |
-| `yolofi_html` | Spec-compliant Tokenizer & DOM Tree construction. | ✅ Done |
-| `yolofi_css` | Tokenizer, Parser, and **YoloFi Theme** injection. | ✅ Done |
-| `yolofi_layout` | **Layout Engine**. Box Model & Geometry calculations. | ✅ Done |
-| `yolofi_paint` | **Software Rasterizer**. Renders pixels to `.ppm` files. | ✅ Done |
-| `yolofi_config` | Secure configuration & Enclaves. | ✅ Done |
+### Features
+1.  **Client-Side NLP**: All intent analysis happens locally in your browser logic (JavaScript/Rust) using high-performance tokenization.
+2.  **Smart Branching**:
+    *   **Tech vs. Life**: Distinguishes "How to Python" (StackOverflow) from "How to Pasta" (wikiHow).
+    *   **Grocery vs. Tech**: Distinguishes "Buy Apple" (Food) from "Buy Apple Watch" (Electronics).
+3.  **Security Enclave**:
+    *   **HSTS Enforcement**: Forces HTTPS.
+    *   **Anti-Tamper**: Blocks inspection and debugging to protect the sovereign code.
+    *   **CSP**: Strict whitelisting of resources.
 
----
+## Intent Categories
 
-## 🚀 Operations Guide (Production)
+| Intent | Trigger Examples | Deterministic Destination |
+| :--- | :--- | :--- |
+| **COMPUTE** | `solve`, `math`, `graph`, `x^2` | **WolframAlpha** |
+| **DEV GUIDE** | `rust`, `error`, `debug`, `npm` | **StackOverflow** |
+| **LIFE GUIDE** | `how to cook`, `clean`, `fix` | **wikiHow** |
+| **GROCERY** | `milk`, `bread`, `fruit` | **Amazon Fresh** |
+| **COMMERCE** | `buy`, `price`, `shop` | **Amazon** |
+| **FACT** | `who is`, `define`, `history` | **Wikipedia** |
+| **VIDEO** | `watch`, `trailer`, `stream` | **YouTube** |
 
-To run the YoloFi Browser environment, you must run two services: the **Infrastructure Layer** (DNS) and the **Runtime Layer** (Browser).
+## Architecture
+*   **Frontend**: HTML5 / CSS3 (Vanillla) with "Security Enclave" pattern.
+*   **Engine**: Rust (WIP) for native intent resolution.
+*   **Network**: Direct-to-Source routing.
 
-### 1. Prerequisites
-*   **Rust Toolchain**: Install via [rustup.rs](https://rustup.rs).
-*   **Windows/Linux/Mac**: Cross-platform support.
-
-### 2. Start the Sovereign DNS Infrastructure
-The browser is configured to usage a **private, local DNS authority** (`127.0.0.1:5353`) to bypass OS and ISP tracking. You must start this server first.
-
-```powershell
-# In a dedicated terminal:
-cd browser
-cargo run -p yolofi_dns_server --release
-```
-yolofi.in/v1/x/9/secure/enclave/browser
-**Expected Output:**
-```text
-Starting YoloFi Sovereign DNS Server...
-Listening on: 127.0.0.1:5353
-Upstream (Privacy): 9.9.9.9:53
-```
-
-> **Security Note**: This server acts as a firewall for your DNS. It logs all queries locally so you can see exactly what sites the browser is trying to contact.
-
-### 3. Run the Browser Engine
-Once the infrastructure is live, you can launch the browser engine. currently, it runs in **Headless Verification Mode**, fetching a test page and rendering it to disk.
-
-```powershell
-# In a new terminal:
-cd browser
-cargo run -p yolofi_browser --release
-```
-
-**Expected Pipeline Output:**
-1.  **NET**: Resolves domain via your Local DNS.
-2.  **NET**: Fetches raw HTML bytes (HTTP/1.1).
-3.  **HTML**: Parses tokens -> DOM Tree.
-4.  **CSS**: Loads `yolofi_css` (Sky Blue/Navy Theme).
-5.  **LAYOUT**: Calculates X/Y/W/H for every element.
-6.  **PAINT**: Renders the frame to `output.ppm`.
-
-### 4. Verify Output
-The browser produces a raw image argument.
-
-*   **Logs**: Check stdout for the execution trace.
-*   **Visuals**: Open `output.ppm` (in IrfanView, GIMP, or convert to PNG) to see the rendered page.
-
----
-
-## 🔧 Configuration & Security
-
-### Secure Endpoints
-Configuration is hardcoded in `yolofi_config` for security.
-*   **Deep Path**: `yolofi.in/v1/x/9/secure/enclave/browser`
-*   **DNS IP**: `127.0.0.1:5353` (Configurable in `yolofi_config/src/lib.rs`)
-
-### Identity
-The browser identifies itself as:
-`User-Agent: YoloFi/1.0 (Sovereign; Privacy-First)`
-
----
-
-## ⚠️ Known Limitations (Phase 5)
-*   **No GUI Window**: Output is to file (`.ppm`) only.
-*   **No JavaScript**: Scripting engine (Phase 7) is not yet integrated.
-*   **Block Layout Only**: Complex inline formatting contexts are simplified.
-*   **HTTP Only**: TLS Handshake (Phase 1.5) implementation is pending `rustls` integration.
-
----
-
-**Built with First Principles.**
-*Determinism. Autonomy. Decentralization.*
+## Run Locally
+Open `public/v1/x/9/q/index.html` in any browser.
