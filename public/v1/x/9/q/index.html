@@ -438,9 +438,14 @@
 
         const NLP_Rules = {
             GROCERY: {
-                triggers: ['milk', 'bread', 'fruit', 'vegetable', 'banana', 'apple', 'orange', 'egg', 'organic', 'snack', 'grocery', 'food'],
-                site: "https://www.amazon.com/s?i=grocery&k=",
-                label: "GROCERY", style: "fact" // distinctive color
+                triggers: ['milk', 'bread', 'fruit', 'vegetable', 'banana', 'apple', 'orange', 'egg', 'organic', 'snack', 'grocery'],
+                site: "https://www.instacart.com/store/s?k=",
+                label: "GROCERY (INSTACART)", style: "fact"
+            },
+            FOOD_DELIVERY: {
+                triggers: ['pizza', 'burger', 'sushi', 'taco', 'pasta', 'hungry', 'delivery', 'eat', 'dinner', 'lunch'],
+                site: "https://www.ubereats.com/search?q=",
+                label: "FOOD DELIVERY", style: "fact"
             },
             COMMERCE: { triggers: ['buy', 'shop', 'price', 'cost', 'cheap', 'amazon'], site: "https://www.amazon.com/s?k=", label: "COMMERCE", style: "valid" },
             VIDEO: { triggers: ['watch', 'video', 'movie', 'stream', 'youtube'], site: "https://www.youtube.com/results?search_query=", label: "VIDEO", style: "valid" },
