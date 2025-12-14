@@ -6,16 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YoloFi Quantum Query</title>
     <style>
-        /* ... (Same Styles as before) ... */
+        /* ... Styles ... */
         :root {
-            --glass: rgba(255, 255, 255, 0.85);
+            --glass: rgba(255, 255, 255, 0.95);
             --glass-border: rgba(255, 255, 255, 0.5);
             --primary: #2d3436;
             --accent: #0984e3;
+            --warn: #e17055;
+            --success: #00b894;
         }
 
         body {
-            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background: linear-gradient(-45deg, #a8c0ff, #3f2b96);
             background-size: 400% 400%;
             animation: gradient 15s ease infinite;
             color: var(--primary);
@@ -44,77 +46,17 @@
 
         .glass-card {
             background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             border-radius: 24px;
             border: 1px solid var(--glass-border);
-            padding: 40px;
+            padding: 50px;
             width: 100%;
             max-width: 720px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
             text-align: center;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 25px;
             position: relative;
-        }
-
-        .agent-overlay {
-            position: absolute;
-            top: -60px;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            pointer-events: none;
-        }
-
-        .agent-overlay.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .agent-bubble {
-            background: rgba(30, 39, 46, 0.95);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: 500;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .agent-dot {
-            width: 8px;
-            height: 8px;
-            background: #00cec9;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #00cec9;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                opacity: 0.5;
-                transform: scale(0.9);
-            }
-
-            50% {
-                opacity: 1;
-                transform: scale(1.1);
-            }
-
-            100% {
-                opacity: 0.5;
-                transform: scale(0.9);
-            }
         }
 
         .omnibar-wrapper {
@@ -126,21 +68,28 @@
             width: 100%;
             padding: 24px 30px;
             padding-right: 70px;
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 600;
             border: 2px solid transparent;
             border-radius: 16px;
             outline: none;
             background: #ffffff;
             color: var(--primary);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
             box-sizing: border-box;
         }
 
+        /* Dynamic Border Color based on Intent State */
+        .omnibar.valid {
+            border-color: var(--success);
+        }
+
+        .omnibar.invalid {
+            border-color: var(--warn);
+        }
+
         .omnibar:focus {
-            border-color: var(--accent);
-            box-shadow: 0 8px 30px rgba(9, 132, 227, 0.2);
             transform: scale(1.01);
         }
 
@@ -154,7 +103,7 @@
 
         .chip {
             padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.6);
+            background: rgba(0, 0, 0, 0.05);
             border-radius: 20px;
             font-size: 14px;
             font-weight: 500;
@@ -164,83 +113,62 @@
         }
 
         .chip:hover {
-            background: white;
+            background: #dfe6e9;
             transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         .chip.history {
             border-color: #fab1a0;
             color: #e17055;
+            background: #fff5f0;
         }
 
-        .choice-container {
-            display: none;
-            gap: 10px;
-            justify-content: center;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.3s;
-            flex-wrap: wrap;
-        }
-
-        .choice-container.active {
-            display: flex;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .choice-btn {
-            background: white;
-            border: 1px solid #dfe6e9;
-            padding: 10px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            color: #2d3436;
-            transition: all 0.2s;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            font-family: 'Outfit', sans-serif;
-        }
-
-        .choice-btn:hover {
-            transform: translateY(-2px);
-            border-color: #0984e3;
-            color: #0984e3;
-            box-shadow: 0 6px 15px rgba(9, 132, 227, 0.15);
-        }
-
-        .output-area {
-            height: 30px;
+        .status-area {
+            height: 24px;
             font-family: 'JetBrains Mono', monospace;
-            color: var(--accent);
             font-weight: 600;
-            opacity: 0;
-            transition: opacity 0.3s;
+            font-size: 14px;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
-        .output-area.visible {
-            opacity: 1;
+        .status-area.error {
+            color: var(--warn);
+        }
+
+        .status-area.success {
+            color: var(--success);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
         }
 
         .fab {
             position: absolute;
-            right: 15px;
+            right: 20px;
             top: 50%;
-            transform: translateY(-50%) scale(0.8);
+            transform: translateY(-50%) scale(0.5);
             width: 50px;
             height: 50px;
-            background: var(--accent);
+            background: var(--success);
             border-radius: 12px;
             border: none;
             cursor: pointer;
             opacity: 0;
             pointer-events: none;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             color: white;
             display: grid;
             place-items: center;
-            box-shadow: 0 4px 15px rgba(9, 132, 227, 0.4);
+            box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
         }
 
         .fab.visible {
@@ -254,6 +182,13 @@
             height: 24px;
             stroke-width: 3;
         }
+
+        .hint-text {
+            font-size: 12px;
+            color: #b2bec3;
+            margin-top: -15px;
+            transition: opacity 0.3s;
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=JetBrains+Mono&display=swap"
         rel="stylesheet">
@@ -261,15 +196,14 @@
 
 <body>
     <div class="glass-card">
-        <div class="agent-overlay" id="agent">
-            <div class="agent-bubble">
-                <div class="agent-dot"></div>
-                <span id="agent-msg">AI: Analyzing Intent...</span>
-            </div>
+        <div class="status-area" id="status">
+            <div class="status-dot" style="opacity: 0"></div>
+            <span id="status-text">Ready for NLP Input</span>
         </div>
 
         <div class="omnibar-wrapper">
-            <input type="text" class="omnibar" id="q" placeholder="Type..." autocomplete="off" autofocus>
+            <input type="text" class="omnibar" id="q" placeholder="Describe intent (e.g., 'buy shoes')"
+                autocomplete="off" autofocus>
             <button class="fab" id="go-btn" onclick="execute()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
                     stroke-linejoin="round">
@@ -279,202 +213,176 @@
             </button>
         </div>
 
-        <div class="choice-container" id="choices"></div>
+        <div class="hint-text" id="hint">Type naturally to clarify intent.</div>
+
         <div class="chips" id="suggestions"></div>
-        <div class="output-area" id="output"></div>
     </div>
 
     <script>
         const input = document.getElementById('q');
-        const output = document.getElementById('output');
+        const statusText = document.getElementById('status-text');
+        const statusArea = document.getElementById('status');
+        const hint = document.getElementById('hint');
         const fab = document.getElementById('go-btn');
         const chipsContainer = document.getElementById('suggestions');
-        const agent = document.getElementById('agent');
-        const agentMsg = document.getElementById('agent-msg');
-        const choiceBox = document.getElementById('choices');
 
         let history = JSON.parse(localStorage.getItem('yolofi_history') || '[]');
-        let destination = null;
+        let currentIntent = null;
 
-        // -- UNIVERSAL INTENT ENGINE --
-        const INTENTS = {
-            COMMERCE: { keywords: ['buy', 'shop', 'store', 'price', 'cost', 'amazon', 'ebay', 'cheap', 'best'], url: "https://www.amazon.com/s?k=" },
-            VIDEO: { keywords: ['watch', 'video', 'youtube', 'trailer', 'clip', 'stream', 'movie'], url: "https://www.youtube.com/results?search_query=" },
-            AUDIO: { keywords: ['listen', 'song', 'music', 'spotify', 'album', 'audio'], url: "https://open.spotify.com/search/" },
-            CODE: { keywords: ['git', 'code', 'repo', 'npm', 'rust', 'js', 'error', 'debug', 'api', 'library'], url: "https://github.com/search?q=" },
-            MAP: { keywords: ['map', 'where', 'location', 'directions', 'place'], url: "https://www.openstreetmap.org/search?query=" },
-            KNOWLEDGE: { keywords: ['what', 'who', 'wiki', 'define', 'meaning', 'history'], url: "https://en.wikipedia.org/wiki/" }
+        // NLP ENGINE CONFIG
+        const NLP_Rules = {
+            COMMERCE: {
+                triggers: ['buy', 'shop', 'price', 'cost', 'cheap', 'best', 'amazon', 'store'],
+                site: "https://www.amazon.com/s?k=",
+                label: "COMMERCE"
+            },
+            VIDEO: {
+                triggers: ['watch', 'video', 'movie', 'clip', 'trailer', 'stream', 'youtube'],
+                site: "https://www.youtube.com/results?search_query=",
+                label: "VIDEO"
+            },
+            CODE: {
+                triggers: ['git', 'code', 'repo', 'rust', 'js', 'python', 'error', 'debug', 'npm', 'api'],
+                site: "https://github.com/search?q=",
+                label: "CODE"
+            },
+            MAP: {
+                triggers: ['map', 'where', 'location', 'directions'],
+                site: "https://www.openstreetmap.org/search?query=",
+                label: "MAP"
+            },
+            AUDIO: {
+                triggers: ['listen', 'music', 'song', 'spotify'],
+                site: "https://open.spotify.com/search/",
+                label: "AUDIO"
+            },
+            KNOWLEDGE: {
+                triggers: ['what', 'who', 'wiki', 'define', 'meaning', 'history', 'learn'],
+                site: "https://en.wikipedia.org/wiki/",
+                label: "KNOWLEDGE"
+            }
         };
 
+        // Exact Fast Matches
         const SHORTCUTS = {
-            'google': 'google.com', 'yt': 'youtube.com', 'gh': 'github.com', 'x': 'x.com',
-            'weather': 'wttr.in', 'gpt': 'chatgpt.com', 'amazon': 'amazon.com'
+            'google': 'google.com', 'yt': 'youtube.com', 'gh': 'github.com', 'x': 'x.com'
         };
 
-        // Init
+        // Render History
         renderChips();
         input.focus();
 
         input.addEventListener('keyup', (e) => {
             if (e.key === 'Enter') {
-                if (destination) { execute(); }
-                else { forceAnalyze(input.value); } // If enter pressed without clear intent, Force Ask
+                if (currentIntent) execute();
             } else {
-                resolve(input.value);
+                analyze(input.value);
             }
         });
 
-        function resolve(raw) {
+        function analyze(raw) {
             const q = raw.trim().toLowerCase();
-            resetUI();
-            if (!q) return;
 
-            // 1. Exact Shortcuts
-            if (SHORTCUTS[q]) { setDest(`https://${SHORTCUTS[q]}`, `Fast Nav: ${SHORTCUTS[q]}`); return; }
-            if (q.includes('.') && !q.includes(' ')) { setDest(`https://${q}`, `Direct Connect: ${q}`); return; }
+            // Reset
+            currentIntent = null;
+            fab.classList.remove('visible');
+            input.classList.remove('valid', 'invalid');
+            statusArea.classList.remove('success', 'error');
 
-            // 2. Heuristic Analysis
-            const analysis = analyzeIntent(q);
-
-            if (analysis.confidence > 0) {
-                // High Confidence -> Direct Nav
-                setDest(analysis.url(q), `Intent: ${analysis.type} (${Math.round(analysis.confidence * 100)}%)`);
-            } else {
-                // Low Confidence / Ambiguous -> Wait for Enter to Ask, OR show default
-                // We default to Knowledge Graph (Wikipedia) but we mark it as generic.
-                setDest(`https://en.wikipedia.org/wiki/${q.replace(/ /g, '_')}`, `Knowledge Graph?`);
+            if (!q) {
+                statusText.innerText = "Ready for NLP Input";
+                hint.innerText = "Type naturally to clarify intent.";
+                return;
             }
-        }
 
-        function forceAnalyze(raw) {
-            const q = raw.trim().toLowerCase();
-            if (!q) return;
-
-            // "Ask Intent for EVERY Input" (if vague)
-            // Even if we have a default wikipedia fallback, we now INTERCEPT just before execution 
-            // if the intent wasn't explicitly clear (low score).
-
-            const analysis = analyzeIntent(q);
-
-            // Artificial Threshold: If users wants us to "ask intent", we do so for scores < 2 (weak matches)
-            if (analysis.score < 2) {
-                askClarification(q);
-            } else {
-                execute(); // Trust the high score
+            // 1. Shortcut Check
+            if (SHORTCUTS[q]) {
+                lockIntent(`FAST NAV: ${SHORTCUTS[q]}`, `https://${SHORTCUTS[q]}`);
+                return;
             }
-        }
 
-        function analyzeIntent(q) {
-            let maxScore = 0;
-            let bestType = null;
-            let bestUrlFn = null;
+            // 2. NLP Scoring
+            let bestScore = 0;
+            let bestMatch = null;
 
-            for (const [type, data] of Object.entries(INTENTS)) {
+            for (const [key, rule] of Object.entries(NLP_Rules)) {
                 let score = 0;
-                for (const word of data.keywords) {
-                    if (q.includes(word)) score += 1; // Simple weighting
+                // Keyword matching
+                for (const t of rule.triggers) {
+                    if (q.includes(t)) score += 1;
                 }
 
-                // Boost for specific structures
-                if (type === 'CODE' && (q.startsWith('gh ') || q.includes('github'))) score += 5;
-                if (type === 'COMMERCE' && (q.startsWith('buy '))) score += 5;
-                if (type === 'VIDEO' && (q.startsWith('watch '))) score += 5;
-
-                if (score > maxScore) {
-                    maxScore = score;
-                    bestType = type;
-                    bestUrlFn = (term) => {
-                        // Clean term (remove keyword)
-                        const clean = term.replace(data.keywords.find(k => term.includes(k)) || '', '').trim();
-                        return data.url + encodeURIComponent(clean || term);
-                    };
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMatch = rule;
                 }
             }
 
-            // Default to knowledge if nothing found
-            if (maxScore === 0) {
-                return { type: 'KNOWLEDGE', confidence: 0, score: 0, url: (t) => INTENTS.KNOWLEDGE.url + t.replace(/ /g, '_') };
+            // 3. Decision Gate
+            if (bestScore > 0) {
+                // Determine clean Query (remove triggers optionally, or keep full context)
+                // For Amazon/YouTube keeping full context "buy red shoes" is usually fine.
+                // For GitHub "gh rust" -> "rust".
+                let dest = bestMatch.site + encodeURIComponent(q);
+
+                // Specific cleaner for GitHub/Wiki to make searches better
+                if (bestMatch.label === 'CODE') {
+                    dest = bestMatch.site + encodeURIComponent(q.replace(/gh |git /g, ''));
+                }
+                if (bestMatch.label === 'KNOWLEDGE') {
+                    dest = bestMatch.site + q.replace(/ /g, '_');
+                }
+
+                lockIntent(bestMatch.label, dest);
+
+            } else {
+                // Ambiguous / No Intent Detected
+                rejectIntent();
             }
-
-            return { type: bestType, confidence: Math.min(maxScore / 2, 1), score: maxScore, url: bestUrlFn };
         }
 
-        function askClarification(q) {
-            // Reset destination logic to prevent auto-nav
-            destination = null;
-            output.classList.remove('visible');
-            fab.classList.remove('visible');
-
-            agentMsg.innerText = `AI: What is your goal with "${q}"?`;
-            agent.classList.add('active');
-
-            chipsContainer.style.display = 'none';
-            choiceBox.innerHTML = '';
-
-            // Generic Choices
-            const choices = [
-                { label: "Learn (Wiki)", type: "KNOWLEDGE" },
-                { label: "Buy (Shop)", type: "COMMERCE" },
-                { label: "Watch (Video)", type: "VIDEO" },
-                { label: "Code (Git)", type: "CODE" }
-            ];
-
-            choices.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = 'choice-btn';
-                btn.innerText = opt.label;
-                btn.onclick = () => {
-                    // Force Intent
-                    const data = INTENTS[opt.type];
-                    destination = data.url + encodeURIComponent(q);
-                    execute();
-                };
-                choiceBox.appendChild(btn);
-            });
-            choiceBox.classList.add('active');
-        }
-
-        function resetUI() {
-            output.classList.remove('visible');
-            fab.classList.remove('visible');
-            agent.classList.remove('active');
-            choiceBox.classList.remove('active');
-            choiceBox.style.display = 'none';
-            chipsContainer.style.display = 'flex';
-        }
-
-        function setDest(url, label) {
-            destination = url;
-            output.innerText = `>> ${label}`;
-            output.classList.add('visible');
+        function lockIntent(label, url) {
+            currentIntent = url;
+            statusText.innerText = `>> INTENT DETECTED: ${label}`;
+            statusArea.classList.add('success');
+            input.classList.add('valid');
             fab.classList.add('visible');
+            hint.innerText = "Press Enter to execute.";
+        }
+
+        function rejectIntent() {
+            statusText.innerText = "AMBIGUOUS QUERY";
+            statusArea.classList.add('error');
+            input.classList.add('invalid');
+            hint.innerText = "Add context: 'buy', 'watch', 'code', 'learn'...";
         }
 
         function execute() {
-            if (!destination) return;
+            if (!currentIntent) return;
             const val = input.value.trim();
             if (val && !history.includes(val)) {
                 history.unshift(val);
                 if (history.length > 5) history.pop();
                 localStorage.setItem('yolofi_history', JSON.stringify(history));
             }
-            window.location.href = destination;
+            window.location.href = currentIntent;
         }
 
         function renderChips() {
             chipsContainer.innerHTML = '';
-            history.slice(0, 3).forEach(h => {
+            history.forEach(h => {
                 const chip = document.createElement('div');
                 chip.className = 'chip history';
                 chip.innerText = '↺ ' + h;
-                chip.onclick = () => { input.value = h; resolve(h); input.focus(); };
+                chip.onclick = () => { input.value = h; analyze(h); input.focus(); };
                 chipsContainer.appendChild(chip);
             });
-            ['apple store', 'rust lang', 'best headphones'].forEach(s => {
+            // Examples
+            ['buy shoes', 'watch batman', 'learn rust'].forEach(s => {
                 const chip = document.createElement('div');
                 chip.className = 'chip';
                 chip.innerText = s;
-                chip.onclick = () => { input.value = s; resolve(s); input.focus(); };
+                chip.onclick = () => { input.value = s; analyze(s); input.focus(); };
                 chipsContainer.appendChild(chip);
             });
         }
