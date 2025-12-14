@@ -227,6 +227,39 @@
             opacity: 0.6;
             margin-top: 5px;
             font-weight: 400;
+            pointer-events: none;
+        }
+
+        #flux-node {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #fff, var(--primary));
+            box-shadow: 0 0 20px var(--primary), inset 0 0 10px #fff;
+            z-index: 20;
+            cursor: crosshair;
+            animation: pulseFlux 1.5s infinite;
+            top: 20%;
+            left: 20%;
+        }
+
+        @keyframes pulseFlux {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+                box-shadow: 0 0 30px var(--primary);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
         }
 
         /* --- PANEL (MARKET) --- */
@@ -649,6 +682,7 @@
                 <button id="mint-btn" onpointerdown="mint(event)">
                     MINT
                     <span class="sub-text">TAP TO MINE</span>
+                    <div id="flux-node"></div>
                 </button>
 
                 <!-- Skill Check UI -->
@@ -691,8 +725,8 @@
             <div class="crate-title" style="color: #ff0055;" id="vip-title">SUPPORT YOLOMINT</div>
             <p class="crate-desc" id="vip-desc" style="line-height: 1.6;">
                 Premium features are <b>Coming Soon</b>!<br><br>
-                If you enjoy the <b>experience</b>, <b>Buy a Coffee</b> to help us cover server costs and ship Premium
-                faster.
+                If you enjoy the <b>experience</b>, <b>Buy a Coffee</b> to support <b>development progress</b> and ship
+                Premium faster.
             </p>
             <ul
                 style="text-align: left; font-size: 13px; color: #ccc; margin-bottom: 20px; list-style: none; padding: 0;">
@@ -850,21 +884,31 @@
 
             const now = Date.now();
 
-            // IF RECHARGING (Skill Mode)
+            // SKILL REBOOT MODE
             if (isRecharging) {
                 resolveSkillCheck();
                 return;
             }
 
-            // Check Energy
+            // PRECISION CHECK (The "Playable Skill")
+            // Check if user hit the Flux Node (or close enough)
+            let isPrecisionHit = false;
+            if (e.target.id === 'flux-node') {
+                isPrecisionHit = true;
+            }
+
+            // Energy Logic
             if (!isPremium) {
-                if (energy < 5) {
-                    haptic(50);
-                    // TRIGGER SKILL CHECK INSTEAD OF UPSELL IMMEDIATELY
-                    startSkillCheck();
-                    return;
+                // If Precision Hit -> 0 Energy Cost! (Skill Reward)
+                // If Normal Hit -> 5 Energy Cost
+                if (!isPrecisionHit) {
+                    if (energy < 5) {
+                        haptic(50);
+                        startSkillCheck();
+                        return;
+                    }
+                    energy -= 5;
                 }
-                energy -= 5;
             }
 
             // COMBO LOGIC
@@ -876,8 +920,11 @@
             }
             lastClickTime = now;
 
-            // CRITICAL HIT & MULTIPLIERS
+            // MULTIPLIERS
             let mult = 1 + (Math.floor(combo / 5) * 0.5);
+            // Precision Hit grants instant 3x multiplier STACKING with Combo
+            if (isPrecisionHit) mult *= 3;
+
             let isCrit = Math.random() < 0.05;
             if (isCrit) mult *= 5;
 
@@ -887,27 +934,48 @@
 
             // Visuals
             let label = `+$${format(power)}`;
+            if (isPrecisionHit) label = `PERFECT! +$${format(power)}`;
             if (isCrit) label = `CRIT! +$${format(power)}`;
-            else if (combo > 5) label += ` (x${mult.toFixed(1)})`;
 
-            spawnParticle(e.clientX, e.clientY, label, isCrit);
-            spawnDebris(e.clientX, e.clientY, isCrit ? 15 : 6); // More Debris
+            spawnParticle(e.clientX, e.clientY, label, isCrit || isPrecisionHit);
 
-            haptic(isCrit ? 50 : 10);
+            // If Precision, move the node
+            if (isPrecisionHit) {
+                moveFluxNode();
+                spawnParticle(e.clientX, e.clientY, "⚡ FREE ENERGY", true);
+                haptic(30);
+            } else {
+                haptic(10);
+            }
 
-            // INTENSITY
+            // Debris on every hit
+            spawnDebris(e.clientX, e.clientY, isCrit ? 15 : 6);
+
+            // Update UI
+            // ... (Intensity logic same as before)
             let intensity = Math.min(combo, 20);
             if (intensity > 0) {
                 document.body.style.transform = `translate(${Math.random() * intensity - intensity / 2}px, ${Math.random() * intensity - intensity / 2}px)`;
                 setTimeout(() => document.body.style.transform = 'none', 50);
             }
 
-            // Btn Shake
-            let scale = isCrit ? 1.2 : 0.95;
+            let scale = (isCrit || isPrecisionHit) ? 1.1 : 0.95;
             btnMint.style.transform = `scale(${scale}) rotate(${Math.random() * 8 - 4}deg)`;
             setTimeout(() => btnMint.style.transform = 'none', 50);
 
             updateUI();
+        }
+
+        // --- FLUX NODE SYSTEM ---
+        const elFlux = document.getElementById('flux-node');
+        function moveFluxNode() {
+            // Random pos within 20% to 80% of button container
+            // Button is 240px or 300px.
+            // Let's use % to be safe.
+            const x = 15 + Math.random() * 70;
+            const y = 15 + Math.random() * 70;
+            elFlux.style.left = x + '%';
+            elFlux.style.top = y + '%';
         }
 
         // --- SKILL REBOOT SYSTEM ---
@@ -1052,7 +1120,7 @@
                 title.style.color = 'red';
             } else {
                 title.innerText = "SUPPORT YOLOMINT";
-                desc.innerHTML = "Premium features are <b>Coming Soon</b>!<br><br>If you enjoy the <b>experience</b>, <b>Buy a Coffee</b> to help us cover server costs.";
+                desc.innerHTML = "Premium features are <b>Coming Soon</b>!<br><br>If you enjoy the <b>experience</b>, <b>Buy a Coffee</b> to support <b>development progress</b>.";
                 title.style.color = '#ff0055';
             }
 
