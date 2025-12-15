@@ -227,72 +227,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Handle upgrade button click
 async function handleUpgrade() {
-    if (!window.PhonePePayment) {
-        // Fallback: Show manual payment instructions
-        const confirmed = confirm('Upgrade to Pro tier for ₹49/month?\n\nYou will be redirected to payment page.');
+    const tier = 'pro';
+    const amount = 49;
+    const upiId = '9035333300-2@ybl';
+    const merchantName = 'Yolofi';
 
-        if (confirmed) {
-            // Show manual UPI payment details
-            const modal = document.createElement('div');
-            modal.className = 'payment-modal';
-            modal.innerHTML = `
-                <div class="payment-modal-content">
-                    <div class="payment-modal-header">
-                        <h3>Upgrade to Pro</h3>
-                        <button class="close-modal" onclick="this.closest('.payment-modal').remove()">×</button>
-                    </div>
-                    <div class="payment-modal-body">
-                        <p><strong>Pay ₹49/month via UPI:</strong></p>
-                        <div class="upi-details">
-                            <div class="upi-field">
-                                <label>UPI ID:</label>
-                                <div class="upi-value">
-                                    <code>9035333300-2@ybl</code>
-                                    <button onclick="navigator.clipboard.writeText('9035333300-2@ybl'); alert('UPI ID copied!')">Copy</button>
-                                </div>
-                            </div>
-                            <div class="upi-field">
-                                <label>Amount:</label>
-                                <div class="upi-value">₹49</div>
-                            </div>
-                            <div class="upi-field">
-                                <label>Merchant:</label>
-                                <div class="upi-value">Yolofi</div>
-                            </div>
-                        </div>
-                        <p class="payment-note">After payment, contact support@yolofi.in with transaction ID to activate Pro tier.</p>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
-        return;
-    }
+    // Generate UPI payment link
+    const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR&tn=${encodeURIComponent('WEG Pro Subscription')}`;
 
-    const tier = 'pro'; // Default to pro tier
-    const billingCycle = 'monthly';
+    // Confirm before redirecting
+    const confirmed = confirm(`Upgrade to Pro tier for ₹${amount}/month?\n\nYou will be redirected to your UPI app for payment.`);
 
-    try {
-        const payment = await window.PhonePePayment.initiateUpgrade(tier, billingCycle);
+    if (confirmed) {
+        // Try to open UPI app
+        window.location.href = upiLink;
 
-        // Show payment modal
-        const confirmed = confirm(`Upgrade to ${tier.toUpperCase()} tier for ₹${payment.amount}/month?\n\nYou will be redirected to PhonePe for payment.`);
+        // Fallback: If UPI app doesn't open, show PhonePe web link after 2 seconds
+        setTimeout(() => {
+            const phonepeLink = `phonepe://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR`;
+            const gpayLink = `tez://upi/pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR`;
 
-        if (confirmed) {
-            window.PhonePePayment.openPayment(payment.paymentLink);
-
-            // After payment, verify
-            setTimeout(async () => {
-                const result = await window.PhonePePayment.verifyPayment(payment.orderId);
-                if (result.success) {
-                    alert('Payment successful! Your account has been upgraded.');
-                    updateDashboard();
+            // Try PhonePe first, then GPay
+            const tryPhonePe = confirm('UPI app not detected. Try PhonePe?');
+            if (tryPhonePe) {
+                window.location.href = phonepeLink;
+            } else {
+                const tryGPay = confirm('Try Google Pay instead?');
+                if (tryGPay) {
+                    window.location.href = gpayLink;
                 }
-            }, 5000);
-        }
-    } catch (error) {
-        console.error('Upgrade failed:', error);
-        alert('Upgrade failed. Please try again or contact support.');
+            }
+        }, 2000);
     }
 }
 
