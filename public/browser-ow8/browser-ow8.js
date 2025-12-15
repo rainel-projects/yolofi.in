@@ -186,6 +186,63 @@ class WebExecutionGate {
                     severity: 'critical'
                 });
             }
+
+            // CYBERSECURITY: XSS Detection
+            if (this.detectXSS(code)) {
+                violations.push({
+                    policy: 'Cybersecurity',
+                    rule: 'XSS attack attempt detected',
+                    severity: 'critical'
+                });
+            }
+
+            // CYBERSECURITY: SQL Injection Detection
+            if (this.detectSQLInjection(code)) {
+                violations.push({
+                    policy: 'Cybersecurity',
+                    rule: 'SQL injection attempt detected',
+                    severity: 'critical'
+                });
+            }
+
+            // CYBERSECURITY: Command Injection Detection
+            if (this.detectCommandInjection(code)) {
+                violations.push({
+                    policy: 'Cybersecurity',
+                    rule: 'Command injection attempt detected',
+                    severity: 'critical'
+                });
+            }
+
+            // CYBERSECURITY: CSRF Detection
+            if (this.detectCSRF(code)) {
+                violations.push({
+                    policy: 'Cybersecurity',
+                    rule: 'CSRF vulnerability detected',
+                    severity: 'high'
+                });
+            }
+
+            // CYBERSECURITY: Cryptojacking Detection
+            if (this.detectCryptojacking(code)) {
+                violations.push({
+                    policy: 'Cybersecurity',
+                    rule: 'Cryptojacking attempt detected',
+                    severity: 'critical'
+                });
+            }
+
+            // CYBERSECURITY: Endpoint Security (for URLs)
+            if (context === 'script-src') {
+                const endpointCheck = this.validateEndpointSecurity(code);
+                if (!endpointCheck.secure) {
+                    violations.push({
+                        policy: 'Cybersecurity',
+                        rule: endpointCheck.reason,
+                        severity: 'critical'
+                    });
+                }
+            }
         }
 
         const executionTime = performance.now() - startTime;
@@ -245,6 +302,125 @@ class WebExecutionGate {
         const dangerousFunctions = /(document\.write|innerHTML\s*=|outerHTML\s*=)/i;
 
         return inlineEventPattern.test(code) || dangerousFunctions.test(code);
+    }
+
+    /**
+     * CYBERSECURITY: Detect XSS (Cross-Site Scripting) attempts
+     */
+    detectXSS(code) {
+        const xssPatterns = [
+            /<script[^>]*>.*?<\/script>/gi,
+            /javascript:/gi,
+            /onerror\s*=/gi,
+            /onload\s*=/gi,
+            /<iframe[^>]*>/gi,
+            /eval\s*\(/gi,
+            /expression\s*\(/gi,
+            /vbscript:/gi,
+            /data:text\/html/gi
+        ];
+
+        return xssPatterns.some(pattern => pattern.test(code));
+    }
+
+    /**
+     * CYBERSECURITY: Detect SQL injection attempts
+     */
+    detectSQLInjection(code) {
+        const sqlPatterns = [
+            /(\bunion\b.*\bselect\b)|(\bselect\b.*\bunion\b)/gi,
+            /\b(drop|delete|insert|update)\b.*\b(table|database|from)\b/gi,
+            /('|")\s*(or|and)\s*('|")\s*=\s*('|")/gi,
+            /;\s*(drop|delete|insert|update)/gi,
+            /--\s*$/gm,
+            /\/\*.*\*\//g
+        ];
+
+        return sqlPatterns.some(pattern => pattern.test(code));
+    }
+
+    /**
+     * CYBERSECURITY: Detect command injection attempts
+     */
+    detectCommandInjection(code) {
+        const cmdPatterns = [
+            /[;&|`$()]/g,
+            /\bexec\b/gi,
+            /\bsystem\b/gi,
+            /\bshell_exec\b/gi,
+            /\bpassthru\b/gi,
+            /\bpopen\b/gi
+        ];
+
+        return cmdPatterns.some(pattern => pattern.test(code));
+    }
+
+    /**
+     * CYBERSECURITY: Detect CSRF (Cross-Site Request Forgery) vulnerabilities
+     */
+    detectCSRF(code) {
+        // Check for form submissions without CSRF tokens
+        const hasFormSubmit = /\.submit\(\)|form\.submit/gi.test(code);
+        const hasCsrfToken = /csrf|_token|authenticity_token/gi.test(code);
+
+        return hasFormSubmit && !hasCsrfToken;
+    }
+
+    /**
+     * CYBERSECURITY: Validate endpoint security
+     */
+    validateEndpointSecurity(url) {
+        // Check for HTTPS
+        if (!url.startsWith('https://') && !url.startsWith('/')) {
+            return {
+                secure: false,
+                reason: 'Non-HTTPS endpoint detected'
+            };
+        }
+
+        // Check for known malicious domains
+        const maliciousDomains = [
+            'malware.com',
+            'phishing.net',
+            'suspicious.org'
+        ];
+
+        if (maliciousDomains.some(domain => url.includes(domain))) {
+            return {
+                secure: false,
+                reason: 'Known malicious domain'
+            };
+        }
+
+        // Check for data exfiltration patterns
+        const dataExfilPatterns = [
+            /data:.*base64/gi,
+            /blob:/gi
+        ];
+
+        if (dataExfilPatterns.some(pattern => pattern.test(url))) {
+            return {
+                secure: false,
+                reason: 'Potential data exfiltration detected'
+            };
+        }
+
+        return { secure: true };
+    }
+
+    /**
+     * CYBERSECURITY: Detect cryptojacking attempts
+     */
+    detectCryptojacking(code) {
+        const cryptoPatterns = [
+            /coinhive/gi,
+            /crypto-loot/gi,
+            /webminer/gi,
+            /minero/gi,
+            /cryptonight/gi
+        ];
+
+        return cryptoPatterns.some(pattern => pattern.test(code));
     }
 
     /**
