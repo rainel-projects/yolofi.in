@@ -131,6 +131,11 @@ function testTracking() {
     const output = document.getElementById('test-output');
     output.innerHTML = '';
 
+    if (!window.WEG || !window.WEG.initialized) {
+        logTest('❌ FAILED: WEG not initialized yet', 'error');
+        return;
+    }
+
     try {
         // This should be blocked by GDPR policy
         eval('ga("create", "UA-XXXXX-Y", "auto");');
@@ -147,6 +152,11 @@ function testInlineScript() {
     const output = document.getElementById('test-output');
     output.innerHTML = '';
 
+    if (!window.WEG || !window.WEG.initialized) {
+        logTest('❌ FAILED: WEG not initialized yet', 'error');
+        return;
+    }
+
     try {
         // This should be blocked by CSP policy
         eval('document.write("<script>alert(1)</script>");');
@@ -162,6 +172,11 @@ function testInlineScript() {
 function testDynamicEval() {
     const output = document.getElementById('test-output');
     output.innerHTML = '';
+
+    if (!window.WEG || !window.WEG.initialized) {
+        logTest('❌ FAILED: WEG not initialized yet', 'error');
+        return;
+    }
 
     try {
         // This should be allowed (no violations)
@@ -206,7 +221,7 @@ window.addEventListener('weg:violation', (event) => {
 });
 
 // Initialize dashboard
-document.addEventListener('DOMContentLoaded', () => {
+function initializeDashboard() {
     // Attach scan button
     document.getElementById('scan-btn').addEventListener('click', scanPage);
 
@@ -222,89 +237,48 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial update
     updateDashboard();
 
-    console.log('[WEG Dashboard] Initialized');
+    console.log('[WEG Dashboard] Initialized after WEG');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.WEG && window.WEG.initialized) {
+        initializeDashboard();
+    } else {
+        window.addEventListener('weg:initialized', initializeDashboard, { once: true });
+    }
 });
 
 // Handle upgrade button click
 async function handleUpgrade() {
-    const tier = 'pro';
-    const amount = 49;
-    const upiId = '9035333300-2@ybl';
-    const merchantName = 'Yolofi';
-
-    // Generate UPI payment link
-    const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR&tn=${encodeURIComponent('WEG Pro Subscription')}`;
-
-    // Create custom payment dialog
+    // Create coming soon dialog
     const dialog = document.createElement('div');
     dialog.className = 'payment-dialog-overlay';
     dialog.innerHTML = `
         <div class="payment-dialog">
             <div class="payment-dialog-header">
-                <h3>Upgrade to Pro</h3>
+                <h3>Payment Integration Coming Soon</h3>
             </div>
             <div class="payment-dialog-body">
-                <div class="payment-info">
-                    <div class="payment-row">
-                        <span class="payment-label">Tier:</span>
-                        <span class="payment-value">Pro</span>
-                    </div>
-                    <div class="payment-row">
-                        <span class="payment-label">Amount:</span>
-                        <span class="payment-value">₹${amount}/month</span>
-                    </div>
-                    <div class="payment-row">
-                        <span class="payment-label">Features:</span>
-                        <span class="payment-value">1M verifications/month</span>
-                    </div>
+                <div style="text-align: center; padding: 20px 0;">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2" style="margin-bottom: 16px;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <p style="font-size: 16px; color: #1a1a1a; margin-bottom: 12px; font-weight: 500;">
+                        Payment integration is currently under development
+                    </p>
+                    <p style="font-size: 14px; color: #6b7280; line-height: 1.6;">
+                        We're working on implementing secure payment processing. Please check back soon for updates.
+                    </p>
                 </div>
-                <p class="payment-note">Your UPI app will open for secure payment</p>
             </div>
             <div class="payment-dialog-actions">
-                <button class="btn-dialog btn-cancel" onclick="this.closest('.payment-dialog-overlay').remove()">Cancel</button>
-                <button class="btn-dialog btn-confirm" id="confirm-payment">Pay ₹${amount}</button>
+                <button class="btn-dialog btn-confirm" onclick="this.closest('.payment-dialog-overlay').remove()" style="width: 100%;">Got it</button>
             </div>
         </div>
     `;
 
     document.body.appendChild(dialog);
-
-    // Handle confirm button
-    document.getElementById('confirm-payment').onclick = () => {
-        // Remove dialog
-        dialog.remove();
-
-        // Open UPI link in new window (will trigger UPI app)
-        const paymentWindow = window.open(upiLink, '_blank');
-
-        // Fallback: If popup blocked or UPI app doesn't open
-        setTimeout(() => {
-            if (!paymentWindow || paymentWindow.closed) {
-                const phonepeLink = `phonepe://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR`;
-                const gpayLink = `tez://upi/pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR`;
-
-                // Show fallback dialog
-                const fallbackDialog = document.createElement('div');
-                fallbackDialog.className = 'payment-dialog-overlay';
-                fallbackDialog.innerHTML = `
-                    <div class="payment-dialog">
-                        <div class="payment-dialog-header">
-                            <h3>Choose Payment App</h3>
-                        </div>
-                        <div class="payment-dialog-body">
-                            <p>UPI app not detected. Choose your preferred payment app:</p>
-                        </div>
-                        <div class="payment-dialog-actions">
-                            <button class="btn-dialog btn-cancel" onclick="this.closest('.payment-dialog-overlay').remove()">Cancel</button>
-                            <button class="btn-dialog btn-app" onclick="window.open('${phonepeLink}', '_blank'); this.closest('.payment-dialog-overlay').remove();">PhonePe</button>
-                            <button class="btn-dialog btn-app" onclick="window.open('${gpayLink}', '_blank'); this.closest('.payment-dialog-overlay').remove();">Google Pay</button>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(fallbackDialog);
-            }
-        }, 1000);
-    };
 }
 
 // Add CSS for spinner
