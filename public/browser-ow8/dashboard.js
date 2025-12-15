@@ -228,7 +228,44 @@ document.addEventListener('DOMContentLoaded', () => {
 // Handle upgrade button click
 async function handleUpgrade() {
     if (!window.PhonePePayment) {
-        alert('Payment system not loaded');
+        // Fallback: Show manual payment instructions
+        const confirmed = confirm('Upgrade to Pro tier for ₹49/month?\n\nYou will be redirected to payment page.');
+
+        if (confirmed) {
+            // Show manual UPI payment details
+            const modal = document.createElement('div');
+            modal.className = 'payment-modal';
+            modal.innerHTML = `
+                <div class="payment-modal-content">
+                    <div class="payment-modal-header">
+                        <h3>Upgrade to Pro</h3>
+                        <button class="close-modal" onclick="this.closest('.payment-modal').remove()">×</button>
+                    </div>
+                    <div class="payment-modal-body">
+                        <p><strong>Pay ₹49/month via UPI:</strong></p>
+                        <div class="upi-details">
+                            <div class="upi-field">
+                                <label>UPI ID:</label>
+                                <div class="upi-value">
+                                    <code>9035333300-2@ybl</code>
+                                    <button onclick="navigator.clipboard.writeText('9035333300-2@ybl'); alert('UPI ID copied!')">Copy</button>
+                                </div>
+                            </div>
+                            <div class="upi-field">
+                                <label>Amount:</label>
+                                <div class="upi-value">₹49</div>
+                            </div>
+                            <div class="upi-field">
+                                <label>Merchant:</label>
+                                <div class="upi-value">Yolofi</div>
+                            </div>
+                        </div>
+                        <p class="payment-note">After payment, contact support@yolofi.in with transaction ID to activate Pro tier.</p>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
         return;
     }
 
@@ -255,7 +292,7 @@ async function handleUpgrade() {
         }
     } catch (error) {
         console.error('Upgrade failed:', error);
-        alert('Upgrade failed. Please try again.');
+        alert('Upgrade failed. Please try again or contact support.');
     }
 }
 
