@@ -183,27 +183,11 @@
                             <span>Account ID:</span>
                             <strong id="account-id" style="font-size: 11px; font-family: monospace;">-</strong>
                         </div>
-                        <button class="btn-upgrade" id="upgrade-btn">Upgrade to Pro</button>
+
                     </div>
                 </div>
 
-                <!-- Page Scan Results -->
-                <div class="dashboard-card scan-card">
-                    <div class="card-header">
-                        <h4>Page Compliance Scan</h4>
-                        <button class="btn-scan" id="scan-btn">Scan Now</button>
-                    </div>
-                    <div class="card-body" id="scan-results">
-                        <div class="scan-placeholder">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M9 11l3 3L22 4"></path>
-                                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
-                            </svg>
-                            <p>Click "Scan Now" to check this page for compliance issues</p>
-                        </div>
-                    </div>
-                </div>
+
 
                 <!-- Recent Violations -->
                 <div class="dashboard-card violations-card">
@@ -265,12 +249,36 @@
             <h3 class="section-title">Integration</h3>
             <p class="section-subtitle">Add WEG to your site in 30 seconds</p>
 
-            <div class="code-block">
-                <div class="code-header">
-                    <span>HTML</span>
-                    <button class="copy-btn" onclick="copyCode()">Copy</button>
+            <div class="locked-docs">
+                <div class="lock-overlay">
+                    <div class="lock-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <h4>Support WEG Development</h4>
+                    <p>Help cover dev costs to build & maintain WEG scripts</p>
+                    <a href="https://www.buymeacoffee.com/yolofi" target="_blank" class="donate-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                            <line x1="6" y1="1" x2="6" y2="4"></line>
+                            <line x1="10" y1="1" x2="10" y2="4"></line>
+                            <line x1="14" y1="1" x2="14" y2="4"></line>
+                        </svg>
+                        Support Development
+                    </a>
                 </div>
-                <pre><code id="integration-code">&lt;!-- Load WEG before any other scripts --&gt;
+                <div class="blurred-content">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>HTML</span>
+                            <button class="copy-btn" disabled>Copy</button>
+                        </div>
+                        <pre><code>&lt;!-- Load WEG before any other scripts --&gt;
 &lt;script src="https://cdn.yolofi.in/browser-ow8/browser-ow8.js"&gt;&lt;/script&gt;
 
 &lt;!-- Optional: Configure policies --&gt;
@@ -281,32 +289,38 @@
     accessibility: { enforceWCAG: 'AA' }
   });
 &lt;/script&gt;</code></pre>
-            </div>
+                    </div>
 
-            <div class="integration-features">
-                <div class="feature">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>Works in all browsers</span>
-                </div>
-                <div class="feature">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>&lt;5ms overhead per check</span>
-                </div>
-                <div class="feature">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>Zero dependencies</span>
-                </div>
-                <div class="feature">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>Tamper-proof audit logs</span>
+                    <div class="integration-features">
+                        <div class="feature">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>Works in all browsers</span>
+                        </div>
+                        <div class="feature">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>&lt;5ms overhead per check</span>
+                        </div>
+                        <div class="feature">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>Zero dependencies</span>
+                        </div>
+                        <div class="feature">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>Tamper-proof audit logs</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

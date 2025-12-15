@@ -809,6 +809,104 @@ body {
     line-height: 1.5;
 }
 
+/* Locked Documentation */
+.locked-docs {
+    position: relative;
+    margin: 32px 0;
+}
+
+.lock-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    padding: 40px;
+    text-align: center;
+}
+
+.lock-icon {
+    margin-bottom: 24px;
+    animation: lockPulse 2s ease-in-out infinite;
+}
+
+.lock-icon svg {
+    color: var(--color-primary);
+}
+
+@keyframes lockPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+}
+
+.lock-overlay h4 {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 12px;
+}
+
+.lock-overlay p {
+    font-size: 16px;
+    color: var(--color-text-secondary);
+    margin-bottom: 32px;
+    max-width: 400px;
+}
+
+.donate-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #FFDD00 0%, #FFC107 100%);
+    color: #1a1a1a;
+    padding: 16px 32px;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    font-size: 16px;
+    text-decoration: none;
+    transition: var(--transition);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.donate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 193, 7, 0.4);
+    background: linear-gradient(135deg, #FFC107 0%, #FFB300 100%);
+}
+
+.donate-btn svg {
+    color: #1a1a1a;
+}
+
+.blurred-content {
+    filter: blur(4px);
+    pointer-events: none;
+    user-select: none;
+}
+
+.blurred-content .copy-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* Footer */
 .footer {
     background: var(--color-text);
