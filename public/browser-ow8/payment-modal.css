@@ -1,0 +1,155 @@
+/* Payment Modal Styles */
+.payment-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.payment-modal-content {
+    background: white;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.16);
+}
+
+.payment-modal-header {
+    padding: 24px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.payment-modal-header h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.close-modal:hover {
+    background: #f9fafb;
+}
+
+.payment-modal-body {
+    padding: 24px;
+}
+
+.payment-modal-body>p {
+    margin-bottom: 16px;
+    font-weight: 500;
+}
+
+.upi-details {
+    background: #f9fafb;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.upi-field {
+    margin-bottom: 16px;
+}
+
+.upi-field:last-child {
+    margin-bottom: 0;
+}
+
+.upi-field label {
+    display: block;
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.upi-value {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.upi-value code {
+    flex: 1;
+    background: white;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    border: 1px solid #e5e7eb;
+}
+
+.upi-value button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.upi-value button:hover {
+    background: #1e40af;
+}
+
+.payment-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.payment-actions .btn-primary,
+.payment-actions .btn-secondary {
+    flex: 1;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.payment-actions .btn-secondary {
+    background: #f9fafb;
+    color: #1a1a1a;
+}
+
+.payment-actions .btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+.payment-note {
+    font-size: 13px;
+    color: #6b7280;
+    text-align: center;
+    margin: 0;
+}

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEG - Web Execution Gate Legal | browser-ow8</title>
+    <meta name="description"
+        content="Runtime verification layer that enforces legal compliance for all web execution. GDPR, CCPA, ADA compliance made inevitable.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="payment-modal.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <div class="logo-icon">O₈</div>
+                <div class="logo-text">
+                    <h1>browser-ow8</h1>
+                    <p>Web Execution Gate Legal</p>
+                </div>
+            </div>
+            <nav class="nav">
+                <a href="#demo">Live Demo</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#integration">Integration</a>
+                <a href="https://yolofi.in" class="btn-primary">Yolofi</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">Runtime Verification Layer</div>
+            <h2 class="hero-title">Legal Compliance<br>Made <span class="gradient-text">Inevitable</span></h2>
+            <p class="hero-subtitle">
+                WEG intercepts all web execution and enforces GDPR, CCPA, and ADA compliance<br>
+                before code runs. The oxygen browsers need to survive in a regulated world.
+            </p>
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-checks">0</div>
+                    <div class="stat-label">Verifications</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="violations-blocked">0</div>
+                    <div class="stat-label">Violations Blocked</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avg-time">0ms</div>
+                    <div class="stat-label">Avg Check Time</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Demo Section -->
+    <section id="demo" class="demo-section">
+        <div class="container">
+            <h3 class="section-title">Live Compliance Dashboard</h3>
+            <p class="section-subtitle">Real-time verification of this page's execution</p>
+
+            <div class="dashboard">
+                <!-- Status Overview -->
+                <div class="dashboard-card status-card">
+                    <div class="card-header">
+                        <h4>WEG Status</h4>
+                        <div class="status-indicator active" id="weg-status">
+                            <span class="pulse"></span>
+                            Active
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="metric-row">
+                            <span>Total Checks:</span>
+                            <strong id="dash-checks">0</strong>
+                        </div>
+                        <div class="metric-row">
+                            <span>Allowed:</span>
+                            <strong class="text-success" id="dash-allowed">0</strong>
+                        </div>
+                        <div class="metric-row">
+                            <span>Blocked:</span>
+                            <strong class="text-danger" id="dash-blocked">0</strong>
+                        </div>
+                        <div class="metric-row">
+                            <span>Performance:</span>
+                            <strong id="dash-perf">0.0ms</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Policy Status -->
+                <div class="dashboard-card policy-card">
+                    <div class="card-header">
+                        <h4>Active Policies</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="policy-item">
+                            <div class="policy-icon gdpr">G</div>
+                            <div class="policy-info">
+                                <strong>GDPR Compliance</strong>
+                                <span>Cookie consent, tracking prevention</span>
+                            </div>
+                            <div class="policy-status enabled">✓</div>
+                        </div>
+                        <div class="policy-item">
+                            <div class="policy-icon ccpa">C</div>
+                            <div class="policy-info">
+                                <strong>CCPA Compliance</strong>
+                                <span>Data sale opt-out, privacy disclosures</span>
+                            </div>
+                            <div class="policy-status enabled">✓</div>
+                        </div>
+                        <div class="policy-item">
+                            <div class="policy-icon ada">A</div>
+                            <div class="policy-info">
+                                <strong>ADA/WCAG 2.1 AA</strong>
+                                <span>Accessibility requirements</span>
+                            </div>
+                            <div class="policy-status enabled">✓</div>
+                        </div>
+                        <div class="policy-item">
+                            <div class="policy-icon security">S</div>
+                            <div class="policy-info">
+                                <strong>Security Policies</strong>
+                                <span>CSP validation, XSS prevention</span>
+                            </div>
+                            <div class="policy-status enabled">✓</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Usage & Billing -->
+                <div class="dashboard-card usage-card">
+                    <div class="card-header">
+                        <h4>Usage & Billing</h4>
+                        <span class="tier-badge" id="tier-badge">Free Tier</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="usage-bar-container">
+                            <div class="usage-bar">
+                                <div class="usage-bar-fill" id="usage-bar-fill" style="width: 0%"></div>
+                            </div>
+                            <div class="usage-stats">
+                                <span id="usage-count">0 / 10,000</span>
+                                <span id="usage-percent">0%</span>
+                            </div>
+                        </div>
+                        <div class="metric-row">
+                            <span>Monthly Price:</span>
+                            <strong id="monthly-price">$0</strong>
+                        </div>
+                        <div class="metric-row">
+                            <span>Billing Cycle:</span>
+                            <strong id="billing-cycle">-</strong>
+                        </div>
+                        <div class="metric-row">
+                            <span>Account ID:</span>
+                            <strong id="account-id" style="font-size: 11px; font-family: monospace;">-</strong>
+                        </div>
+                        <button class="btn-upgrade" id="upgrade-btn">Upgrade to Pro</button>
+                    </div>
+                </div>
+
+                <!-- Page Scan Results -->
+                <div class="dashboard-card scan-card">
+                    <div class="card-header">
+                        <h4>Page Compliance Scan</h4>
+                        <button class="btn-scan" id="scan-btn">Scan Now</button>
+                    </div>
+                    <div class="card-body" id="scan-results">
+                        <div class="scan-placeholder">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M9 11l3 3L22 4"></path>
+                                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+                            </svg>
+                            <p>Click "Scan Now" to check this page for compliance issues</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Violations -->
+                <div class="dashboard-card violations-card">
+                    <div class="card-header">
+                        <h4>Recent Violations</h4>
+                    </div>
+                    <div class="card-body" id="violations-list">
+                        <div class="empty-state">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 6v6l4 2"></path>
+                            </svg>
+                            <p>No violations detected</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Testing -->
+            <div class="testing-section">
+                <h4>Test WEG Protection</h4>
+                <p>Try executing code that violates compliance policies:</p>
+
+                <div class="test-buttons">
+                    <button class="test-btn" onclick="testTracking()">
+                        <span>Test Tracking Code</span>
+                        <small>Should be blocked by GDPR</small>
+                    </button>
+                    <button class="test-btn" onclick="testInlineScript()">
+                        <span>Test Inline Script</span>
+                        <small>Should be blocked by CSP</small>
+                    </button>
+                    <button class="test-btn" onclick="testDynamicEval()">
+                        <span>Test Dynamic Eval</span>
+                        <small>Should be verified</small>
+                    </button>
+                </div>
+
+                <div class="test-output" id="test-output"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="how-section">
+        <div class="container">
+            <h3 class="section-title">How WEG Works</h3>
+            <p class="section-subtitle">Four layers of inevitable compliance</p>
+
+            <div class="how-grid">
+                <div class="how-card">
+                    <div class="how-number">1</div>
+                    <h4>Execution Interception</h4>
+                    <p>Hooks into eval(), Function(), setTimeout(), script creation, and all dynamic execution points
+                    </p>
+                </div>
+                <div class="how-card">
+                    <div class="how-number">2</div>
+                    <h4>Policy Verification</h4>
+                    <p>Real-time checking against GDPR, CCPA, ADA, and security policies before code runs</p>
+                </div>
+                <div class="how-card">
+                    <div class="how-number">3</div>
+                    <h4>Violation Handling</h4>
+                    <p>Blocks non-compliant execution and logs violations to tamper-proof audit trail</p>
+                </div>
+                <div class="how-card">
+                    <div class="how-number">4</div>
+                    <h4>Audit Trail</h4>
+                    <p>Cryptographically signed logs exportable for regulatory compliance reporting</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Integration -->
+    <section id="integration" class="integration-section">
+        <div class="container">
+            <h3 class="section-title">Integration</h3>
+            <p class="section-subtitle">Add WEG to your site in 30 seconds</p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span>HTML</span>
+                    <button class="copy-btn" onclick="copyCode()">Copy</button>
+                </div>
+                <pre><code id="integration-code">&lt;!-- Load WEG before any other scripts --&gt;
+&lt;script src="https://cdn.yolofi.in/browser-ow8/browser-ow8.js"&gt;&lt;/script&gt;
+
+&lt;!-- Optional: Configure policies --&gt;
+&lt;script&gt;
+  WEG.configure({
+    gdpr: { enabled: true },
+    ccpa: { enabled: true },
+    accessibility: { enforceWCAG: 'AA' }
+  });
+&lt;/script&gt;</code></pre>
+            </div>
+
+            <div class="integration-features">
+                <div class="feature">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Works in all browsers</span>
+                </div>
+                <div class="feature">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>&lt;5ms overhead per check</span>
+                </div>
+                <div class="feature">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Zero dependencies</span>
+                </div>
+                <div class="feature">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Tamper-proof audit logs</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Inevitable -->
+    <section class="why-section">
+        <div class="container">
+            <h3 class="section-title">Why WEG is Inevitable</h3>
+
+            <div class="why-grid">
+                <div class="why-card">
+                    <div class="why-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                    </div>
+                    <h4>Legal Necessity</h4>
+                    <p>GDPR fines up to €20M or 4% revenue. CCPA fines up to $7,500 per violation. Non-compliance =
+                        catastrophic liability.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <h4>Regulatory Demand</h4>
+                    <p>Regulators will mandate runtime verification as enforcement becomes automated. WEG provides the
+                        infrastructure.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M9 11l3 3L22 4"></path>
+                            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+                        </svg>
+                    </div>
+                    <h4>Can't Ship Without It</h4>
+                    <p>Developers need proof of compliance. WEG provides tamper-proof audit trails for regulatory
+                        reporting.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="12" y1="1" x2="12" y2="23"></line>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                    </div>
+                    <h4>Stable Revenue</h4>
+                    <p>Every web execution requires verification. Constraint-based monetization through legal
+                        inevitability.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo-icon">O₈</div>
+                    <p>Making legal compliance inevitable through runtime verification</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://yolofi.in">Yolofi</a>
+                    <a href="#integration">Docs</a>
+                    <a href="mailto:legal@yolofi.in">Contact</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Yolofi. WEG v1.0.0 - Web Execution Gate Legal</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Load WEG -->
+    <script src="browser-ow8.js"></script>
+
+    <!-- Billing Engine -->
+    <script src="billing.js"></script>
+
+    <!-- PhonePe Payment -->
+    <script src="phonepe-payment.js"></script>
+
+    <!-- Dashboard Logic -->
+    <script src="dashboard.js"></script>
+</body>
+
+</html>
