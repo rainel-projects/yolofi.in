@@ -42,6 +42,9 @@ class WebExecutionGate {
         this.initialized = true;
         this.log('WEG initialized successfully', 'info');
 
+        // Dispatch initialization event for dashboard
+        window.dispatchEvent(new CustomEvent('weg:initialized'));
+
         return this;
     }
 
