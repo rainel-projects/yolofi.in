@@ -14,8 +14,18 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@500;700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="payment-modal.css">
+    <link rel="stylesheet" href="styles.css?v=2.0">
+    <link rel="stylesheet" href="payment-modal.css?v=2.0">
+
+    <!-- Prevent back navigation -->
+    <script>
+        (function () {
+            history.pushState(null, null, location.href);
+            window.onpopstate = function () {
+                history.pushState(null, null, location.href);
+            };
+        })();
+    </script>
 </head>
 
 <body>
