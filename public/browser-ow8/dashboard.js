@@ -236,28 +236,30 @@ async function handleUpgrade() {
     const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR&tn=${encodeURIComponent('WEG Pro Subscription')}`;
 
     // Confirm before redirecting
-    const confirmed = confirm(`Upgrade to Pro tier for ₹${amount}/month?\n\nYou will be redirected to your UPI app for payment.`);
+    const confirmed = confirm(`Upgrade to Pro tier for ₹${amount}/month?\n\nYour UPI app will open for payment.`);
 
     if (confirmed) {
-        // Try to open UPI app
-        window.location.href = upiLink;
+        // Open UPI link in new window (will trigger UPI app)
+        const paymentWindow = window.open(upiLink, '_blank');
 
-        // Fallback: If UPI app doesn't open, show PhonePe web link after 2 seconds
+        // Fallback: If popup blocked or UPI app doesn't open
         setTimeout(() => {
-            const phonepeLink = `phonepe://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR`;
-            const gpayLink = `tez://upi/pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR`;
+            if (!paymentWindow || paymentWindow.closed) {
+                const phonepeLink = `phonepe://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR`;
+                const gpayLink = `tez://upi/pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR`;
 
-            // Try PhonePe first, then GPay
-            const tryPhonePe = confirm('UPI app not detected. Try PhonePe?');
-            if (tryPhonePe) {
-                window.location.href = phonepeLink;
-            } else {
-                const tryGPay = confirm('Try Google Pay instead?');
-                if (tryGPay) {
-                    window.location.href = gpayLink;
+                // Try PhonePe first, then GPay
+                const tryPhonePe = confirm('UPI app not detected. Try PhonePe?');
+                if (tryPhonePe) {
+                    window.open(phonepeLink, '_blank');
+                } else {
+                    const tryGPay = confirm('Try Google Pay instead?');
+                    if (tryGPay) {
+                        window.open(gpayLink, '_blank');
+                    }
                 }
             }
-        }, 2000);
+        }, 1000);
     }
 }
 
