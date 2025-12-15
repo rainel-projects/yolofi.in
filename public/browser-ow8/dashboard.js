@@ -235,10 +235,45 @@ async function handleUpgrade() {
     // Generate UPI payment link
     const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR&tn=${encodeURIComponent('WEG Pro Subscription')}`;
 
-    // Confirm before redirecting
-    const confirmed = confirm(`Upgrade to Pro tier for ₹${amount}/month?\n\nYour UPI app will open for payment.`);
+    // Create custom payment dialog
+    const dialog = document.createElement('div');
+    dialog.className = 'payment-dialog-overlay';
+    dialog.innerHTML = `
+        <div class="payment-dialog">
+            <div class="payment-dialog-header">
+                <h3>Upgrade to Pro</h3>
+            </div>
+            <div class="payment-dialog-body">
+                <div class="payment-info">
+                    <div class="payment-row">
+                        <span class="payment-label">Tier:</span>
+                        <span class="payment-value">Pro</span>
+                    </div>
+                    <div class="payment-row">
+                        <span class="payment-label">Amount:</span>
+                        <span class="payment-value">₹${amount}/month</span>
+                    </div>
+                    <div class="payment-row">
+                        <span class="payment-label">Features:</span>
+                        <span class="payment-value">1M verifications/month</span>
+                    </div>
+                </div>
+                <p class="payment-note">Your UPI app will open for secure payment</p>
+            </div>
+            <div class="payment-dialog-actions">
+                <button class="btn-dialog btn-cancel" onclick="this.closest('.payment-dialog-overlay').remove()">Cancel</button>
+                <button class="btn-dialog btn-confirm" id="confirm-payment">Pay ₹${amount}</button>
+            </div>
+        </div>
+    `;
 
-    if (confirmed) {
+    document.body.appendChild(dialog);
+
+    // Handle confirm button
+    document.getElementById('confirm-payment').onclick = () => {
+        // Remove dialog
+        dialog.remove();
+
         // Open UPI link in new window (will trigger UPI app)
         const paymentWindow = window.open(upiLink, '_blank');
 
@@ -248,19 +283,28 @@ async function handleUpgrade() {
                 const phonepeLink = `phonepe://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR`;
                 const gpayLink = `tez://upi/pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=INR`;
 
-                // Try PhonePe first, then GPay
-                const tryPhonePe = confirm('UPI app not detected. Try PhonePe?');
-                if (tryPhonePe) {
-                    window.open(phonepeLink, '_blank');
-                } else {
-                    const tryGPay = confirm('Try Google Pay instead?');
-                    if (tryGPay) {
-                        window.open(gpayLink, '_blank');
-                    }
-                }
+                // Show fallback dialog
+                const fallbackDialog = document.createElement('div');
+                fallbackDialog.className = 'payment-dialog-overlay';
+                fallbackDialog.innerHTML = `
+                    <div class="payment-dialog">
+                        <div class="payment-dialog-header">
+                            <h3>Choose Payment App</h3>
+                        </div>
+                        <div class="payment-dialog-body">
+                            <p>UPI app not detected. Choose your preferred payment app:</p>
+                        </div>
+                        <div class="payment-dialog-actions">
+                            <button class="btn-dialog btn-cancel" onclick="this.closest('.payment-dialog-overlay').remove()">Cancel</button>
+                            <button class="btn-dialog btn-app" onclick="window.open('${phonepeLink}', '_blank'); this.closest('.payment-dialog-overlay').remove();">PhonePe</button>
+                            <button class="btn-dialog btn-app" onclick="window.open('${gpayLink}', '_blank'); this.closest('.payment-dialog-overlay').remove();">Google Pay</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(fallbackDialog);
             }
         }, 1000);
-    }
+    };
 }
 
 // Add CSS for spinner

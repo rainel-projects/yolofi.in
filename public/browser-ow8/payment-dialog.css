@@ -1,0 +1,150 @@
+/* Payment Dialog Styles */
+.payment-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.payment-dialog {
+    background: white;
+    border-radius: 16px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.payment-dialog-header {
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.payment-dialog-header h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    color: #1a1a1a;
+}
+
+.payment-dialog-body {
+    padding: 24px;
+}
+
+.payment-info {
+    background: #f9fafb;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+.payment-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.payment-row:last-child {
+    border-bottom: none;
+}
+
+.payment-label {
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.payment-value {
+    font-size: 15px;
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+.payment-note {
+    font-size: 13px;
+    color: #6b7280;
+    text-align: center;
+    margin: 0;
+}
+
+.payment-dialog-actions {
+    padding: 16px 24px 24px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.btn-dialog {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    font-family: 'Inter', sans-serif;
+}
+
+.btn-cancel {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.btn-cancel:hover {
+    background: #e5e7eb;
+}
+
+.btn-confirm {
+    background: #2563eb;
+    color: white;
+    flex: 1;
+}
+
+.btn-confirm:hover {
+    background: #1e40af;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.btn-app {
+    background: #10b981;
+    color: white;
+    flex: 1;
+}
+
+.btn-app:hover {
+    background: #059669;
+    transform: translateY(-1px);
+}
