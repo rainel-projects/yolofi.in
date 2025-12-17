@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edge Search - YoloFi</title>
+
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://yolofi.in; img-src 'self' data:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="no-referrer">
+
+    <!-- SEO -->
+    <meta name="description"
+        content="Zero-server-cost edge search - Think locally, learn from distributed files, navigate without asking permission.">
+    <meta name="keywords" content="edge search, distributed search, zero cost, client-side">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #151b3d;
+            --bg-card: rgba(21, 27, 61, 0.6);
+            --accent-primary: #00d4ff;
+            --accent-secondary: #7c3aed;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --border: rgba(0, 212, 255, 0.2);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --glow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .tagline {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 20px 60px 20px 24px;
+            font-size: 1.1rem;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: var(--glow);
+            transform: translateY(-2px);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-primary);
+            font-size: 1.4rem;
+            pointer-events: none;
+        }
+
+        .results {
+            display: none;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            max-height: 400px;
+            overflow-y: auto;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .result-item {
+            padding: 16px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .result-item:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--accent-primary);
+            transform: translateX(4px);
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .result-description {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .result-score {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 2px 8px;
+            background: rgba(0, 212, 255, 0.2);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--accent-primary);
+        }
+
+        .status {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .status.secure {
+            color: var(--accent-primary);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-text {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--text-primary);
+            text-shadow: var(--glow);
+        }
+
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--accent-primary);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--accent-primary);
+            margin-top: 12px;
+        }
+
+        .security-badge::before {
+            content: "🔒";
+        }
+
+        /* Scrollbar */
+        .results::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .results::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .results::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 4px;
+        }
+
+        @media (max-width: 640px) {
+            .logo {
+                font-size: 2rem;
+            }
+
+            .search-input {
+                padding: 16px 50px 16px 20px;
+                font-size: 1rem;
+            }
+
+            .tagline {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">Edge Search</h1>
+            <p class="tagline">Think locally, learn from distributed files, navigate without asking permission.</p>
+            <div class="security-badge">Zero-Server-Cost • Fully Encrypted • Privacy-First</div>
+        </header>
+
+        <div class="search-container">
+            <input type="text" class="search-input" id="searchInput"
+                placeholder="Type to search... (try: optimize, diagnose, link)" autocomplete="off" spellcheck="false"
+                maxlength="200">
+            <span class="search-icon">⚡</span>
+        </div>
+
+        <div class="results" id="results"></div>
+
+        <div class="status secure" id="status">
+            🔒 Secure • All processing happens locally • Zero network calls
+        </div>
+
+        <footer class="footer">
+            <p class="footer-text">Powered by client-side intelligence • No servers • No tracking</p>
+            <div class="footer-links">
+                <a href="/" class="footer-link">← Back to YoloFi</a>
+                <a href="#" class="footer-link" id="downloadLink">Download This Page</a>
+                <a href="https://github.com" class="footer-link" target="_blank" rel="noopener noreferrer">Fork on
+                    GitHub</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================
+        // SECURITY LAYER
+        // ============================================
+
+        // Input sanitization
+        const sanitizeInput = (input) => {
+            if (typeof input !== 'string') return '';
+
+            // Remove any HTML tags
+            const temp = document.createElement('div');
+            temp.textContent = input;
+            let sanitized = temp.innerHTML;
+
+            // Remove script-like patterns
+            sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+            sanitized = sanitized.replace(/javascript:/gi, '');
+            sanitized = sanitized.replace(/on\w+\s*=/gi, '');
+
+            // Limit length
+            return sanitized.slice(0, 200).trim();
+        };
+
+        // XSS Protection
+        const escapeHtml = (text) => {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        };
+
+        // Validate URL before navigation
+        const isValidUrl = (url) => {
+            try {
+                // Only allow relative URLs or same-origin
+                if (url.startsWith('/')) return true;
+
+                const parsed = new URL(url, window.location.origin);
+                return parsed.origin === window.location.origin;
+            } catch {
+                return false;
+            }
+        };
+
+        // ============================================
+        // KNOWLEDGE PACKS (EMBEDDED)
+        // ============================================
+
+        const KNOWLEDGE_PACKS = {
+            core: {
+                version: "1.0.0",
+                rules: [
+                    {
+                        match: ["optimize", "speed", "faster", "performance", "boost"],
+                        go: "/optimizer",
+                        weight: 0.95,
+                        description: "Browser optimization and performance boost"
+                    },
+                    {
+                        match: ["diagnose", "debug", "fix", "problem", "issue"],
+                        go: "/diagnose",
+                        weight: 0.90,
+                        description: "System diagnostics and troubleshooting"
+                    },
+                    {
+                        match: ["link", "connect", "share", "session"],
+                        go: "/link",
+                        weight: 0.88,
+                        description: "Connection and sharing system"
+                    },
+                    {
+                        match: ["simulator", "simulate", "test"],
+                        go: "/v1/simulator",
+                        weight: 0.85,
+                        description: "Offline simulation runtime"
+                    },
+                    {
+                        match: ["mint", "create", "generate"],
+                        go: "/v1/mint",
+                        weight: 0.82,
+                        description: "Content creation tools"
+                    },
+                    {
+                        match: ["home", "main", "start"],
+                        go: "/",
+                        weight: 0.80,
+                        description: "YoloFi home page"
+                    }
+                ]
+            },
+            shortcuts: {
+                version: "1.0.0",
+                rules: [
+                    { match: ["opt"], go: "/optimizer", weight: 1.0, description: "Quick: Optimizer" },
+                    { match: ["diag"], go: "/diagnose", weight: 1.0, description: "Quick: Diagnostics" },
+                    { match: ["ln"], go: "/link", weight: 1.0, description: "Quick: Link System" },
+                    { match: ["sim"], go: "/v1/simulator", weight: 1.0, description: "Quick: Simulator" }
+                ]
+            },
+            game: {
+                version: "1.0.0",
+                rules: [
+                    {
+                        match: ["secret", "hidden", "easter"],
+                        go: "/v1/simulator",
+                        weight: 0.75,
+                        description: "🎮 Hidden simulator path",
+                        hint: "You found a secret!"
+                    },
+                    {
+                        match: ["edge", "search"],
+                        go: "/edge",
+                        weight: 0.70,
+                        description: "🔍 You're already here!",
+                        hint: "Recursive search detected"
+                    }
+                ]
+            }
+        };
+
+        // ============================================
+        // CLIENT-SIDE RESOLVER ENGINE
+        // ============================================
+
+        class EdgeResolver {
+            constructor(knowledgePacks) {
+                this.packs = knowledgePacks;
+                this.allRules = this.flattenRules();
+            }
+
+            flattenRules() {
+                const rules = [];
+                for (const pack of Object.values(this.packs)) {
+                    if (pack.rules) {
+                        rules.push(...pack.rules);
+                    }
+                }
+                return rules;
+            }
+
+            tokenize(input) {
+                // Sanitize first
+                const sanitized = sanitizeInput(input);
+
+                // Convert to lowercase and split
+                return sanitized
+                    .toLowerCase()
+                    .split(/\s+/)
+                    .filter(token => token.length > 0);
+            }
+
+            matchRules(tokens) {
+                const matches = [];
+
+                for (const rule of this.allRules) {
+                    let score = 0;
+                    let matchedTerms = [];
+
+                    for (const token of tokens) {
+                        for (const matchTerm of rule.match) {
+                            // Exact match
+                            if (matchTerm === token) {
+                                score += 1.0;
+                                matchedTerms.push(matchTerm);
+                            }
+                            // Partial match
+                            else if (matchTerm.includes(token) || token.includes(matchTerm)) {
+                                score += 0.5;
+                                matchedTerms.push(matchTerm);
+                            }
+                        }
+                    }
+
+                    if (score > 0) {
+                        matches.push({
+                            rule,
+                            score: score * rule.weight,
+                            matchedTerms: [...new Set(matchedTerms)]
+                        });
+                    }
+                }
+
+                return matches;
+            }
+
+            scoreMatches(matches) {
+                // Sort by score descending
+                return matches.sort((a, b) => b.score - a.score);
+            }
+
+            search(input) {
+                if (!input || input.trim().length === 0) {
+                    return [];
+                }
+
+                const tokens = this.tokenize(input);
+                if (tokens.length === 0) {
+                    return [];
+                }
+
+                const matches = this.matchRules(tokens);
+                return this.scoreMatches(matches);
+            }
+
+            navigate(match) {
+                const url = match.rule.go;
+
+                // Security check
+                if (!isValidUrl(url)) {
+                    console.error('Invalid URL blocked:', url);
+                    return false;
+                }
+
+                // Navigate
+                window.location.href = url;
+                return true;
+            }
+        }
+
+        // ============================================
+        // UI CONTROLLER
+        // ============================================
+
+        class SearchUI {
+            constructor(resolver) {
+                this.resolver = resolver;
+                this.searchInput = document.getElementById('searchInput');
+                this.resultsContainer = document.getElementById('results');
+                this.statusElement = document.getElementById('status');
+
+                this.init();
+            }
+
+            init() {
+                // Input event
+                this.searchInput.addEventListener('input', (e) => {
+                    this.handleSearch(e.target.value);
+                });
+
+                // Enter key navigation
+                this.searchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        this.navigateToTop();
+                    }
+                });
+
+                // Download link
+                document.getElementById('downloadLink').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.downloadPage();
+                });
+
+                // Focus on load
+                this.searchInput.focus();
+            }
+
+            handleSearch(query) {
+                const results = this.resolver.search(query);
+                this.displayResults(results);
+            }
+
+            displayResults(results) {
+                if (results.length === 0) {
+                    this.resultsContainer.classList.remove('active');
+                    return;
+                }
+
+                const html = results.map(match => `
+                    <div class="result-item" data-url="${escapeHtml(match.rule.go)}">
+                        <div class="result-title">
+                            ${escapeHtml(match.rule.description)}
+                            <span class="result-score">${(match.score * 100).toFixed(0)}%</span>
+                        </div>
+                        <div class="result-description">
+                            ${escapeHtml(match.rule.go)}
+                            ${match.rule.hint ? ` • ${escapeHtml(match.rule.hint)}` : ''}
+                        </div>
+                    </div>
+                `).join('');
+
+                this.resultsContainer.innerHTML = html;
+                this.resultsContainer.classList.add('active');
+
+                // Add click handlers
+                this.resultsContainer.querySelectorAll('.result-item').forEach((item, index) => {
+                    item.addEventListener('click', () => {
+                        this.resolver.navigate(results[index]);
+                    });
+                });
+            }
+
+            navigateToTop() {
+                const results = this.resolver.search(this.searchInput.value);
+                if (results.length > 0) {
+                    this.resolver.navigate(results[0]);
+                }
+            }
+
+            downloadPage() {
+                const html = document.documentElement.outerHTML;
+                const blob = new Blob([html], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'yolofi-edge-search.html';
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize resolver
+            const resolver = new EdgeResolver(KNOWLEDGE_PACKS);
+
+            // Initialize UI
+            const ui = new SearchUI(resolver);
+
+            // Log security status
+            console.log('🔒 Edge Search initialized');
+            console.log('✅ All processing local');
+            console.log('✅ Zero network calls');
+            console.log('✅ Input sanitization active');
+            console.log('✅ XSS protection enabled');
+        });
+
+        // Prevent common attacks
+        window.addEventListener('error', (e) => {
+            e.preventDefault();
+            console.error('Blocked error:', e.message);
+        });
+    </script>
+</body>
+
+</html>

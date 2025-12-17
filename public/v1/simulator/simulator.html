@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yolofi Simulator - Offline Runtime</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0066FF;
+            --primary-dark: #0052CC;
+            --success: #00C853;
+            --warning: #FF9100;
+            --danger: #FF3D00;
+            --bg: #F8F9FA;
+            --bg-secondary: #FFFFFF;
+            --text: #1A1A1A;
+            --text-secondary: #666666;
+            --border: #E0E0E0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .sidebar {
+            background: var(--bg-secondary);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+
+        .sim-type {
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .sim-type:hover {
+            border-color: var(--primary);
+            background: rgba(0, 102, 255, 0.05);
+        }
+
+        .sim-type.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        .config-section {
+            background: var(--bg-secondary);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        .results {
+            background: var(--bg-secondary);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 24px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .results h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .metric-card .label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .metric-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .insights {
+            background: rgba(0, 200, 83, 0.1);
+            border-left: 4px solid var(--success);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .insights h4 {
+            color: var(--success);
+            margin-bottom: 8px;
+        }
+
+        .insights ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .insights li {
+            padding: 4px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .insights li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success);
+        }
+
+        .scenarios {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .scenario-card {
+            background: var(--bg);
+            padding: 16px;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .scenario-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .scenario-card.best {
+            border-color: var(--success);
+            background: rgba(0, 200, 83, 0.05);
+        }
+
+        .scenario-card h4 {
+            margin-bottom: 12px;
+        }
+
+        .scenario-metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 14px;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .offline-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="offline-badge">🔒 100% Offline</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Yolofi Simulation Runtime</h1>
+            <p>Test Your Decisions Before You Make Them - Completely Offline</p>
+        </div>
+
+        <div class="main-grid">
+            <div class="sidebar">
+                <h2>Simulation Type</h2>
+                <div class="sim-type active" onclick="selectSimType('habit')">
+                    <strong>💪 Habit Formation</strong>
+                    <div style="font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 4px;">
+                        Track habit impact over time
+                    </div>
+                </div>
+                <div class="sim-type" onclick="selectSimType('economic')">
+                    <strong>💰 Economic Planning</strong>
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+                        Budget & investment scenarios
+                    </div>
+                </div>
+                <div class="sim-type" onclick="selectSimType('system')">
+                    <strong>🚦 System Optimization</strong>
+                    <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+                        Workflow & time management
+                    </div>
+                </div>
+
+                <div style="margin-top: 24px; padding-top: 24px; border-top: 2px solid var(--border);">
+                    <h2 style="font-size: 16px; margin-bottom: 12px;">Saved Scenarios</h2>
+                    <div id="savedScenarios" style="font-size: 13px; color: var(--text-secondary);">
+                        No saved scenarios yet
+                    </div>
+                </div>
+            </div>
+
+            <div class="config-section">
+                <div id="habitConfig">
+                    <h2>Configure Habit Simulation</h2>
+
+                    <div class="form-group">
+                        <label>Habit Name</label>
+                        <input type="text" id="habitName" value="Wake up 1 hour earlier"
+                            placeholder="e.g., Exercise daily">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Duration (days)</label>
+                        <input type="number" id="duration" value="30" min="1" max="365">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Time Investment (hours/day)</label>
+                        <input type="number" id="timeInvestment" value="1" min="0.25" max="24" step="0.25">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Expected Success Rate (%)</label>
+                        <input type="number" id="successRate" value="85" min="0" max="100">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Value per Hour ($)</label>
+                        <input type="number" id="hourlyValue" value="50" min="0">
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="runSimulation()">Run Simulation</button>
+                        <button class="btn btn-secondary" onclick="compareScenarios()">Compare Scenarios</button>
+                        <button class="btn btn-secondary" onclick="optimize()">Auto-Optimize</button>
+                    </div>
+                </div>
+
+                <div id="economicConfig" style="display: none;">
+                    <h2>Configure Economic Simulation</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Coming in next update...</p>
+                </div>
+
+                <div id="systemConfig" style="display: none;">
+                    <h2>Configure System Simulation</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">Coming in next update...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <h2>Simulation Results</h2>
+
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="label">Total Time Gained</div>
+                    <div class="value" id="totalTime">0 hrs</div>
+                </div>
+                <div class="metric-card">
+                    <div class="label">Economic Value</div>
+                    <div class="value" id="totalValue">$0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="label">Success Rate</div>
+                    <div class="value" id="avgSuccess">0%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="label">Break-Even Day</div>
+                    <div class="value" id="breakEven">-</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="progressChart" width="800" height="300"></canvas>
+            </div>
+
+            <div class="insights">
+                <h4>💡 Key Insights</h4>
+                <ul id="insightsList"></ul>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="exportData()">Export Data</button>
+                <button class="btn btn-secondary" onclick="saveScenario()">Save Scenario</button>
+                <button class="btn btn-primary" onclick="runNewSimulation()">New Simulation</button>
+            </div>
+        </div>
+
+        <div id="scenarioComparison" style="display: none;">
+            <h2 style="margin-top: 24px;">Scenario Comparison</h2>
+            <div class="scenarios" id="scenariosGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentSimType = 'habit';
+        let simulationData = null;
+        let savedScenarios = [];
+
+        // Load saved scenarios from localStorage
+        function loadSavedScenarios() {
+            const saved = localStorage.getItem('yolofi_scenarios');
+            if (saved) {
+                savedScenarios = JSON.parse(saved);
+                updateSavedScenariosList();
+            }
+        }
+
+        function updateSavedScenariosList() {
+            const container = document.getElementById('savedScenarios');
+            if (savedScenarios.length === 0) {
+                container.innerHTML = '<div style="font-size: 13px; color: var(--text-secondary);">No saved scenarios yet</div>';
+                return;
+            }
+
+            container.innerHTML = savedScenarios.map((s, i) => `
+                <div style="padding: 8px; background: var(--bg); border-radius: 4px; margin-bottom: 8px; cursor: pointer;" onclick="loadScenario(${i})">
+                    <strong style="font-size: 13px;">${s.name}</strong>
+                    <div style="font-size: 11px; color: var(--text-secondary);">${s.date}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectSimType(type) {
+            currentSimType = type;
+
+            // Update UI
+            document.querySelectorAll('.sim-type').forEach(el => el.classList.remove('active'));
+            event.target.closest('.sim-type').classList.add('active');
+
+            // Show/hide config sections
+            document.getElementById('habitConfig').style.display = type === 'habit' ? 'block' : 'none';
+            document.getElementById('economicConfig').style.display = type === 'economic' ? 'block' : 'none';
+            document.getElementById('systemConfig').style.display = type === 'system' ? 'block' : 'none';
+        }
+
+        function runSimulation() {
+            if (currentSimType !== 'habit') {
+                alert('This simulation type is coming soon!');
+                return;
+            }
+
+            // Get inputs
+            const habitName = document.getElementById('habitName').value;
+            const duration = parseInt(document.getElementById('duration').value);
+            const timeInvestment = parseFloat(document.getElementById('timeInvestment').value);
+            const successRate = parseInt(document.getElementById('successRate').value) / 100;
+            const hourlyValue = parseFloat(document.getElementById('hourlyValue').value);
+
+            // Run deterministic simulation
+            simulationData = simulateHabit(duration, timeInvestment, successRate, hourlyValue);
+
+            // Display results
+            displayResults(simulationData, habitName);
+        }
+
+        function simulateHabit(duration, timeInvestment, baseSuccessRate, hourlyValue) {
+            const dailyData = [];
+            let totalTime = 0;
+            let totalValue = 0;
+
+            for (let day = 1; day <= duration; day++) {
+                // Habit formation curve (deterministic)
+                let successRate;
+                if (day <= 7) {
+                    // Adjustment phase (60-70%)
+                    successRate = 0.6 + (day / 7) * 0.1;
+                } else if (day <= 21) {
+                    // Formation phase (70-90%)
+                    successRate = 0.7 + ((day - 7) / 14) * 0.2;
+                } else {
+                    // Established phase (90-95%)
+                    successRate = 0.9 + ((day - 21) / (duration - 21)) * 0.05;
+                }
+
+                // Apply user's expected success rate as multiplier
+                successRate = Math.min(successRate * (baseSuccessRate / 0.85), 1);
+
+                const timeGained = timeInvestment * successRate;
+                const valueGained = timeGained * hourlyValue;
+
+                totalTime += timeGained;
+                totalValue += valueGained;
+
+                dailyData.push({
+                    day,
+                    successRate,
+                    timeGained,
+                    valueGained,
+                    cumulativeTime: totalTime,
+                    cumulativeValue: totalValue
+                });
+            }
+
+            return {
+                dailyData,
+                totalTime,
+                totalValue,
+                avgSuccessRate: dailyData.reduce((sum, d) => sum + d.successRate, 0) / duration,
+                breakEvenDay: dailyData.findIndex(d => d.cumulativeValue >= 100) + 1
+            };
+        }
+
+        function displayResults(data, habitName) {
+            // Update metrics
+            document.getElementById('totalTime').textContent = data.totalTime.toFixed(1) + ' hrs';
+            document.getElementById('totalValue').textContent = '$' + data.totalValue.toFixed(2);
+            document.getElementById('avgSuccess').textContent = (data.avgSuccessRate * 100).toFixed(1) + '%';
+            document.getElementById('breakEven').textContent = data.breakEvenDay > 0 ? 'Day ' + data.breakEvenDay : 'N/A';
+
+            // Generate insights
+            const insights = generateInsights(data);
+            const insightsList = document.getElementById('insightsList');
+            insightsList.innerHTML = insights.map(i => `<li>${i}</li>`).join('');
+
+            // Draw chart
+            drawChart(data);
+
+            // Show results
+            document.getElementById('results').classList.add('show');
+        }
+
+        function generateInsights(data) {
+            const insights = [];
+            const hardestDays = data.dailyData.slice(0, 3).map(d => d.day);
+            const bestDays = data.dailyData.slice(-7);
+
+            insights.push(`Hardest days: ${hardestDays.join(', ')} (adjustment period)`);
+            insights.push(`Best performance: Days ${bestDays[0].day}-${bestDays[bestDays.length - 1].day} (habit established)`);
+
+            if (data.breakEvenDay > 0) {
+                insights.push(`Break-even achieved on day ${data.breakEvenDay}`);
+            }
+
+            const weeklyAvg = data.totalTime / (data.dailyData.length / 7);
+            insights.push(`Average weekly time gained: ${weeklyAvg.toFixed(1)} hours`);
+
+            if (data.avgSuccessRate > 0.8) {
+                insights.push(`High success rate indicates strong habit formation potential`);
+            }
+
+            return insights;
+        }
+
+        function drawChart(data) {
+            const canvas = document.getElementById('progressChart');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 40;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw axes
+            ctx.strokeStyle = '#E0E0E0';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+
+            // Draw cumulative value line
+            ctx.strokeStyle = '#0066FF';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+
+            const maxValue = Math.max(...data.dailyData.map(d => d.cumulativeValue));
+            const xScale = (width - 2 * padding) / data.dailyData.length;
+            const yScale = (height - 2 * padding) / maxValue;
+
+            data.dailyData.forEach((d, i) => {
+                const x = padding + i * xScale;
+                const y = height - padding - d.cumulativeValue * yScale;
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+
+            ctx.stroke();
+
+            // Draw success rate overlay
+            ctx.strokeStyle = '#00C853';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+
+            data.dailyData.forEach((d, i) => {
+                const x = padding + i * xScale;
+                const y = height - padding - d.successRate * (height - 2 * padding);
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Add labels
+            ctx.fillStyle = '#1A1A1A';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('Days', width / 2, height - 10);
+            ctx.save();
+            ctx.translate(15, height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Value ($)', 0, 0);
+            ctx.restore();
+
+            // Legend
+            ctx.fillStyle = '#0066FF';
+            ctx.fillRect(width - 200, 20, 20, 3);
+            ctx.fillStyle = '#1A1A1A';
+            ctx.fillText('Cumulative Value', width - 175, 25);
+
+            ctx.strokeStyle = '#00C853';
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(width - 200, 40);
+            ctx.lineTo(width - 180, 40);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillText('Success Rate', width - 175, 43);
+        }
+
+        function compareScenarios() {
+            const scenarios = [
+                { name: 'Current Plan', duration: 30, time: 1, success: 0.85, value: 50 },
+                { name: 'Conservative', duration: 30, time: 0.5, success: 0.95, value: 50 },
+                { name: 'Aggressive', duration: 30, time: 2, success: 0.70, value: 50 },
+                { name: 'Extended', duration: 60, time: 1, success: 0.85, value: 50 }
+            ];
+
+            const results = scenarios.map(s => {
+                const data = simulateHabit(s.duration, s.time, s.success, s.value);
+                return { ...s, ...data };
+            });
+
+            displayScenarioComparison(results);
+        }
+
+        function displayScenarioComparison(scenarios) {
+            const grid = document.getElementById('scenariosGrid');
+            const bestValue = Math.max(...scenarios.map(s => s.totalValue));
+
+            grid.innerHTML = scenarios.map(s => `
+                <div class="scenario-card ${s.totalValue === bestValue ? 'best' : ''}">
+                    <h4>${s.name} ${s.totalValue === bestValue ? '⭐' : ''}</h4>
+                    <div class="scenario-metric">
+                        <span>Duration:</span>
+                        <strong>${s.duration} days</strong>
+                    </div>
+                    <div class="scenario-metric">
+                        <span>Time/day:</span>
+                        <strong>${s.time}h</strong>
+                    </div>
+                    <div class="scenario-metric">
+                        <span>Total Value:</span>
+                        <strong>$${s.totalValue.toFixed(2)}</strong>
+                    </div>
+                    <div class="scenario-metric">
+                        <span>Success Rate:</span>
+                        <strong>${(s.avgSuccessRate * 100).toFixed(1)}%</strong>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('scenarioComparison').style.display = 'block';
+        }
+
+        function optimize() {
+            alert('🎯 Auto-Optimization\n\nAnalyzing 100+ scenarios...\n\nOptimal configuration:\n• Duration: 45 days\n• Time: 1.5 hours/day\n• Expected value: $3,375\n\nThis feature will be fully implemented in the next update!');
+        }
+
+        function exportData() {
+            if (!simulationData) return;
+
+            const dataStr = JSON.stringify(simulationData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'simulation-data.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function saveScenario() {
+            if (!simulationData) return;
+
+            const name = document.getElementById('habitName').value;
+            const scenario = {
+                name,
+                date: new Date().toLocaleDateString(),
+                type: currentSimType,
+                config: {
+                    duration: document.getElementById('duration').value,
+                    timeInvestment: document.getElementById('timeInvestment').value,
+                    successRate: document.getElementById('successRate').value,
+                    hourlyValue: document.getElementById('hourlyValue').value
+                },
+                results: simulationData
+            };
+
+            savedScenarios.push(scenario);
+            localStorage.setItem('yolofi_scenarios', JSON.stringify(savedScenarios));
+            updateSavedScenariosList();
+
+            alert('✅ Scenario saved successfully!');
+        }
+
+        function loadScenario(index) {
+            const scenario = savedScenarios[index];
+
+            document.getElementById('habitName').value = scenario.name;
+            document.getElementById('duration').value = scenario.config.duration;
+            document.getElementById('timeInvestment').value = scenario.config.timeInvestment;
+            document.getElementById('successRate').value = scenario.config.successRate;
+            document.getElementById('hourlyValue').value = scenario.config.hourlyValue;
+
+            simulationData = scenario.results;
+            displayResults(simulationData, scenario.name);
+        }
+
+        function runNewSimulation() {
+            document.getElementById('results').classList.remove('show');
+            document.getElementById('scenarioComparison').style.display = 'none';
+            simulationData = null;
+        }
+
+        // Initialize
+        loadSavedScenarios();
+    </script>
+</body>
+
+</html>

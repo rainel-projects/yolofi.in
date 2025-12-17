@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yolofi Simulation Runtime - Offline Planning Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0066FF;
+            --primary-dark: #0052CC;
+            --success: #00C853;
+            --warning: #FF9100;
+            --danger: #FF3D00;
+            --bg: #F8F9FA;
+            --bg-secondary: #FFFFFF;
+            --text: #1A1A1A;
+            --text-secondary: #666666;
+            --border: #E0E0E0;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-radius: 16px;
+            margin-bottom: 40px;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .hero p {
+            font-size: 20px;
+            opacity: 0.9;
+            margin-bottom: 32px;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            color: var(--primary);
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .feature-card h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+
+        .feature-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .feature-card li {
+            padding: 8px 0;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .feature-card li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .use-cases {
+            background: var(--bg-secondary);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 40px;
+        }
+
+        .use-cases h2 {
+            font-size: 32px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .use-case {
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .use-case h4 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .use-case p {
+            color: var(--text-secondary);
+        }
+
+        .specs {
+            background: var(--bg-secondary);
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .specs h3 {
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        .specs ul {
+            list-style: none;
+        }
+
+        .specs li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--success);
+            color: white;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge.offline {
+            background: var(--warning);
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>🧪 Yolofi Simulation Runtime</h1>
+            <p>Offline Planning Tool - Test Your Decisions Before You Make Them</p>
+            <a href="#" class="download-btn" onclick="downloadSimulator(event)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Download Simulator (Single HTML File)
+            </a>
+            <div style="margin-top: 16px;">
+                <span class="badge">100% Offline</span>
+                <span class="badge offline">No Dependencies</span>
+                <span class="badge">Self-Contained</span>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <h3>📊 Scenario Comparison</h3>
+                <ul>
+                    <li>Run multiple variations side-by-side</li>
+                    <li>Compare outcomes visually</li>
+                    <li>Identify best approach</li>
+                    <li>Save and export scenarios</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h3>🎯 Optimization Engine</h3>
+                <ul>
+                    <li>Auto-suggest better parameters</li>
+                    <li>Find optimal configurations</li>
+                    <li>Sensitivity analysis</li>
+                    <li>Break-even calculations</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h3>⚠️ Risk Analysis</h3>
+                <ul>
+                    <li>Show failure scenarios</li>
+                    <li>Probability distributions</li>
+                    <li>Worst-case planning</li>
+                    <li>Mitigation strategies</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="use-cases">
+            <h2>Example Simulations</h2>
+
+            <div class="use-case">
+                <h4>💪 Habit Formation: "Wake up 1 hour earlier for 30 days"</h4>
+                <p>Simulate habit impact, track cumulative benefits, visualize formation curve, calculate time/value
+                    gained</p>
+            </div>
+
+            <div class="use-case">
+                <h4>💰 Economic Planning: "Save $500/month vs Invest $300/month"</h4>
+                <p>Compare savings strategies, project growth, analyze risk-adjusted returns, find optimal allocation
+                </p>
+            </div>
+
+            <div class="use-case">
+                <h4>🚦 System Optimization: "Reduce commute by 15 minutes daily"</h4>
+                <p>Model time savings, calculate annual impact, compare route alternatives, optimize schedule</p>
+            </div>
+
+            <div class="use-case">
+                <h4>📚 Learning Goals: "Study 2 hours daily for 90 days"</h4>
+                <p>Track knowledge accumulation, predict skill level, identify optimal study patterns, plan breaks</p>
+            </div>
+        </div>
+
+        <div class="specs">
+            <h3>Technical Specifications</h3>
+            <ul>
+                <li>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <strong>100% Offline:</strong> Works without internet connection
+                </li>
+                <li>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <strong>Self-Contained:</strong> Single HTML file, no external dependencies
+                </li>
+                <li>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <strong>Deterministic:</strong> Same inputs always produce same results
+                </li>
+                <li>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <strong>Privacy:</strong> All data stays on your device
+                </li>
+                <li>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <strong>Compatible:</strong> Works on any modern browser (Chrome, Firefox, Safari, Edge)
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>Yolofi Simulation Runtime - Plan Better, Decide Smarter</p>
+        <p style="margin-top: 8px; font-size: 14px;">No installation required • No account needed • 100% Free</p>
+    </footer>
+
+    <script>
+        function downloadSimulator(event) {
+            event.preventDefault();
+
+            // Trigger download of the simulator HTML file
+            const link = document.createElement('a');
+            link.href = 'simulator.html';
+            link.download = 'yolofi-simulator.html';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Show confirmation
+            alert('✅ Simulator downloaded!\n\nOpen "yolofi-simulator.html" in any browser to start simulating.\n\nNo internet required!');
+        }
+    </script>
+</body>
+
+</html>

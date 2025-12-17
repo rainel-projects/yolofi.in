@@ -83,6 +83,17 @@ const Showcase = () => {
                     link="Open Link →"
                 />
 
+                {/* Card 5: Edge Search */}
+                <Card
+                    theme={theme}
+                    onClick={() => window.location.href = '/edge'}
+                    icon={<span style={{ fontSize: '32px' }}>⚡</span>}
+                    iconBg='#f0fdfa'
+                    title="Edge Search"
+                    desc="Zero-server-cost distributed search. Think locally, navigate without asking permission."
+                    link="Try Edge Search →"
+                />
+
             </div>
 
             <div style={{ textAlign: 'center', marginTop: '4rem', color: '#a1a1aa' }}>
