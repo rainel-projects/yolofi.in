@@ -594,6 +594,25 @@
             }
 
             displayResults(results) {
+                const query = this.searchInput.value.trim();
+
+                if (results.length === 0 && query.length > 0) {
+                    // Show "Search Web" button when no local matches
+                    const html = `
+                        <div class="result-item" style="background: rgba(124, 58, 237, 0.1); border-color: var(--accent-secondary); cursor: pointer;" onclick="window.location.href='/search/${encodeURIComponent(query)}'">
+                            <div class="result-title">
+                                🌐 Search web for "${escapeHtml(query)}"
+                            </div>
+                            <div class="result-description">
+                                No local matches found • Search within yolofi.in domain
+                            </div>
+                        </div>
+                    `;
+                    this.resultsContainer.innerHTML = html;
+                    this.resultsContainer.classList.add('active');
+                    return;
+                }
+
                 if (results.length === 0) {
                     this.resultsContainer.classList.remove('active');
                     return;
