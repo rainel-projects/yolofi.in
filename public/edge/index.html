@@ -41,20 +41,18 @@
 
         body {
             font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            overflow-x: hidden;
+            padding: 0;
+            margin: 0;
         }
 
         .container {
-            width: 100%;
-            max-width: 900px;
-            animation: fadeIn 0.6s ease-out;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 60px;
+            min-height: 100vh;
         }
 
         @keyframes fadeIn {
@@ -70,16 +68,17 @@
         }
 
         .header {
-            text-align: center;
-            margin-bottom: 50px;
+            text-align: left;
+            margin-bottom: 60px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid var(--bg-secondary);
         }
 
         .logo-container {
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 16px;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         .logo-icon {
@@ -108,25 +107,24 @@
         }
 
         .security-badges {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 24px;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 800px;
         }
 
         .badge {
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: rgba(0, 212, 255, 0.08);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            border-radius: 24px;
-            font-size: 0.8rem;
-            color: var(--accent-primary);
+            gap: 10px;
+            padding: 14px 18px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--bg-secondary);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: var(--text-primary);
             font-weight: 500;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
 
         .badge-icon {
@@ -135,30 +133,28 @@
         }
 
         .search-container {
-            position: relative;
+            background: var(--bg-secondary);
+            border: 1px solid var(--bg-secondary);
+            border-radius: 12px;
+            padding: 30px;
             margin-bottom: 30px;
         }
 
         .search-input {
             width: 100%;
-            padding: 22px 60px 22px 28px;
-            font-size: 1.05rem;
+            padding: 16px 50px 16px 20px;
+            font-size: 1rem;
             font-family: 'Geist', sans-serif;
-            background: var(--bg-card);
-            border: 2px solid var(--border);
-            border-radius: 16px;
+            background: var(--bg-primary);
+            border: 1px solid var(--bg-primary);
+            border-radius: 8px;
             color: var(--text-primary);
             outline: none;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            letter-spacing: 0.3px;
+            transition: border-color 0.2s ease;
         }
 
         .search-input:focus {
             border-color: var(--accent-primary);
-            box-shadow: var(--glow);
-            transform: translateY(-2px);
         }
 
         .search-input::placeholder {
@@ -167,25 +163,16 @@
 
         .search-icon {
             position: absolute;
-            right: 24px;
+            right: 20px;
             top: 50%;
             transform: translateY(-50%);
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             pointer-events: none;
         }
 
         .results {
             display: none;
-            background: var(--bg-card);
-            border: 2px solid var(--border);
-            border-radius: 16px;
-            padding: 16px;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            max-height: 400px;
-            overflow-y: auto;
-            animation: slideDown 0.3s ease-out;
         }
 
         @keyframes slideDown {
@@ -205,19 +192,17 @@
         }
 
         .result-item {
-            padding: 18px;
-            margin-bottom: 8px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--bg-secondary);
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: border-color 0.2s ease;
         }
 
         .result-item:hover {
-            background: rgba(0, 212, 255, 0.1);
             border-color: var(--accent-primary);
-            transform: translateX(4px);
         }
 
         .result-item:last-child {
@@ -250,15 +235,16 @@
         }
 
         .status {
-            text-align: center;
-            padding: 24px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            letter-spacing: 0.3px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 12px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
 
         .status-icon {
